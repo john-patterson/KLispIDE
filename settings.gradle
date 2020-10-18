@@ -1,2 +1,6 @@
 rootProject.name = 'KLispIDE'
+include 'server'
+include 'compiler'
+include 'editor'
+include 'test-server'
 
