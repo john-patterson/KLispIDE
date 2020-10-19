@@ -15,6 +15,12 @@ enum class TokenType {
 
 data class Token(val text: String, val type: TokenType)
 
+fun identifierToken(text: String) = Token(text, TokenType.IDENTIFIER)
+fun numericToken(text: String) = Token(text, TokenType.NUMERIC)
+fun booleanToken(text: String) = Token(text, TokenType.BOOLEAN)
+fun leftParensToken() = Token("(", TokenType.LEFT_PARENS)
+fun rightParensToken() = Token(")", TokenType.RIGHT_PARENS)
+
 class Tokenizer {
     fun scan(source: String): List<Token> {
         var tokens = mutableListOf<Token>()
