@@ -18,20 +18,62 @@ class TokenizerTests {
             Assertions.assertEquals(Token("(", TokenType.LEFT_PARENS), leftParen)
             Assertions.assertEquals(Token(")", TokenType.RIGHT_PARENS), rightParen)
         }
+
+        @Test
+        fun `skips whitespace between components`() {
+            val result = Tokenizer().scan("      (             )     ")
+            val (leftParen, rightParen) = result
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("(", TokenType.LEFT_PARENS), leftParen)
+            Assertions.assertEquals(Token(")", TokenType.RIGHT_PARENS), rightParen)
+        }
+    }
+
+    @Nested
+    inner class ReservedKeywordsTests {
+        @Test
+        fun `classifies if`() {
+            val result = Tokenizer().scan("if IF")
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("if", TokenType.IF), result[0])
+            Assertions.assertEquals(Token("IF", TokenType.IF), result[1])
+        }
+
+        @Test
+        fun `classifies let`() {
+            val result = Tokenizer().scan("let LET")
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("let", TokenType.LET), result[0])
+            Assertions.assertEquals(Token("LET", TokenType.LET), result[1])
+        }
+
+        @Test
+        fun `classifies fun`() {
+            val result = Tokenizer().scan("fun fUn")
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("fun", TokenType.FUN), result[0])
+            Assertions.assertEquals(Token("fUn", TokenType.FUN), result[1])
+        }
+
+        @Test
+        fun `classifies true`() {
+            val result = Tokenizer().scan("true tRUe")
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("true", TokenType.BOOLEAN), result[0])
+            Assertions.assertEquals(Token("tRUe", TokenType.BOOLEAN), result[1])
+        }
+
+        @Test
+        fun `classifies false`() {
+            val result = Tokenizer().scan("false FalsE")
+            Assertions.assertEquals(2, result.size)
+            Assertions.assertEquals(Token("false", TokenType.BOOLEAN), result[0])
+            Assertions.assertEquals(Token("FalsE", TokenType.BOOLEAN), result[1])
+        }
     }
 
     @Nested
     inner class SymbolClassificationTests {
-        @Test
-        fun `classifies reserved keywords`() {
-            val result = Tokenizer().scan("if IF let LET")
-            Assertions.assertEquals(4, result.size)
-            Assertions.assertEquals(Token("if", TokenType.IF), result[0])
-            Assertions.assertEquals(Token("IF", TokenType.IF), result[1])
-            Assertions.assertEquals(Token("let", TokenType.LET), result[2])
-            Assertions.assertEquals(Token("LET", TokenType.LET), result[3])
-        }
-
         @Test
         fun `classifies symbols`() {
             val result = Tokenizer().scan("abc abc123 123ABc .... ___%&")
@@ -47,19 +89,52 @@ class TokenizerTests {
     @Nested
     inner class NumberClassificationTests {
         @Test
-        fun `classifies number`() {
-            val result = Tokenizer().scan("123 0")
-            Assertions.assertEquals(2, result.size)
+        fun `classifies positive integer`() {
+            val result = Tokenizer().scan("123")
+            Assertions.assertEquals(1, result.size)
             Assertions.assertEquals(Token("123", TokenType.NUMERIC), result[0])
-            Assertions.assertEquals(Token("0", TokenType.NUMERIC), result[1])
         }
 
         @Test
-        fun `classifies negative and decimals as symbol`() { // This is not the *intentional* spec long-term, but it sure is easier to implement
-            val result = Tokenizer().scan("-123 1.23")
-            Assertions.assertEquals(2, result.size)
+        fun `classifies negative integer`() {
+            val result = Tokenizer().scan("-123")
+            Assertions.assertEquals(1, result.size)
             Assertions.assertEquals(Token("-123", TokenType.NUMERIC), result[0])
-            Assertions.assertEquals(Token("1.23", TokenType.IDENTIFIER), result[1])
+        }
+
+        @Test
+        fun `classifies zero`() {
+            val result = Tokenizer().scan("0")
+            Assertions.assertEquals(1, result.size)
+            Assertions.assertEquals(Token("0", TokenType.NUMERIC), result[0])
+        }
+
+        @Test
+        fun `classifies positive floating number`() {
+            val result = Tokenizer().scan("1.23")
+            Assertions.assertEquals(1, result.size)
+            Assertions.assertEquals(Token("1.23", TokenType.NUMERIC), result[0])
+        }
+
+        @Test
+        fun `classifies positive floating negative`() {
+            val result = Tokenizer().scan("-1.23")
+            Assertions.assertEquals(1, result.size)
+            Assertions.assertEquals(Token("-1.23", TokenType.NUMERIC), result[0])
+        }
+
+        @Test
+        fun `classifies positive floating zero`() {
+            val result = Tokenizer().scan("0.00")
+            Assertions.assertEquals(1, result.size)
+            Assertions.assertEquals(Token("0.00", TokenType.NUMERIC), result[0])
+        }
+
+        @Test
+        fun `classifies floating number with no leading number`() {
+            val result = Tokenizer().scan(".123")
+            Assertions.assertEquals(1, result.size)
+            Assertions.assertEquals(Token(".123", TokenType.NUMERIC), result[0])
         }
     }
 

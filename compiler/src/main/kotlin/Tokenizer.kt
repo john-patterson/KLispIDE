@@ -6,9 +6,11 @@ enum class TokenType {
     RIGHT_PARENS,
     LEFT_PARENS,
     NUMERIC,
+    BOOLEAN,
     IDENTIFIER,
     LET,
     IF,
+    FUN,
 }
 
 data class Token(val text: String, val type: TokenType)
@@ -50,7 +52,7 @@ class Tokenizer {
 
     private fun classifyPart(text: String): Token {
         return when {
-            text.toIntOrNull() != null -> {
+            text.toFloatOrNull() != null -> {
                 Token(text, TokenType.NUMERIC)
             }
             "if".equals(text, true) -> {
@@ -58,6 +60,15 @@ class Tokenizer {
             }
             "let".equals(text, true) -> {
                 Token(text, TokenType.LET)
+            }
+            "fun".equals(text, true) -> {
+                Token(text, TokenType.FUN)
+            }
+            "true".equals(text, true) -> {
+                Token(text, TokenType.BOOLEAN)
+            }
+            "false".equals(text, true) -> {
+                Token(text, TokenType.BOOLEAN)
             }
             else -> {
                 Token(text, TokenType.IDENTIFIER)
