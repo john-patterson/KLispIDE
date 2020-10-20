@@ -138,7 +138,7 @@ class EditorView: View() {
                             val className = "class_${token.type.toString().toLowerCase()}"
                             builder.add(Collections.emptyList(), token.pos - lastIdx)
                             builder.add(Collections.singleton(className), token.text.length)
-                            lastIdx = token.pos + 1
+                            lastIdx = token.pos + token.text.length
                         }
                     }
                 }
