@@ -17,14 +17,25 @@ of this information to their own situation:
   > Error: Main method not found in class org.sc.koro.Main, please define the main method as:
      public static void main(String[] args)
 
-   - The JVM requires an application's entrypoint be defined as a static method named `main` inside of the class which 
-   you highlight in the manifest.
    - Kotlin compiles classes you write into classes with the "Kt" suffix. For instance, the class Main in the package
    `com.statelesscoder.klisp` has the class path: `com.statelesscoder.klisp.MainKt`.
    - When defining an application, Gradle expects you to use the [application plugin](https://docs.gradle.org/current/userguide/application_plugin.html)
    which requires you to specify a `mainClassName`.
-   - There are ways to get Kotlin code to show up correctly for this entrypoint, but I found it much easier to define
-   my application entrypoint as a Java class, then call into my Kotlin code. 
+   - While I spent my time wondering what I was doing wrong, I took advantage of Kotlin's ability to work with Java and
+   I created a standard Java entrypoint while I went on. Since there is no renaming and there are many Java hello world
+   samples in the world, this proved faster to get going for the novice.
+   - This stemmed from my newcomer's eyes on the type I was using. 
+   
+     This signature:
+     
+     `fun main(args: List<string>)`
+     
+     Is not the same as this one:
+     
+     `fun main(args: Array<string>)`
+     
+     Seems simple in hindsight, huh?
+     
    
 ### Adding dependencies with Gradle
 When I first tried to add a dependency, TornadoFX, I could not for the life of me get it to resolve in my Kotlin file.

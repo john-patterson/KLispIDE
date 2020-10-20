@@ -1,9 +1,15 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
+    id 'application'
+    id 'idea'
 }
 
 group 'com.statelesscoder.klisp.server'
 version '1.0-SNAPSHOT'
+
+application {
+    mainClassName = 'com.statelesscoder.klisp.server.MainAppKt'
+}
 
 repositories {
     mavenCentral()
@@ -11,4 +17,8 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    compile 'io.javalin:javalin:3.11.0'
+    compile 'org.slf4j:slf4j-api:1.8.0-beta4'
+    compile 'org.slf4j:slf4j-simple:1.8.0-beta4'
 }
+
