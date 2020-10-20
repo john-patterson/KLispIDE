@@ -29,6 +29,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation 'no.tornado:tornadofx:1.7.20'
     implementation 'com.github.kittinunf.fuel:fuel:2.3.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
     compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.10.5'
     compile project(':compiler')
 }
