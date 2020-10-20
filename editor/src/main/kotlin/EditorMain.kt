@@ -46,31 +46,40 @@ class Styles : Stylesheet() {
         }
         class_right_parens {
             fill = Color.GREEN
+            fontWeight = FontWeight.BOLD
         }
         class_left_parens {
             fill = Color.GREEN
+            fontWeight = FontWeight.BOLD
         }
         class_numeric {
             fill = Color.ORANGE
+            fontWeight = FontWeight.BOLD
         }
         class_boolean {
             fill = Color.ORANGE
+            fontWeight = FontWeight.BOLD
         }
         class_identifier {
             fill = Color.BLUE
+            fontWeight = FontWeight.BOLD
         }
         class_let {
             fill = Color.PURPLE
+            fontWeight = FontWeight.BOLD
         }
         class_if {
             fill = Color.PURPLE
+            fontWeight = FontWeight.BOLD
         }
         class_fun {
             fill = Color.PURPLE
+            fontWeight = FontWeight.BOLD
         }
         root {
             prefHeight = 600.px
             prefWidth = 800.px
+            fontSize = 20.px
         }
     }
 }
@@ -131,7 +140,7 @@ class EditorView: View() {
                             val className = "class_${token.type.toString().toLowerCase()}"
                             builder.add(Collections.emptyList(), token.pos - lastIdx)
                             builder.add(Collections.singleton(className), token.text.length)
-                            lastIdx = token.pos
+                            lastIdx = token.pos + 1
                         }
                     }
                 }
