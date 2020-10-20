@@ -28,9 +28,7 @@ class Parser() {
         assertTokenTypeIsOneOf(tokens[0], TokenType.LEFT_PARENS)
         var i = 2
         val head = if(tokens[1].type == TokenType.LEFT_PARENS) {
-            val end = findExpressionEnd(tokens, 1)
-            val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
-            expr.expression = parse(tokens.subList(1, end + 1))
+            val (end, expr) = parseExprPart(tokens, 1)
             i = end + 1
             expr
         } else {
@@ -40,9 +38,7 @@ class Parser() {
 
         while (i < (tokens.size - 1)) {
             if (tokens[i].type == TokenType.LEFT_PARENS) {
-                val end = findExpressionEnd(tokens, i)
-                val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
-                expr.expression = parse(tokens.subList(i, end + 1))
+                val (end, expr) = parseExprPart(tokens, i)
                 tail.add(expr)
                 i = end + 1
             } else {
@@ -54,6 +50,13 @@ class Parser() {
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
         return Expression(head, tail)
+    }
+
+    private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
+        val end = findExpressionEnd(tokens, start)
+        val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
+        expr.expression = parse(tokens.subList(start, end + 1))
+        return Pair(end, expr)
     }
 
     private fun parsePart(token: Token): ExpressionPart {

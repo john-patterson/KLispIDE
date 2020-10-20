@@ -18,7 +18,19 @@ class ParserTests {
         }
 
         @Test
-        fun `parses function with identifier leading`() {
+        fun `throws when expr head is a number`() {
+            assertThrows(ParsingException::class.java) {
+                Parser().parse(listOf(
+                    leftParensToken(),
+                    numericToken("1"),
+                    numericToken("2"),
+                    rightParensToken()
+                ))
+            }
+        }
+
+        @Test
+        fun `parses function with no args`() {
             val result = Parser().parse(listOf(leftParensToken(), identifierToken("fOo"), rightParensToken()))
             assertEquals(ExpressionPartType.SYMBOL, result.head.type)
             assertIsSymbol("fOo", result.head)
