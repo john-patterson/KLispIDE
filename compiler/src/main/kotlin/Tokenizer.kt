@@ -1,5 +1,6 @@
 package com.statelesscoder.klisp.compiler
 
+import java.text.FieldPosition
 import kotlin.collections.List
 
 enum class TokenType {
@@ -13,13 +14,18 @@ enum class TokenType {
     FUN,
 }
 
-data class Token(val text: String, val type: TokenType)
+data class Token(val text: String, val type: TokenType, val pos: Int)
 
-fun identifierToken(text: String) = Token(text, TokenType.IDENTIFIER)
-fun numericToken(text: String) = Token(text, TokenType.NUMERIC)
-fun booleanToken(text: String) = Token(text, TokenType.BOOLEAN)
-fun leftParensToken() = Token("(", TokenType.LEFT_PARENS)
-fun rightParensToken() = Token(")", TokenType.RIGHT_PARENS)
+fun identifierToken(text: String, pos: Int) =
+    Token(text, TokenType.IDENTIFIER, pos)
+fun numericToken(text: String, pos: Int) =
+    Token(text, TokenType.NUMERIC, pos)
+fun booleanToken(text: String, pos: Int) =
+    Token(text, TokenType.BOOLEAN, pos)
+fun leftParensToken(pos: Int) =
+    Token("(", TokenType.LEFT_PARENS, pos)
+fun rightParensToken(pos: Int) =
+    Token(")", TokenType.RIGHT_PARENS, pos)
 
 class Tokenizer {
     fun scan(source: String): List<Token> {
@@ -34,11 +40,11 @@ class Tokenizer {
                     }
                 }
                 source[pos] == '(' -> {
-                    tokens.add(Token("(", TokenType.LEFT_PARENS))
+                    tokens.add(Token("(", TokenType.LEFT_PARENS, pos))
                     pos += 1
                 }
                 source[pos] == ')' -> {
-                    tokens.add(Token(")", TokenType.RIGHT_PARENS))
+                    tokens.add(Token(")", TokenType.RIGHT_PARENS, pos))
                     pos += 1
                 }
                 else -> {
@@ -47,7 +53,7 @@ class Tokenizer {
                         endpos += 1
                     }
                     val part = source.substring(pos, endpos)
-                    tokens.add(classifyPart(part))
+                    tokens.add(classifyPart(part, pos))
                     pos = endpos
                 }
             }
@@ -56,29 +62,20 @@ class Tokenizer {
         return tokens
     }
 
-    private fun classifyPart(text: String): Token {
+    private fun classifyPart(text: String, pos: Int): Token {
         return when {
-            text.toFloatOrNull() != null -> {
-                Token(text, TokenType.NUMERIC)
-            }
-            "if".equals(text, true) -> {
-                Token(text, TokenType.IF)
-            }
-            "let".equals(text, true) -> {
-                Token(text, TokenType.LET)
-            }
-            "fun".equals(text, true) -> {
-                Token(text, TokenType.FUN)
-            }
-            "true".equals(text, true) -> {
-                Token(text, TokenType.BOOLEAN)
-            }
-            "false".equals(text, true) -> {
-                Token(text, TokenType.BOOLEAN)
-            }
-            else -> {
-                Token(text, TokenType.IDENTIFIER)
-            }
+            text.toFloatOrNull() != null -> numericToken(text, pos)
+            "if".equals(text, true) ->
+                Token(text, TokenType.IF, pos)
+            "let".equals(text, true) ->
+                Token(text, TokenType.LET, pos)
+            "fun".equals(text, true) ->
+                Token(text, TokenType.FUN, pos)
+            "true".equals(text, true) ->
+                booleanToken(text, pos)
+            "false".equals(text, true) ->
+                booleanToken(text, pos)
+            else -> identifierToken(text, pos)
         }
     }
 }
