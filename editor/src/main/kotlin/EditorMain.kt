@@ -11,13 +11,11 @@ import org.fxmisc.richtext.CodeArea
 import org.fxmisc.richtext.LineNumberFactory
 import org.fxmisc.richtext.model.StyleSpans
 import org.fxmisc.richtext.model.StyleSpansBuilder
-import org.reactfx.util.Try
 import tornadofx.*
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.function.Supplier
 
 fun main(args: Array<String>) {
     launch<EditorApp>(args)
@@ -85,9 +83,9 @@ class Styles : Stylesheet() {
 }
 
 class EditorView: View() {
-    val codeArea: CodeArea = CodeArea()
-    val executor: ExecutorService = Executors.newSingleThreadExecutor()
-    val label: Text = text("No response")
+    private val codeArea: CodeArea = CodeArea()
+    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val label: Text = text("Editing 'Untitled' KLisp document.")
 
     override val root = borderpane {
         top = label
@@ -110,7 +108,7 @@ class EditorView: View() {
         }
     }
 
-    fun computeHighlightingAsync(): Task<StyleSpans<Collection<String>>> {
+    private fun computeHighlightingAsync(): Task<StyleSpans<Collection<String>>> {
         val task = object : Task<StyleSpans<Collection<String>>>() {
             override fun call(): StyleSpans<Collection<String>> {
                 return computeHighlighting(codeArea.text)
@@ -126,7 +124,7 @@ class EditorView: View() {
         val httpAsync = "http://localhost:7340/tokenize"
             .httpPost()
             .body(text)
-            .responseString { request, response, result ->
+            .responseString { _, _, result ->
                 when (result) {
                     is Result.Failure -> {
                         val ex = result.getException()
@@ -149,35 +147,5 @@ class EditorView: View() {
         httpAsync.join()
         return builder.create()
     }
-
-//    fun computeHighlightingAsync(): Task<String> {
-//        val task = object : Task<String>() {
-//            override fun call(): String {
-//                return tokenize(codeArea.text)
-//            }
-//        }
-//
-//        executor.execute(task)
-//        return task
-//    }
-//
-//    fun tokenize(text: String): String {
-//        var resultingTokens: String = ""
-//        val httpAsync = "http://localhost:7340/tokenize"
-//            .httpPost()
-//            .body(text)
-//            .responseString { request, response, result ->
-//                when (result) {
-//                    is Result.Failure -> {
-//                        resultingTokens = result.getException().toString()
-//                    }
-//                    is Result.Success -> {
-//                        resultingTokens = result.get()
-//                    }
-//                }
-//            }
-//
-//        httpAsync.join()
-//        return resultingTokens
-//    }
 }
+
