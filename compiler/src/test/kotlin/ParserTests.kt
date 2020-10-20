@@ -62,6 +62,26 @@ class ParserTests {
             }, result.tail[0])
             assertIsNumber(2.0f, result.tail[1])
         }
+
+        @Test
+        fun `parses function with expression in head`() {
+            val result = Parser().parse(listOf(
+                leftParensToken(),
+                    leftParensToken(),
+                        identifierToken("f"),
+                        numericToken("1"),
+                    rightParensToken(),
+                numericToken("2"),
+                rightParensToken()))
+
+            assertIsExpression({e ->
+                assertIsSymbol("f", e.head)
+                assertEquals(1, e.tail.size)
+                assertIsNumber(1.0f, e.tail[0])
+            }, result.head)
+            assertEquals(1, result.tail.size)
+            assertIsNumber(2.0f, result.tail[0])
+        }
     }
 
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {

@@ -26,9 +26,18 @@ class Parser() {
 
         var tail = mutableListOf<ExpressionPart>()
         assertTokenTypeIsOneOf(tokens[0], TokenType.LEFT_PARENS)
-        assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER)
-        val head = parsePart(tokens[1])
         var i = 2
+        val head = if(tokens[1].type == TokenType.LEFT_PARENS) {
+            val end = findExpressionEnd(tokens, 1)
+            val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
+            expr.expression = parse(tokens.subList(1, end + 1))
+            i = end + 1
+            expr
+        } else {
+            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER)
+            parsePart(tokens[1])
+        }
+
         while (i < (tokens.size - 1)) {
             if (tokens[i].type == TokenType.LEFT_PARENS) {
                 val end = findExpressionEnd(tokens, i)
