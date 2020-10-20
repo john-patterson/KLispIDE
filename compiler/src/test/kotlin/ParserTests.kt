@@ -41,6 +41,36 @@ class ParserTests {
             assertIsBoolean(true, result.tail[1])
             assertIsSymbol("foo", result.tail[2])
         }
+
+        @Test
+        fun `parses function with expression in tail`() {
+            val result = Parser().parse(listOf(
+                leftParensToken(),
+                    identifierToken("f"),
+                    leftParensToken(),
+                        identifierToken("g"),
+                        numericToken("1"),
+                    rightParensToken(),
+                    numericToken("2"),
+                rightParensToken()))
+
+            assertIsSymbol("f", result.head)
+            assertEquals(2, result.tail.size)
+            assertIsExpression({e ->
+                assertIsSymbol("g", e.head)
+                assertIsNumber(1.0f, e.tail[0])
+            }, result.tail[0])
+            assertIsNumber(2.0f, result.tail[1])
+        }
+    }
+
+    fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {
+        assertEquals(ExpressionPartType.EXPRESSION, actual.type)
+        assertNull(actual.value)
+        assertNull(actual.truth)
+        assertNull(actual.name)
+        assertNotNull(actual.expression)
+        expressionAssertion(actual.expression!!) // Value verified by previous line
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {

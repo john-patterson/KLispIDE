@@ -28,9 +28,19 @@ class Parser() {
         assertTokenTypeIsOneOf(tokens[0], TokenType.LEFT_PARENS)
         assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER)
         val head = parsePart(tokens[1])
-        for (i in 2 until (tokens.size - 1)) {
-            assertTokenTypeIsOneOf(tokens[i], TokenType.IDENTIFIER, TokenType.NUMERIC, TokenType.BOOLEAN)
-            tail.add(parsePart(tokens[i]))
+        var i = 2
+        while (i < (tokens.size - 1)) {
+            if (tokens[i].type == TokenType.LEFT_PARENS) {
+                val end = findExpressionEnd(tokens, i)
+                val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
+                expr.expression = parse(tokens.subList(i, end + 1))
+                tail.add(expr)
+                i = end + 1
+            } else {
+                assertTokenTypeIsOneOf(tokens[i], TokenType.IDENTIFIER, TokenType.NUMERIC, TokenType.BOOLEAN)
+                tail.add(parsePart(tokens[i]))
+                i +=1
+            }
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
