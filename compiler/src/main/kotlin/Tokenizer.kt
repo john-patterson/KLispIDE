@@ -49,7 +49,9 @@ class Tokenizer {
                 }
                 else -> {
                     var endpos = pos + 1
-                    while (endpos < source.length && !source[endpos].isWhitespace()) {
+                    while (endpos < source.length
+                        && !source[endpos].isWhitespace()
+                        && source[endpos] != ')') {
                         endpos += 1
                     }
                     val part = source.substring(pos, endpos)

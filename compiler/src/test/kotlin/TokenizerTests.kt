@@ -15,8 +15,8 @@ class TokenizerTests {
             val result = Tokenizer().scan("()")
             val (leftParen, rightParen) = result
             Assertions.assertEquals(2, result.size)
-            Assertions.assertEquals(Token("(", TokenType.LEFT_PARENS, 0), leftParen)
-            Assertions.assertEquals(Token(")", TokenType.RIGHT_PARENS, 1), rightParen)
+            assertLeftParen(0, leftParen)
+            assertRightParen(1, rightParen)
         }
 
         @Test
@@ -24,8 +24,26 @@ class TokenizerTests {
             val result = Tokenizer().scan("      (             )     ")
             val (leftParen, rightParen) = result
             Assertions.assertEquals(2, result.size)
-            Assertions.assertEquals(Token("(", TokenType.LEFT_PARENS, 6), leftParen)
-            Assertions.assertEquals(Token(")", TokenType.RIGHT_PARENS, 20), rightParen)
+            assertLeftParen(6, leftParen)
+            assertRightParen(20, rightParen)
+        }
+
+        @Test
+        fun `tokenizes function invocation with args`() {
+            val result = Tokenizer().scan("(g 1)")
+            Assertions.assertEquals(4, result.size)
+            assertLeftParen(0, result[0])
+            Assertions.assertEquals(Token("g", TokenType.IDENTIFIER, 1), result[1])
+            Assertions.assertEquals(Token("1", TokenType.NUMERIC, 3), result[2])
+            assertRightParen(4, result[3])
+        }
+
+        private fun assertLeftParen(pos: Int, leftParen: Token) {
+            Assertions.assertEquals(Token("(", TokenType.LEFT_PARENS, pos), leftParen)
+        }
+
+        private fun assertRightParen(pos: Int, leftParen: Token) {
+            Assertions.assertEquals(Token(")", TokenType.RIGHT_PARENS, pos), leftParen)
         }
     }
 
