@@ -12,6 +12,7 @@ class EditorStyles : Stylesheet() {
         val class_right_parens by cssclass()
         val class_left_parens by cssclass()
         val class_numeric by cssclass()
+        val class_string by cssclass()
         val class_boolean by cssclass()
         val class_identifier by cssclass()
         val class_let by cssclass()
@@ -27,11 +28,11 @@ class EditorStyles : Stylesheet() {
             fontWeight = FontWeight.BOLD
         }
         class_right_parens {
-            fill = Color.GREEN
+            fill = Color.DARKSALMON
             fontWeight = FontWeight.BOLD
         }
         class_left_parens {
-            fill = Color.GREEN
+            fill = Color.DARKSALMON
             fontWeight = FontWeight.BOLD
         }
         class_numeric {
@@ -41,6 +42,10 @@ class EditorStyles : Stylesheet() {
         class_boolean {
             fill = Color.ORANGE
             fontWeight = FontWeight.BOLD
+        }
+        class_string {
+            fill = Color.DARKGREEN
+            fontWeight = FontWeight.NORMAL
         }
         class_identifier {
             fill = Color.BLUE
