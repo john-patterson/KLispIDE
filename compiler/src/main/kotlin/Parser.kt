@@ -39,7 +39,7 @@ class Parser() {
             i = end + 1
             expr
         } else {
-            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER, TokenType.LET)
+            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER, TokenType.LET, TokenType.IF)
             parsePart(tokens[1])
         }
 
@@ -56,6 +56,11 @@ class Parser() {
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
+        if (head.type == ExpressionPartType.KEYWORD
+            && head.keywordType == KeywordType.IF
+            && tail.size != 3) {
+            throw ParsingException("Encountered IF with less than 3 parts: $tail.")
+        }
         return Expression(head, tail)
     }
 
@@ -86,6 +91,11 @@ class Parser() {
             TokenType.LET -> {
                 val part = ExpressionPart(ExpressionPartType.KEYWORD)
                 part.keywordType = KeywordType.LET
+                part
+            }
+            TokenType.IF -> {
+                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                part.keywordType = KeywordType.IF
                 part
             }
             else -> throw ParsingException("Unexpected token '${token.text}' of type ${token.type}.")

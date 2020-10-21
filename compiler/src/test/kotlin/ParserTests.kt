@@ -173,6 +173,75 @@ class ParserTests {
         }
     }
 
+    @Nested
+    inner class IfExpression {
+        @Test
+        fun `allows boolean in pos 1`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(if true 0 1)")
+
+            val result = parser.parse(tokens)
+
+            assertIsKeyword(KeywordType.IF, result.head)
+            assertIsBoolean(true, result.tail[0])
+            assertIsNumber(0f, result.tail[1])
+            assertIsNumber(1f, result.tail[2])
+        }
+
+        @Test
+        fun `allows expr in pos 1`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(if (f 3) 0 1)")
+
+            val result = parser.parse(tokens)
+
+            assertIsKeyword(KeywordType.IF, result.head)
+            assertIsExpression({expr ->
+                assertIsSymbol("f", expr.head)
+                assertIsNumber(3f, expr.tail[0])
+            }, result.tail[0])
+            assertIsNumber(0f, result.tail[1])
+            assertIsNumber(1f, result.tail[2])
+        }
+
+        @Test
+        fun `allows expressions in pos 2 & pos 3`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(if true (f 0) (f 1))")
+
+            val result = parser.parse(tokens)
+
+            assertIsKeyword(KeywordType.IF, result.head)
+            assertIsBoolean(true, result.tail[0])
+            assertIsExpression({expr ->
+                assertIsSymbol("f", expr.head)
+                assertIsNumber(0f, expr.tail[0])
+            }, result.tail[1])
+            assertIsExpression({expr ->
+                assertIsSymbol("f", expr.head)
+                assertIsNumber(1f, expr.tail[0])
+            }, result.tail[2])
+        }
+
+        @Test
+        fun `must have correct number of parts`() {
+            assertThrows(ParsingException::class.java) {
+                Parser().parse(Tokenizer().scan("(if true 1)"))
+            }
+
+            assertThrows(ParsingException::class.java) {
+                Parser().parse(Tokenizer().scan("(if true)"))
+            }
+
+            assertThrows(ParsingException::class.java) {
+                Parser().parse(Tokenizer().scan("(if)"))
+            }
+        }
+    }
+
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {
         assertEquals(ExpressionPartType.EXPRESSION, actual.type)
         assertNull(actual.value)

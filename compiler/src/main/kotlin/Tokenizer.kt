@@ -20,12 +20,6 @@ fun identifierToken(text: String, pos: Int) =
     Token(text, TokenType.IDENTIFIER, pos)
 fun numericToken(text: String, pos: Int) =
     Token(text, TokenType.NUMERIC, pos)
-fun letToken(text: String, pos: Int) =
-    Token(text, TokenType.LET, pos)
-fun ifToken(text: String, pos: Int) =
-    Token(text, TokenType.IF, pos)
-fun funToken(text: String, pos: Int) =
-    Token(text, TokenType.FUN, pos)
 fun booleanToken(text: String, pos: Int) =
     Token(text, TokenType.BOOLEAN, pos)
 fun leftParensToken(pos: Int) =
