@@ -1,6 +1,5 @@
 package com.statelesscoder.klisp.compiler
 
-import java.text.FieldPosition
 import kotlin.collections.List
 
 enum class TokenType {
@@ -9,10 +8,13 @@ enum class TokenType {
     NUMERIC,
     BOOLEAN,
     IDENTIFIER,
+    STRING,
     LET,
     IF,
     FUN,
 }
+
+class ScanningException(message: String): Exception(message)
 
 data class Token(val text: String, val type: TokenType, val pos: Int)
 
@@ -20,6 +22,8 @@ fun identifierToken(text: String, pos: Int) =
     Token(text, TokenType.IDENTIFIER, pos)
 fun numericToken(text: String, pos: Int) =
     Token(text, TokenType.NUMERIC, pos)
+fun stringToken(text: String, pos: Int) =
+    Token(text, TokenType.STRING, pos)
 fun booleanToken(text: String, pos: Int) =
     Token(text, TokenType.BOOLEAN, pos)
 fun leftParensToken(pos: Int) =
@@ -47,11 +51,26 @@ class Tokenizer {
                     tokens.add(Token(")", TokenType.RIGHT_PARENS, pos))
                     pos += 1
                 }
+                source[pos] == '"' -> {
+                    var endpos = pos + 1
+                    while (endpos < source.length && source[endpos] != '"') {
+                        endpos += 1
+                    }
+
+                    if (endpos == source.length) {
+                        throw ScanningException("Expected end to string: ${source.substring(pos)}")
+                    }
+
+                    val s = source.substring(pos, endpos + 1)
+                    tokens.add(Token(s, TokenType.STRING, pos))
+                    pos = endpos + 1
+                }
                 else -> {
                     var endpos = pos + 1
                     while (endpos < source.length
                         && !source[endpos].isWhitespace()
-                        && source[endpos] != ')') {
+                        && source[endpos] != ')'
+                        && source[endpos] != '"') {
                         endpos += 1
                     }
                     val part = source.substring(pos, endpos)
