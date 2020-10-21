@@ -48,13 +48,15 @@ class ParserTests {
                 numericToken("123", 2),
                 booleanToken("true", 5),
                 identifierToken("foo", 9),
-                rightParensToken(12)))
+                stringToken("\"s\"", 12),
+                rightParensToken(15)))
 
             assertIsSymbol("f", result.head)
-            assertEquals(3, result.tail.size)
+            assertEquals(4, result.tail.size)
             assertIsNumber(123.0f, result.tail[0])
             assertIsBoolean(true, result.tail[1])
             assertIsSymbol("foo", result.tail[2])
+            assertIsString("s", result.tail[3])
         }
 
         @Test
@@ -332,6 +334,7 @@ class ParserTests {
         assertNotNull(actual.expression)
         expressionAssertion(actual.expression!!) // Value verified by previous line
         assertNull(actual.keywordType)
+        assertNull(actual.innerText)
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
@@ -342,6 +345,7 @@ class ParserTests {
         assertNull(actual.name)
         assertNull(actual.expression)
         assertNull(actual.keywordType)
+        assertNull(actual.innerText)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
@@ -352,6 +356,7 @@ class ParserTests {
         assertNull(actual.name)
         assertNull(actual.expression)
         assertNull(actual.keywordType)
+        assertNull(actual.innerText)
     }
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {
@@ -362,6 +367,7 @@ class ParserTests {
         assertEquals(expected, actual.name)
         assertNull(actual.expression)
         assertNull(actual.keywordType)
+        assertNull(actual.innerText)
     }
 
     fun assertIsKeyword(expected: KeywordType, actual: ExpressionPart) {
@@ -372,5 +378,17 @@ class ParserTests {
         assertNull(actual.expression)
         assertNotNull(actual.keywordType)
         assertEquals(expected, actual.keywordType)
+        assertNull(actual.innerText)
+    }
+
+    fun assertIsString(expectedText: String, actual: ExpressionPart) {
+        assertEquals(ExpressionPartType.STRING, actual.type)
+        assertNull(actual.value)
+        assertNull(actual.truth)
+        assertNull(actual.name)
+        assertNull(actual.expression)
+        assertNull(actual.keywordType)
+        assertNotNull(actual.innerText)
+        assertEquals(expectedText, actual.innerText)
     }
 }

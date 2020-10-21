@@ -7,9 +7,11 @@ enum class KeywordType {
     FUN
 }
 
+
 enum class ExpressionPartType {
     SYMBOL,
     NUMBER,
+    STRING,
     BOOLEAN,
     EXPRESSION,
     KEYWORD,
@@ -18,6 +20,7 @@ class ExpressionPart(val type: ExpressionPartType) {
     var value: Number? = null
     var truth: Boolean? = null
     var name: String? = null
+    var innerText: String? = null
     var keywordType: KeywordType? = null
     var expression: Expression? = null
 }
@@ -54,7 +57,11 @@ class Parser() {
                 tail.add(expr)
                 i = end + 1
             } else {
-                assertTokenTypeIsOneOf(tokens[i], TokenType.IDENTIFIER, TokenType.NUMERIC, TokenType.BOOLEAN)
+                assertTokenTypeIsOneOf(tokens[i],
+                    TokenType.IDENTIFIER,
+                    TokenType.NUMERIC,
+                    TokenType.BOOLEAN,
+                    TokenType.STRING)
                 tail.add(parsePart(tokens[i]))
                 i +=1
             }
@@ -116,6 +123,11 @@ class Parser() {
                 part.value = token.text.toFloat()
                 part
             }
+            TokenType.STRING -> {
+                val part = ExpressionPart(ExpressionPartType.STRING)
+                part.innerText = token.text.substring(1, token.text.length - 1)
+                part
+            }
             TokenType.IDENTIFIER -> {
                 val part = ExpressionPart(ExpressionPartType.SYMBOL)
                 part.name = token.text
@@ -145,8 +157,7 @@ class Parser() {
         }
     }
 
-
-    fun findExpressionEnd(tokens: List<Token>, start: Int): Int {
+    private fun findExpressionEnd(tokens: List<Token>, start: Int): Int {
         var balance = 1
         var pos = start + 1
         while (pos < tokens.size && balance != 0) {
