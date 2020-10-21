@@ -99,6 +99,80 @@ class ParserTests {
         }
     }
 
+    @Nested
+    inner class LetBinding {
+        @Test
+        fun `one let binding in a simple environment`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(let ((a 1)) (f a))")
+
+            val result = parser.parse(tokens)
+            assertIsKeyword(KeywordType.LET, result.head)
+
+            assertIsExpression({ expr ->
+                assertIsExpression({ bind ->
+                    assertIsSymbol("a", bind.head)
+                    assertIsNumber(1.0f, bind.tail[0])
+                }, expr.head)
+            }, result.tail[0])
+
+            assertIsExpression({ expr ->
+                assertIsSymbol("f", expr.head)
+                assertIsSymbol("a", expr.tail[0])
+            }, result.tail[1])
+        }
+
+        @Test
+        fun `let binding with multiple bindings`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(let ((a 1) (b 2)) (f a b))")
+
+            val result = parser.parse(tokens)
+            assertIsKeyword(KeywordType.LET, result.head)
+
+            assertIsExpression({ expr ->
+                assertIsExpression({ bind ->
+                    assertIsSymbol("a", bind.head)
+                    assertIsNumber(1.0f, bind.tail[0])
+                }, expr.head)
+                assertIsExpression({ bind ->
+                    assertIsSymbol("b", bind.head)
+                    assertIsNumber(2.0f, bind.tail[0])
+                }, expr.tail[0])
+            }, result.tail[0])
+
+            assertIsExpression({ expr ->
+                assertIsSymbol("f", expr.head)
+                assertIsSymbol("a", expr.tail[0])
+                assertIsSymbol("b", expr.tail[1])
+            }, result.tail[1])
+        }
+
+        @Test
+        fun `empty let binding throws`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(let () (f 1))")
+
+            assertThrows(ParsingException::class.java) {
+                parser.parse(tokens)
+            }
+        }
+
+        @Test
+        fun `empty let environment throws`() {
+            val tokenizer = Tokenizer()
+            val parser = Parser()
+            val tokens = tokenizer.scan("(let ((a 1)) ())")
+
+            assertThrows(ParsingException::class.java) {
+                parser.parse(tokens)
+            }
+        }
+    }
+
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {
         assertEquals(ExpressionPartType.EXPRESSION, actual.type)
         assertNull(actual.value)
@@ -106,6 +180,7 @@ class ParserTests {
         assertNull(actual.name)
         assertNotNull(actual.expression)
         expressionAssertion(actual.expression!!) // Value verified by previous line
+        assertNull(actual.keywordType)
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
@@ -115,6 +190,7 @@ class ParserTests {
         assertNull(actual.truth)
         assertNull(actual.name)
         assertNull(actual.expression)
+        assertNull(actual.keywordType)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
@@ -124,8 +200,8 @@ class ParserTests {
         assertEquals(expected, actual.truth)
         assertNull(actual.name)
         assertNull(actual.expression)
+        assertNull(actual.keywordType)
     }
-
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {
         assertEquals(ExpressionPartType.SYMBOL, actual.type)
@@ -134,5 +210,16 @@ class ParserTests {
         assertNotNull(actual.name)
         assertEquals(expected, actual.name)
         assertNull(actual.expression)
+        assertNull(actual.keywordType)
+    }
+
+    fun assertIsKeyword(expected: KeywordType, actual: ExpressionPart) {
+        assertEquals(ExpressionPartType.KEYWORD, actual.type)
+        assertNull(actual.value)
+        assertNull(actual.truth)
+        assertNull(actual.name)
+        assertNull(actual.expression)
+        assertNotNull(actual.keywordType)
+        assertEquals(expected, actual.keywordType)
     }
 }

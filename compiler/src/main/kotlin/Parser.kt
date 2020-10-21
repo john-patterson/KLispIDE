@@ -1,20 +1,27 @@
 package com.statelesscoder.klisp.compiler
 
 
+enum class KeywordType {
+    LET,
+    IF,
+    FUN
+}
+
 enum class ExpressionPartType {
     SYMBOL,
     NUMBER,
     BOOLEAN,
     EXPRESSION,
+    KEYWORD,
 }
 class ExpressionPart(val type: ExpressionPartType) {
     var value: Number? = null
     var truth: Boolean? = null
     var name: String? = null
+    var keywordType: KeywordType? = null
     var expression: Expression? = null
 }
 data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>)
-
 
 class ParsingException(message:String): Exception(message)
 
@@ -32,7 +39,7 @@ class Parser() {
             i = end + 1
             expr
         } else {
-            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER)
+            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER, TokenType.LET)
             parsePart(tokens[1])
         }
 
@@ -76,10 +83,15 @@ class Parser() {
                 part.truth = token.text.toBoolean()
                 part
             }
+            TokenType.LET -> {
+                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                part.keywordType = KeywordType.LET
+                part
+            }
             else -> throw ParsingException("Unexpected token '${token.text}' of type ${token.type}.")
         }
-
     }
+
 
     fun findExpressionEnd(tokens: List<Token>, start: Int): Int {
         var balance = 1
