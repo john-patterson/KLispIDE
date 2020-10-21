@@ -242,6 +242,88 @@ class ParserTests {
         }
     }
 
+    @Nested
+    inner class FunExpression {
+        @Test
+        fun `parses identity function`() {
+            val result = getParseTree("(fun id (x) x)")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("id", result.tail[0])
+            assertIsExpression({expr ->
+                assertIsSymbol("x", expr.head)
+            }, result.tail[1])
+            assertIsSymbol("x", result.tail[2])
+        }
+
+        @Test
+        fun `name must be a symbol`() {
+            assertThrows(ParsingException::class.java) {
+                getParseTree("(fun 1 (x) x)")
+            }
+            assertThrows(ParsingException::class.java) {
+                getParseTree("(fun (thing) (x) x)")
+            }
+        }
+
+        @Test
+        fun `function with strange amounts of parts not allowed`() {
+            assertThrows(ParsingException::class.java) { getParseTree("(fun)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3 3)") }
+        }
+
+        @Test
+        fun `function with no args section allowed`() {
+            val result = getParseTree("(fun id 3)")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("id", result.tail[0])
+            assertIsNumber(3f, result.tail[1])
+        }
+
+        @Test
+        fun `function with two arg`() {
+            val result = getParseTree("(fun foo (a b) a)")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("foo", result.tail[0])
+            assertIsExpression({expr ->
+                assertIsSymbol("a", expr.head)
+                assertIsSymbol("b", expr.tail[0])
+            }, result.tail[1])
+            assertIsSymbol("a", result.tail[2])
+        }
+
+        @Test
+        fun `things which are not symbols not allowed in args list`() {
+            assertThrows(ParsingException::class.java) {
+                getParseTree("(fun foo (1) x)")
+            }
+            assertThrows(ParsingException::class.java) {
+                getParseTree("(fun foo ((x)) x)")
+            }
+        }
+
+        @Test
+        fun `allows expression return`() {
+            val result = getParseTree("(fun foo (g) (g 1))")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("foo", result.tail[0])
+            assertIsExpression({expr ->
+                assertIsSymbol("g", expr.head)
+            }, result.tail[1])
+            assertIsExpression({expr ->
+                assertIsSymbol("g", expr.head)
+                assertIsNumber(1f, expr.tail[0])
+            }, result.tail[2])
+        }
+    }
+
+    fun getParseTree(text: String): Expression {
+        val tokenizer = Tokenizer()
+        val parser = Parser()
+        val tokens = tokenizer.scan(text)
+        return parser.parse(tokens)
+    }
+
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {
         assertEquals(ExpressionPartType.EXPRESSION, actual.type)
         assertNull(actual.value)

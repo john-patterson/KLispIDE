@@ -39,7 +39,12 @@ class Parser() {
             i = end + 1
             expr
         } else {
-            assertTokenTypeIsOneOf(tokens[1], TokenType.IDENTIFIER, TokenType.LET, TokenType.IF)
+            assertTokenTypeIsOneOf(tokens[1],
+                TokenType.IDENTIFIER,
+                TokenType.LET,
+                TokenType.IF,
+                TokenType.FUN
+            )
             parsePart(tokens[1])
         }
 
@@ -56,12 +61,45 @@ class Parser() {
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
+        validateIfExpr(head, tail)
+        validateFunctionDecl(head, tail)
+        return Expression(head, tail)
+    }
+
+    private fun validateIfExpr(head: ExpressionPart, tail: List<ExpressionPart>) {
         if (head.type == ExpressionPartType.KEYWORD
             && head.keywordType == KeywordType.IF
             && tail.size != 3) {
             throw ParsingException("Encountered IF with less than 3 parts: $tail.")
         }
-        return Expression(head, tail)
+    }
+
+    private fun validateFunctionDecl(head: ExpressionPart, tail: List<ExpressionPart>) {
+        if (head.type == ExpressionPartType.KEYWORD
+            && head.keywordType == KeywordType.FUN) {
+
+            if (tail.size == 2 && tail[0].type != ExpressionPartType.SYMBOL) {
+                // This is the case without args
+                throw ParsingException("Encountered function without symbol as name: $tail")
+            } else if (tail.size == 3) { // This has all parts
+                // This is the case without args
+                val nameValid = tail[0].type == ExpressionPartType.SYMBOL
+                val argsValid = tail[1].type == ExpressionPartType.EXPRESSION
+                        && tail[1].expression != null
+                        && tail[1].expression!!.head.type == ExpressionPartType.SYMBOL
+                        && tail[1].expression!!.tail.all { it.type == ExpressionPartType.SYMBOL }
+
+                if (!nameValid) {
+                    throw ParsingException("Encountered function without symbol as name: $tail")
+                } else if (!argsValid) {
+                    throw ParsingException("Encountered function with invalid item in arg list: $tail")
+                }
+            } else if (tail.size < 2) {
+                throw ParsingException("Encountered function with too few parts: $tail")
+            } else if (tail.size > 3) {
+                throw ParsingException("Encountered function with too many parts: $tail")
+            }
+        }
     }
 
     private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
@@ -96,6 +134,11 @@ class Parser() {
             TokenType.IF -> {
                 val part = ExpressionPart(ExpressionPartType.KEYWORD)
                 part.keywordType = KeywordType.IF
+                part
+            }
+            TokenType.FUN -> {
+                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                part.keywordType = KeywordType.FUN
                 part
             }
             else -> throw ParsingException("Unexpected token '${token.text}' of type ${token.type}.")
