@@ -16,8 +16,40 @@ enum class ExpressionPartType {
     EXPRESSION,
     KEYWORD,
 }
+
+fun keywordPart(type: KeywordType): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.KEYWORD)
+    p.keywordType = type
+    return p
+}
+fun symbolPart(name: String): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.SYMBOL)
+    p.name = name
+    return p
+}
+fun numericPart(value: Float): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.NUMBER)
+    p.value = value
+    return p
+}
+fun booleanPart(truth: Boolean): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.BOOLEAN)
+    p.truth = truth
+    return p
+}
+fun expressionPart(expr: Expression): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.EXPRESSION)
+    p.expression = expr
+    return p
+}
+fun stringPart(s: String): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.STRING)
+    p.innerText = s
+    return p
+}
+
 class ExpressionPart(val type: ExpressionPartType) {
-    var value: Number? = null
+    var value: Float? = null
     var truth: Boolean? = null
     var name: String? = null
     var innerText: String? = null
