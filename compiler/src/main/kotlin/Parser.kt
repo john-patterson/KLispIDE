@@ -17,6 +17,11 @@ enum class ExpressionPartType {
     KEYWORD,
 }
 
+fun keywordPart(type: KeywordType): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.KEYWORD)
+    p.keywordType = type
+    return p
+}
 fun symbolPart(name: String): ExpressionPart {
     val p = ExpressionPart(ExpressionPartType.SYMBOL)
     p.name = name
@@ -25,6 +30,11 @@ fun symbolPart(name: String): ExpressionPart {
 fun numericPart(value: Float): ExpressionPart {
     val p = ExpressionPart(ExpressionPartType.NUMBER)
     p.value = value
+    return p
+}
+fun booleanPart(truth: Boolean): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.BOOLEAN)
+    p.truth = truth
     return p
 }
 fun expressionPart(expr: Expression): ExpressionPart {

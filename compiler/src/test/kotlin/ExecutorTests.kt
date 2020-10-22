@@ -81,4 +81,17 @@ class ExecutorTests {
         }
 
     }
+
+    @Nested
+    inner class KeywordTests {
+        @Test
+        fun `if expression with simple boolean and 2 parts`() {
+            val executor = Executor()
+            val trueExpr = Expression(keywordPart(KeywordType.IF), listOf(booleanPart(true), numericPart(1f), numericPart(2f)))
+            assertEquals(1f, executor.execute(trueExpr).innerValue)
+
+            val falseExpr = Expression(keywordPart(KeywordType.IF), listOf(booleanPart(false), numericPart(1f), numericPart(2f)))
+            assertEquals(2f, executor.execute(falseExpr).innerValue)
+        }
+    }
 }

@@ -8,6 +8,8 @@ class Executor {
     fun execute(expr: Expression, env: Scope = Scope()): ExecutionResult {
         if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.name?.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
+        } else if (expr.head.type == ExpressionPartType.KEYWORD) {
+            return handleKeyword(expr, env)
         }
 
         val headResult = realizePart(expr.head, env)
@@ -53,7 +55,59 @@ class Executor {
             "/" -> argsAsNums.reduce {acc, number -> acc / number }
             else -> throw RuntimeException("$functionName is not a built-in function.")
         })
+    }
 
+    private fun handleKeyword(expr: Expression, scope: Scope): ExecutionResult {
+        return when (expr.head.keywordType!!) {
+            KeywordType.LET -> {
+                val bindings = expr.tail[0]
+                val body = expr.tail[1]
+                return handleLet(bindings, body, scope)
+            }
+            KeywordType.FUN -> {
+                val funName = expr.tail[0].name!!
+                val f = if (expr.tail.size == 3) {
+                    val params = listOf(expr.tail[1].expression!!.head) + expr.tail[1].expression!!.tail
+                    val body = expr.tail[2]
+                    Function(this, funName, params, body)
+                } else {
+                    Function(this, funName, emptyList(), expr.tail[1])
+                }
+
+                scope.add(funName, functionData(f))
+                literalResult(f)
+            }
+            KeywordType.IF -> {
+                val boolPart = expr.tail[0]
+                val ifTruePart = expr.tail[1]
+                val ifFalsePart = if (expr.tail.size == 3) expr.tail[2] else null
+
+                val boolResult = realizePart(boolPart, scope)
+
+                return if (boolResult.innerTruth == null) {
+                    throw RuntimeException("Boolean conditions in if-statements must be truthy: $boolPart.")
+                } else if (boolResult.innerTruth!!) {
+                    execute(ifTruePart, scope)
+                } else if (!boolResult.innerTruth!! && ifFalsePart != null) {
+                    execute(ifFalsePart, scope)
+                } else {
+                    literalResult(false)
+                }
+            }
+        }
+    }
+
+    private fun handleLet(bindings: ExpressionPart, body: ExpressionPart, scope: Scope): ExecutionResult {
+        val newScope = Scope(scope)
+        val unitedBindings = listOf(bindings.expression!!.head) + bindings.expression!!.tail
+        unitedBindings
+            .forEach {
+                val symbol = it.expression!!.head.name!!
+                val value = execute(it.expression!!.tail[0], newScope)
+                newScope.add(symbol, value.data)
+            }
+
+        return execute(body, newScope)
     }
 
     fun realizePart(arg: ExpressionPart, env: Scope): ExecutionResult {
