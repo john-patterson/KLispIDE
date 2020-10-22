@@ -1,8 +1,15 @@
 package com.statelesscoder.klisp.compiler
 
+import tornadofx.times
+
 
 class Executor {
+    fun execute(part: ExpressionPart, env: Scope = Scope()): ExecutionResult = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): ExecutionResult {
+        if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.name?.toLowerCase())) {
+            return handleBuiltinFunction(expr, env)
+        }
+
         val headResult = realizePart(expr.head, env)
         if (!headResult.successful || headResult.data.type != DataType.FUNCTION) {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
@@ -18,6 +25,35 @@ class Executor {
         val argsData = argsResults.map { it.second.data }
         val finalResult = headResult.innerFunction!!.run(argsData, env)
         return dataToResult(finalResult)
+    }
+
+    private val builtinFunctions: Set<String> = setOf("+", "-", "/", "*", "print")
+    private fun handleBuiltinFunction(expr: Expression, scope: Scope): ExecutionResult {
+        val args = expr.tail.map { execute(it, scope) }
+        val functionName = expr.head.name?.toLowerCase()
+
+        if (functionName == "print") {
+            if (!args.all { it.innerText != null }) {
+                throw RuntimeException("Only strings are printable.")
+            }
+
+            val s = args.map { it.innerText!! }.reduce {acc, s -> "$acc $s" }
+            print(s)
+            return literalResult(s)
+        }
+
+        if (!args.all { it.innerValue != null }) {
+            throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
+        }
+        val argsAsNums = args.map { it.innerValue!! }
+        return literalResult(when (functionName) {
+            "*" -> argsAsNums.reduce {acc, number -> acc * number }
+            "+" -> argsAsNums.reduce {acc, number -> acc + number }
+            "-" -> argsAsNums.reduce {acc, number -> acc - number }
+            "/" -> argsAsNums.reduce {acc, number -> acc / number }
+            else -> throw RuntimeException("$functionName is not a built-in function.")
+        })
+
     }
 
     fun realizePart(arg: ExpressionPart, env: Scope): ExecutionResult {
@@ -45,7 +81,7 @@ class Executor {
 
 fun literalResult(s: String): ExecutionResult = ExecutionResult(true, stringData(s))
 fun literalResult(b: Boolean): ExecutionResult = ExecutionResult(true, truthyData(b))
-fun literalResult(n: Number): ExecutionResult = ExecutionResult(true, numericData(n))
+fun literalResult(n: Float): ExecutionResult = ExecutionResult(true, numericData(n))
 fun literalResult(f: Function): ExecutionResult = ExecutionResult(true, functionData(f))
 fun dataToResult(d: Data): ExecutionResult = when (d.type) {
     DataType.NUMBER -> literalResult(d.numericValue!!)
@@ -57,7 +93,7 @@ fun dataToResult(d: Data): ExecutionResult = when (d.type) {
 // TODO: This is a redundant type
 class ExecutionResult(val successful: Boolean, val data: Data) {
     var innerText: String? = data.stringValue
-    var innerValue: Number? = data.numericValue
+    var innerValue: Float? = data.numericValue
     var innerTruth: Boolean? = data.truthyValue
     var innerFunction: Function? = data.functionValue
 }

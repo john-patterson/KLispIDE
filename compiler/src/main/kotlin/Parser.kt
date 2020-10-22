@@ -22,7 +22,7 @@ fun symbolPart(name: String): ExpressionPart {
     p.name = name
     return p
 }
-fun numericPart(value: Number): ExpressionPart {
+fun numericPart(value: Float): ExpressionPart {
     val p = ExpressionPart(ExpressionPartType.NUMBER)
     p.value = value
     return p
@@ -32,9 +32,14 @@ fun expressionPart(expr: Expression): ExpressionPart {
     p.expression = expr
     return p
 }
+fun stringPart(s: String): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.STRING)
+    p.innerText = s
+    return p
+}
 
 class ExpressionPart(val type: ExpressionPartType) {
-    var value: Number? = null
+    var value: Float? = null
     var truth: Boolean? = null
     var name: String? = null
     var innerText: String? = null
