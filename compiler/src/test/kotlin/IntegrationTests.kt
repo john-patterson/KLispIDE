@@ -19,6 +19,17 @@ class IntegrationTests {
         assertEquals("hello world", run("(print \"hello\" \"world\")").innerText)
     }
 
+    @Test
+    fun `let bindings, if expressions, and function declaration`() {
+        val scope = Scope()
+        val bindingResult = run("(fun foo (a b c) (if a b c))", scope)
+        assertEquals(DataType.FUNCTION, bindingResult.data.type)
+        assertNotNull(scope.lookup("foo"))
+
+        val executionResult = run("(let ((switch false)) (foo switch 50 100))", scope)
+        assertEquals(100f, executionResult.innerValue)
+    }
+
     private fun run(text: String, env: Scope = Scope()): ExecutionResult {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parse(tokens)
