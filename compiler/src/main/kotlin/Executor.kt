@@ -2,22 +2,7 @@ package com.statelesscoder.klisp.compiler
 
 
 class Executor {
-    fun execute(expr: Expression): ExecutionResult = execute(expr, Scope())
-    fun execute(expr: Expression, env: Scope): ExecutionResult {
-        return when (expr.head.type) {
-            ExpressionPartType.EXPRESSION -> ExecutionResult()
-            ExpressionPartType.SYMBOL -> ExecutionResult()
-            ExpressionPartType.KEYWORD -> when (expr.head.keywordType) {
-                KeywordType.FUN -> ExecutionResult()
-                KeywordType.IF -> ExecutionResult()
-                KeywordType.LET -> ExecutionResult()
-                else -> throw RuntimeException("Unknown keyword type ${expr.head.keywordType}.")
-            }
-            else -> throw RuntimeException("Invalid beginning to function call ${expr.head}.")
-        }
-    }
-
-    fun executeFunction(expr: Expression, env: Scope): ExecutionResult {
+    fun execute(expr: Expression, env: Scope = Scope()): ExecutionResult {
         val headResult = realizePart(expr.head, env)
         if (!headResult.successful || headResult.data.type != DataType.FUNCTION) {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
@@ -31,7 +16,7 @@ class Executor {
         }
 
         val argsData = argsResults.map { it.second.data }
-        val finalResult = headResult.innerFunction!!.run(argsData)
+        val finalResult = headResult.innerFunction!!.run(argsData, env)
         return dataToResult(finalResult)
     }
 
@@ -69,11 +54,12 @@ fun dataToResult(d: Data): ExecutionResult = when (d.type) {
     DataType.FUNCTION -> literalResult(d.functionValue!!)
 }
 
+// TODO: This is a redundant type
 class ExecutionResult(val successful: Boolean, val data: Data) {
-    var innerText: String? = null
-    var innerValue: Number? = null
-    var innerTruth: Boolean? = null
-    var innerFunction: Function? = null
+    var innerText: String? = data.stringValue
+    var innerValue: Number? = data.numericValue
+    var innerTruth: Boolean? = data.truthyValue
+    var innerFunction: Function? = data.functionValue
 }
 
 

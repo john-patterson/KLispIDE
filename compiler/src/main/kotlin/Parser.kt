@@ -16,6 +16,23 @@ enum class ExpressionPartType {
     EXPRESSION,
     KEYWORD,
 }
+
+fun symbolPart(name: String): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.SYMBOL)
+    p.name = name
+    return p
+}
+fun numericPart(value: Number): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.NUMBER)
+    p.value = value
+    return p
+}
+fun expressionPart(expr: Expression): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.EXPRESSION)
+    p.expression = expr
+    return p
+}
+
 class ExpressionPart(val type: ExpressionPartType) {
     var value: Number? = null
     var truth: Boolean? = null

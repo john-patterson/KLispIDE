@@ -2,13 +2,39 @@ package com.statelesscoder.klisp.compiler
 
 class RuntimeException(message: String): Exception(message)
 
-class Function(val name: String, val params: List<ExpressionPart>, val body: Expression) {
-    fun run(args: List<Data>): Data {
+abstract class Function(val executor: Executor, val name: String, val params: List<ExpressionPart>, val body: ExpressionPart) {
+    fun run(args: List<Data>, scope: Scope = Scope()): Data {
         if (args.size != params.size) {
             throw RuntimeException("Function '$name' expects '${params.size}' arguments, but got '${args.size}'.")
         }
 
-        return args[0]
+        val boundScope = Scope(scope)
+        for (i in args.indices) {
+            boundScope.add(params[i].name!!, args[i])
+        }
+
+        return runBody(boundScope)
+
+//        return when (body.type) {
+//            ExpressionPartType.BOOLEAN, ExpressionPartType.NUMBER, ExpressionPartType.SYMBOL, ExpressionPartType.STRING ->
+//                executor.realizePart(body, boundScope).data
+//            ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
+//                executor.execute(body.expression!!, boundScope).data
+//        }
+    }
+
+    abstract fun runBody(boundScope: Scope): Data
+}
+
+class UserDefinedFunction(executor: Executor, name: String, params: List<ExpressionPart>, body: ExpressionPart)
+    : Function(executor, name, params, body) {
+    override fun runBody(boundScope: Scope): Data {
+        return when (body.type) {
+            ExpressionPartType.BOOLEAN, ExpressionPartType.NUMBER, ExpressionPartType.SYMBOL, ExpressionPartType.STRING ->
+                executor.realizePart(body, boundScope).data
+            ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
+                executor.execute(body.expression!!, boundScope).data
+        }
     }
 }
 
