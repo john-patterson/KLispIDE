@@ -54,8 +54,23 @@ class ExpressionPart(val type: ExpressionPartType) {
     var innerText: String? = null
     var keywordType: KeywordType? = null
     var expression: Expression? = null
+
+    override fun toString(): String = when(type) {
+        ExpressionPartType.NUMBER -> value.toString()
+        ExpressionPartType.SYMBOL -> name.toString()
+        ExpressionPartType.BOOLEAN -> if (truth!!) "true" else "false"
+        ExpressionPartType.KEYWORD -> keywordType.toString()
+        ExpressionPartType.STRING -> "\"$innerText\""
+        ExpressionPartType.EXPRESSION -> expression.toString()
+    }
 }
-data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>)
+data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>) {
+    override fun toString(): String {
+        val headString = head.toString()
+        val tailString = tail.joinToString(separator = " ") { it.toString() }
+        return "($headString $tailString)"
+    }
+}
 
 class ParsingException(message:String): Exception(message)
 

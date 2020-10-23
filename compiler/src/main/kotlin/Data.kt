@@ -14,6 +14,13 @@ class Data(val type: DataType) {
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
+
+    override fun toString(): String = when (type) {
+        DataType.STRING -> "\"$stringValue\""
+        DataType.NUMBER -> "$numericValue"
+        DataType.BOOLEAN -> "$truthyValue"
+        DataType.FUNCTION -> "$functionValue"
+    }
 }
 
 fun createData(s: String): Data {

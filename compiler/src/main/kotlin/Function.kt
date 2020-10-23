@@ -22,4 +22,10 @@ class Function(private val executor: Executor,
                 executor.execute(body.expression!!, boundScope)
         }
     }
+
+    override fun toString(): String {
+        val paramString = params.joinToString(separator = " ") { it.toString() }
+        val bodyString = body.toString()
+        return "(fun $name ($paramString) $bodyString)"
+    }
 }

@@ -87,6 +87,21 @@ class DataTests {
             assertEquals(DataType.NUMBER, result.type)
             assertEquals(2f, result.numericValue)
         }
+
+        @Test
+        fun `toString simple types`() {
+            assertEquals("1.0", createData(1f).toString())
+            assertEquals("\"foo\"", createData("foo").toString())
+            assertEquals("true", createData(true).toString())
+        }
+
+        @Test
+        fun `toString function`() {
+            val e = Executor()
+            val f = Function(e, "foo", listOf(symbolPart("a"), symbolPart("b")),
+                expressionPart(Expression(symbolPart("+"), listOf(symbolPart("a"), symbolPart("b")))))
+            assertEquals("(fun foo (a b) (+ a b))", f.toString())
+        }
     }
 }
 
