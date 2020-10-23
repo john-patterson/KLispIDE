@@ -1,7 +1,22 @@
 package com.statelesscoder.klisp.compiler
 
-import tornadofx.times
 
+data class ExecutionResult(val result: Data, val scope: Scope)
+fun runCode(code: String): ExecutionResult {
+    val tokenizer = Tokenizer()
+    val parser = Parser()
+    val executor = Executor()
+    val scope = Scope()
+
+    val results = mutableListOf<Data>()
+    val tokens = tokenizer.scan(code)
+    val expressions = parser.parse(tokens)
+    for (expression in expressions) {
+        results.add(executor.execute(expression, scope))
+    }
+
+    return ExecutionResult(results.last(), scope)
+}
 
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)

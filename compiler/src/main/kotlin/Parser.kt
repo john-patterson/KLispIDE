@@ -91,6 +91,8 @@ class Parser() {
                 end = i
                 balance -= 1
                 collection.add(parseSingleExpression(tokens.subList(start, end + 1)))
+            } else if (tokens[i].type == TokenType.RIGHT_PARENS) {
+                balance -= 1
             }
         }
 

@@ -348,6 +348,31 @@ class ParserTests {
             assertEquals(ExpressionPartType.NUMBER, result[1].tail[0].type)
             assertEquals(3f, result[1].tail[0].value)
         }
+
+        @Test
+        fun `parse multiple nested expressions`() {
+            val tokens = getTokenStream("(fun foo (a b) (+ a b 1))(foo 10 20)")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(ExpressionPartType.KEYWORD, result.first().head.type)
+            assertEquals(KeywordType.FUN, result.first().head.keywordType)
+            assertEquals(ExpressionPartType.SYMBOL, result.first().tail[0].type)
+            assertEquals("foo", result.first().tail[0].name)
+            assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[1].type)
+            assertEquals("a", result.first().tail[1].expression!!.head.name)
+            assertEquals("b", result.first().tail[1].expression!!.tail[0].name)
+            assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[2].type)
+            assertEquals("+", result.first().tail[2].expression!!.head.name)
+            assertEquals("a", result.first().tail[2].expression!!.tail[0].name)
+            assertEquals("b", result.first().tail[2].expression!!.tail[1].name)
+            assertEquals(1f, result.first().tail[2].expression!!.tail[2].value)
+
+            assertEquals(ExpressionPartType.SYMBOL, result[1].head.type)
+            assertEquals("foo", result[1].head.name)
+            assertEquals(ExpressionPartType.NUMBER, result[1].tail[0].type)
+            assertEquals(10f, result[1].tail[0].value)
+            assertEquals(20f, result[1].tail[1].value)
+        }
     }
 
     fun getTokenStream(text: String): List<Token> {
