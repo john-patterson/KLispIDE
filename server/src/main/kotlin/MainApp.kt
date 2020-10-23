@@ -1,9 +1,6 @@
 package com.statelesscoder.klisp.server
 
-import com.statelesscoder.klisp.compiler.Expression
-import com.statelesscoder.klisp.compiler.Parser
-import com.statelesscoder.klisp.compiler.Token
-import com.statelesscoder.klisp.compiler.Tokenizer
+import com.statelesscoder.klisp.compiler.*
 import io.javalin.Javalin
 import io.javalin.http.Context
 
@@ -17,11 +14,21 @@ fun main(args: Array<String>) {
     app.post("/parse") {
             ctx -> ctx.json(router.parse(ctx.body()))
     }
+
+    app.post("/execute") { ctx ->
+        val scope = ctx.formParam("scope", Scope::class.java)
+        if (scope.isValid()) {
+            ctx.json(router.execute(ctx.body(), scope.value!!))
+        } else {
+            ctx.json(router.execute(ctx.body()))
+        }
+    }
 }
 
 class Routes {
     private val tokenizer = Tokenizer()
     private val parser = Parser()
+    private val executor = Executor()
 
     fun tokenize(request: String): List<Token> {
         return tokenizer.scan(request)
@@ -32,4 +39,9 @@ class Routes {
         return parser.parse(tokens)
     }
 
+    fun execute(request: String, scope: Scope = Scope()): ExecutionResult {
+        val tokens = tokenize(request)
+        val ast = parser.parse(tokens)
+        return executor.execute(ast, scope)
+    }
 }
