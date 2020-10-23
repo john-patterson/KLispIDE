@@ -1,26 +1,28 @@
 package com.statelesscoder.klisp.compiler
 
 class SimpleResult(r: ExecutionResult) {
-    val result: String = r.toString()
+    val expression = r.expression.toString()
+    val result = r.result.toString()
     val scope = r.scope.getBindings()
         .map { Pair(it.first, it.second.toString()) }
         .toMap()
 }
-data class ExecutionResult(val result: Data, val scope: Scope)
-fun runCode(code: String): ExecutionResult {
+data class ExecutionResult(val expression: Expression, val result: Data, val scope: Scope)
+fun runCode(code: String): List<ExecutionResult> {
     val tokenizer = Tokenizer()
     val parser = Parser()
     val executor = Executor()
     val scope = Scope()
 
-    val results = mutableListOf<Data>()
+    val results = mutableListOf<ExecutionResult>()
     val tokens = tokenizer.scan(code)
     val expressions = parser.parse(tokens)
     for (expression in expressions) {
-        results.add(executor.execute(expression, scope))
+        val result = ExecutionResult(expression, executor.execute(expression, scope), scope)
+        results.add(result)
     }
 
-    return ExecutionResult(results.last(), scope)
+    return results
 }
 
 class Executor {

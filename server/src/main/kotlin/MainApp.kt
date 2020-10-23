@@ -1,6 +1,5 @@
 package com.statelesscoder.klisp.server
 
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.statelesscoder.klisp.compiler.*
 import io.javalin.Javalin
 
@@ -23,7 +22,6 @@ fun main(args: Array<String>) {
 class Routes {
     private val tokenizer = Tokenizer()
     private val parser = Parser()
-    private val executor = Executor()
 
     fun tokenize(request: String): List<Token> {
         return tokenizer.scan(request)
@@ -34,8 +32,10 @@ class Routes {
         return parser.parseSingleExpression(tokens)
     }
 
-    fun execute(request: String): SimpleResult {
-        return SimpleResult(runCode(request))
+    fun execute(request: String): Array<SimpleResult> {
+        return runCode(request)
+            .map { SimpleResult(it) }
+            .toTypedArray()
     }
 }
 

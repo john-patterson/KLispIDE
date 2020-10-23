@@ -28,6 +28,7 @@ class EditorView: View() {
         Executors.newSingleThreadExecutor()
     private val controller: EditorController by inject()
     private var bindings = mutableListOf<Pair<String, String>>()
+    private var results = mutableListOf<Pair<String, String>>()
     private var showScopeView = SimpleBooleanProperty(false)
     private var scopeViewOffset = SimpleIntegerProperty(3)
 
@@ -44,6 +45,19 @@ class EditorView: View() {
                 .heightProperty()
                 .divide(10) * scopeViewOffset.get())
             visibleWhen(showScopeView)
+        }
+        val resultsView = tableview(results.asObservable()) {
+            readonlyColumn("Expression", Pair<String, String>::first) {
+                prefWidthProperty().bind(this@tableview.widthProperty().divide(2))
+            }
+            readonlyColumn("Result", Pair<String, String>::second) {
+                prefWidthProperty().bind(this@tableview.widthProperty().divide(2))
+            }
+
+            prefHeightProperty().bind(this@borderpane
+                .heightProperty()
+                .divide(10) * scopeViewOffset.get())
+            visibleWhen(!showScopeView)
         }
 
         top = codeArea.apply {
@@ -67,14 +81,17 @@ class EditorView: View() {
                 .divide(10) * (9 - scopeViewOffset.get()))
         }
 
-        center = scopeView
+        center = resultsView
         bottom = hbox {
             button("Run") {
                 action {
                     val result = controller.execute(codeArea.text)
                     bindings.clear()
-                    bindings.addAll(result.scope.entries.map { Pair(it.key, it.value) })
+                    bindings.addAll(result.last().scope.entries.map { Pair(it.key, it.value) })
+                    results.clear()
+                    results.addAll(result.map { Pair(it.expression, it.result) })
                     scopeView.refresh()
+                    resultsView.refresh()
                 }
 
             }
@@ -82,9 +99,11 @@ class EditorView: View() {
                 action {
                     if (showScopeView.get()) {
                         showScopeView.set(false)
+                        this@borderpane.center = resultsView
                         this.text = "Show Scope Inspector"
                     } else {
                         showScopeView.set(true)
+                        this@borderpane.center = scopeView
                         this.text = "Show Run Results"
                     }
                 }

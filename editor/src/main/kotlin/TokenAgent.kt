@@ -9,7 +9,7 @@ import com.statelesscoder.klisp.compiler.Token
 
 interface TokenSource {
     fun getTokens(text: String): Array<Token>
-    fun execute(text: String): SimpleResult
+    fun execute(text: String): Array<SimpleResult>
 }
 
 class TokenAgentException(message: String) : Exception(message) {
@@ -49,10 +49,10 @@ class TokenAgent: TokenSource {
         return tokenArray
     }
 
-    override fun execute(text: String): SimpleResult {
-        var executionResult: SimpleResult? = null
-        var shouldThrow: Boolean = false
-        var errorString: String = ""
+    override fun execute(text: String): Array<SimpleResult> {
+        var executionResult: Array<SimpleResult>? = null
+        var shouldThrow = false
+        var errorString = ""
 
         val httpAsync = "$baseUrl/execute"
             .httpPost()
@@ -66,7 +66,7 @@ class TokenAgent: TokenSource {
                     is Result.Success -> {
                         val data = result.get()
                         executionResult = Gson()
-                            .fromJson(data, SimpleResult::class.java)
+                            .fromJson(data, Array<SimpleResult>::class.java)
                     }
                 }
             }
