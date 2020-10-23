@@ -7,7 +7,6 @@ enum class KeywordType {
     FUN
 }
 
-
 enum class ExpressionPartType {
     SYMBOL,
     NUMBER,

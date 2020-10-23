@@ -2,7 +2,6 @@ package com.statelesscoder.klisp.compiler
 
 class RuntimeException(message: String): Exception(message)
 
-
 enum class DataType {
     STRING,
     NUMBER,
