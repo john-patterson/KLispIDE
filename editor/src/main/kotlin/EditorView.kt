@@ -27,13 +27,12 @@ class EditorView: View() {
     private val executor: ExecutorService =
         Executors.newSingleThreadExecutor()
     private val controller: EditorController by inject()
-    private val label: Text = text("Editing 'Untitled' KLisp document.")
-    private var bindings = emptyList<Pair<String, String>>().asObservable()
+    private var bindings = mutableListOf<Pair<String, String>>()
     private var showScopeView = SimpleBooleanProperty(false)
     private var scopeViewOffset = SimpleIntegerProperty(3)
 
     override val root = borderpane {
-        val scopeView = tableview(bindings) {
+        val scopeView = tableview(bindings.asObservable()) {
             readonlyColumn("Name", Pair<String, String>::first) {
                 prefWidthProperty().bind(this@tableview.widthProperty().divide(4))
             }
@@ -73,9 +72,8 @@ class EditorView: View() {
             button("Run") {
                 action {
                     val result = controller.execute(codeArea.text)
-                    // This is not how this should work.
-                    bindings = result.scope.entries.map { Pair(it.key, it.value) }.asObservable()
-                    scopeView.items = bindings
+                    bindings.clear()
+                    bindings.addAll(result.scope.entries.map { Pair(it.key, it.value) })
                     scopeView.refresh()
                 }
 
