@@ -1,5 +1,6 @@
 package com.statelesscoder.klisp.server
 
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.statelesscoder.klisp.compiler.*
 import io.javalin.Javalin
 
@@ -11,7 +12,7 @@ fun main(args: Array<String>) {
     }
 
     app.post("/parse") {
-            ctx -> ctx.json(router.parse(ctx.body()))
+            ctx -> ctx.json(router.parse(ctx.body()).toString())
     }
 
     app.post("/execute") { ctx ->
@@ -33,7 +34,8 @@ class Routes {
         return parser.parseSingleExpression(tokens)
     }
 
-    fun execute(request: String): ExecutionResult {
-        return runCode(request)
+    fun execute(request: String): SimpleResult {
+        return SimpleResult(runCode(request))
     }
 }
+

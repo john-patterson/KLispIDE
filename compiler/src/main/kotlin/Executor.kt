@@ -1,6 +1,11 @@
 package com.statelesscoder.klisp.compiler
 
-
+class SimpleResult(r: ExecutionResult) {
+    val result: String = r.toString()
+    val scope = r.scope.getBindings()
+        .map { Pair(it.first, it.second.toString()) }
+        .toMap()
+}
 data class ExecutionResult(val result: Data, val scope: Scope)
 fun runCode(code: String): ExecutionResult {
     val tokenizer = Tokenizer()

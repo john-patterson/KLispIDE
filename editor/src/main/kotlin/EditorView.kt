@@ -2,6 +2,10 @@ package com.statelesscoder.klisp.editor
 
 import com.statelesscoder.klisp.compiler.Data
 import com.statelesscoder.klisp.compiler.Token
+import javafx.beans.Observable
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import javafx.scene.Parent
@@ -24,15 +28,26 @@ class EditorView: View() {
         Executors.newSingleThreadExecutor()
     private val controller: EditorController by inject()
     private val label: Text = text("Editing 'Untitled' KLisp document.")
-    private val bindings = emptyList<Pair<String, Data>>().asObservable()
+    private var bindings = emptyList<Pair<String, String>>().asObservable()
+    private var showScopeView = SimpleBooleanProperty(false)
+    private var scopeViewOffset = SimpleIntegerProperty(3)
 
     override val root = borderpane {
-        top = tableview(bindings) {
-            readonlyColumn("Name", Pair<String, Data>::first)
-            readonlyColumn("Value", Pair<String, Data>::second)
+        val scopeView = tableview(bindings) {
+            readonlyColumn("Name", Pair<String, String>::first) {
+                prefWidthProperty().bind(this@tableview.widthProperty().divide(4))
+            }
+            readonlyColumn("Value", Pair<String, String>::second) {
+                prefWidthProperty().bind(this@tableview.widthProperty().divide(4) * 3)
+            }
+
+            prefHeightProperty().bind(this@borderpane
+                .heightProperty()
+                .divide(10) * scopeViewOffset.get())
+            visibleWhen(showScopeView)
         }
 
-        center = codeArea.apply {
+        top = codeArea.apply {
             paragraphGraphicFactory = LineNumberFactory.get(this)
             multiPlainChanges()
                 .successionEnds(Duration.ofMillis(500))
@@ -48,14 +63,35 @@ class EditorView: View() {
                 .subscribe {
                     setStyleSpans(0, it)
                 }
+            prefHeightProperty().bind(this@borderpane
+                .heightProperty()
+                .divide(10) * (9 - scopeViewOffset.get()))
         }
 
+        center = scopeView
         bottom = hbox {
             button("Run") {
                 action {
                     val result = controller.execute(codeArea.text)
+                    // This is not how this should work.
+                    bindings = result.scope.entries.map { Pair(it.key, it.value) }.asObservable()
+                    scopeView.items = bindings
+                    scopeView.refresh()
+                }
+
+            }
+            button ("Show Scope Inspector") {
+                action {
+                    if (showScopeView.get()) {
+                        showScopeView.set(false)
+                        this.text = "Show Scope Inspector"
+                    } else {
+                        showScopeView.set(true)
+                        this.text = "Show Run Results"
+                    }
                 }
             }
+            prefHeightProperty().bind(this@borderpane.heightProperty().divide(10))
         }
 
     }

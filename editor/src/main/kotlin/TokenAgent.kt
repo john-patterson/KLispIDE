@@ -4,11 +4,12 @@ import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
 import com.statelesscoder.klisp.compiler.ExecutionResult
+import com.statelesscoder.klisp.compiler.SimpleResult
 import com.statelesscoder.klisp.compiler.Token
 
 interface TokenSource {
     fun getTokens(text: String): Array<Token>
-    fun execute(text: String): ExecutionResult
+    fun execute(text: String): SimpleResult
 }
 
 class TokenAgentException(message: String) : Exception(message) {
@@ -48,8 +49,8 @@ class TokenAgent: TokenSource {
         return tokenArray
     }
 
-    override fun execute(text: String): ExecutionResult {
-        var executionResult: ExecutionResult? = null
+    override fun execute(text: String): SimpleResult {
+        var executionResult: SimpleResult? = null
         var shouldThrow: Boolean = false
         var errorString: String = ""
 
@@ -65,7 +66,7 @@ class TokenAgent: TokenSource {
                     is Result.Success -> {
                         val data = result.get()
                         executionResult = Gson()
-                            .fromJson(data, ExecutionResult::class.java)
+                            .fromJson(data, SimpleResult::class.java)
                     }
                 }
             }
