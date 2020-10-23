@@ -17,25 +17,25 @@ class Data(val type: DataType) {
     var functionValue: Function? = null
 }
 
-fun stringData(s: String): Data {
+fun createData(s: String): Data {
     val d = Data(DataType.STRING)
     d.stringValue = s
     return d
 }
 
-fun numericData(n: Float): Data {
+fun createData(n: Float): Data {
     val d = Data(DataType.NUMBER)
     d.numericValue = n
     return d
 }
 
-fun truthyData(b: Boolean): Data {
+fun createData(b: Boolean): Data {
     val d = Data(DataType.BOOLEAN)
     d.truthyValue = b
     return d
 }
 
-fun functionData(f: Function): Data {
+fun createData(f: Function): Data {
     val d = Data(DataType.FUNCTION)
     d.functionValue = f
     return d

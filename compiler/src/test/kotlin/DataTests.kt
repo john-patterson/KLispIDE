@@ -15,7 +15,7 @@ class DataTests {
             val f = Function(e, "f", emptyList(), numericPart(1f))
 
             assertThrows(RuntimeException::class.java) {
-                f.run(listOf(stringData("g")))
+                f.run(listOf(createData("g")))
             }
 
             val g = Function(e, "g", listOf(symbolPart("a")), numericPart(1f))
@@ -28,7 +28,7 @@ class DataTests {
         fun `function with 1 arg that is not used`() {
             val e = Executor()
             val f = Function(e, "f", listOf(symbolPart("a")), numericPart(1f))
-            val result = f.run(listOf(numericData(10f)))
+            val result = f.run(listOf(createData(10f)))
 
             assertEquals(DataType.NUMBER, result.type)
             assertEquals(1f, result.numericValue)
@@ -38,7 +38,7 @@ class DataTests {
         fun `function with 2 arg that are not used`() {
             val e = Executor()
             val params = listOf(symbolPart("a"), symbolPart("b"))
-            val args = listOf(numericData(10f), numericData(20f))
+            val args = listOf(createData(10f), createData(20f))
             val f = Function(e, "f", params, numericPart(1f))
             val result = f.run(args)
 
@@ -50,7 +50,7 @@ class DataTests {
         fun `function which takes one parameter and uses it`() {
             val e = Executor()
             val params = listOf(symbolPart("x"))
-            val args = listOf(numericData(10f))
+            val args = listOf(createData(10f))
             val f = Function(e, "f", params, symbolPart("x"))
             val result = f.run(args)
 
@@ -62,7 +62,7 @@ class DataTests {
         fun `function which takes two parameters and uses one`() {
             val e = Executor()
             val params = listOf(symbolPart("x"), symbolPart("y"))
-            val args = listOf(numericData(10f), numericData(20f))
+            val args = listOf(createData(10f), createData(20f))
             val f = Function(e, "f", params, symbolPart("x"))
             val result = f.run(args)
 
@@ -76,13 +76,13 @@ class DataTests {
             val e = Executor()
             // This is: (fun id (x) x) and
             val id = Function(e, "id", listOf(symbolPart("x")), symbolPart("x"))
-            scope.add("id", functionData(id))
+            scope.add("id", createData(id))
 
             // This is: (fun f (a b) (id b))
             val params = listOf(symbolPart("a"), symbolPart("b"))
             val expr = Expression(symbolPart("id"), listOf(symbolPart("b")))
             val f = Function(e, "f", params, expressionPart(expr))
-            val result = f.run(listOf(numericData(1f), numericData(2f)), scope)
+            val result = f.run(listOf(createData(1f), createData(2f)), scope)
 
             assertEquals(DataType.NUMBER, result.type)
             assertEquals(2f, result.numericValue)

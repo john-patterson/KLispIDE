@@ -11,10 +11,10 @@ class ExecutorTests {
     inner class BuiltinTests {
         @Test
         fun `builtin functions work with simple types`() {
-            assertEquals(400f, testBuiltin("*", 10f, 20f, 2f).innerValue)
-            assertEquals(32f, testBuiltin("+", 10f, 20f, 2f).innerValue)
-            assertEquals(-12f, testBuiltin("-", 10f, 20f, 2f).innerValue)
-            assertEquals(0.25f, testBuiltin("/", 10f, 20f, 2f).innerValue)
+            assertEquals(400f, testBuiltin("*", 10f, 20f, 2f).numericValue)
+            assertEquals(32f, testBuiltin("+", 10f, 20f, 2f).numericValue)
+            assertEquals(-12f, testBuiltin("-", 10f, 20f, 2f).numericValue)
+            assertEquals(0.25f, testBuiltin("/", 10f, 20f, 2f).numericValue)
         }
 
         @Test
@@ -33,7 +33,7 @@ class ExecutorTests {
                     numericPart(10f)
                 )
             )
-            assertEquals(30f, e.execute(expr).innerValue)
+            assertEquals(30f, e.execute(expr).numericValue)
         }
 
         @Test
@@ -45,8 +45,8 @@ class ExecutorTests {
                     listOf(stringPart("hello"), stringPart("world"))
                 )
             )
-            assertEquals(DataType.STRING, result.data.type)
-            assertEquals("hello world", result.innerText)
+            assertEquals(DataType.STRING, result.type)
+            assertEquals("hello world", result.stringValue)
         }
 
         @Test
@@ -68,7 +68,7 @@ class ExecutorTests {
             val e = Executor()
             val scope = Scope()
             val id = Function(e, "id", listOf(symbolPart("x")), symbolPart("x"))
-            scope.add("id", functionData(id))
+            scope.add("id", createData(id))
 
             val expr = Expression(symbolPart("id"), listOf(stringPart("test")))
             val result = e.execute(
@@ -77,8 +77,8 @@ class ExecutorTests {
                     listOf(stringPart("hello"), stringPart("world"), expressionPart(expr))
                 ), scope
             )
-            assertEquals(DataType.STRING, result.data.type)
-            assertEquals("hello world test", result.innerText)
+            assertEquals(DataType.STRING, result.type)
+            assertEquals("hello world test", result.stringValue)
         }
 
         @Test
@@ -97,7 +97,7 @@ class ExecutorTests {
             }
         }
 
-        private fun testBuiltin(op: String, vararg args: Float): ExecutionResult {
+        private fun testBuiltin(op: String, vararg args: Float): Data {
             val e = Executor()
             val expr = Expression(symbolPart(op), args.map { numericPart(it) })
             return e.execute(expr)
@@ -112,8 +112,8 @@ class ExecutorTests {
             @Test
             fun `if expression with simple boolean and 2 simple parts`() {
                 val executor = Executor()
-                assertEquals(1f, executor.execute(simpleIfExpr(true, 1f, 2f)).innerValue)
-                assertEquals(2f, executor.execute(simpleIfExpr(false, 1f, 2f)).innerValue)
+                assertEquals(1f, executor.execute(simpleIfExpr(true, 1f, 2f)).numericValue)
+                assertEquals(2f, executor.execute(simpleIfExpr(false, 1f, 2f)).numericValue)
             }
 
             @Test
@@ -128,8 +128,8 @@ class ExecutorTests {
                     1f, 2f
                 )
 
-                assertEquals(2f, executor.execute(trueNegation).innerValue)
-                assertEquals(1f, executor.execute(falseNegation).innerValue)
+                assertEquals(2f, executor.execute(trueNegation).numericValue)
+                assertEquals(1f, executor.execute(falseNegation).numericValue)
             }
 
             @Test
@@ -140,7 +140,7 @@ class ExecutorTests {
                 val falseExpr = simpleIfExpr(true, truePart = 10f, falsePart = 20f) // => 10f
                 val composedExpr = complexIfExpr(switchExpr, trueExpr, falseExpr)
 
-                assertEquals(2f, executor.execute(composedExpr).innerValue)
+                assertEquals(2f, executor.execute(composedExpr).numericValue)
             }
         }
 
@@ -151,7 +151,7 @@ class ExecutorTests {
                 val executor: Executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f))
                 val expr = makeLetBinding(binding, symbolPart("x"))
-                assertEquals(10f, executor.execute(expr).innerValue)
+                assertEquals(10f, executor.execute(expr).numericValue)
             }
 
             @Test
@@ -159,7 +159,7 @@ class ExecutorTests {
                 val executor: Executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f), Pair("y", 100f))
                 val expr = makeLetBinding(binding, symbolPart("y"))
-                assertEquals(100f, executor.execute(expr).innerValue)
+                assertEquals(100f, executor.execute(expr).numericValue)
             }
 
             @Test
@@ -168,7 +168,7 @@ class ExecutorTests {
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f), Pair("y", 100f))
                 val bodyExpr = Expression(symbolPart("*"), listOf(symbolPart("x"), symbolPart("y")))
                 val expr = makeLetBinding(binding, expressionPart(bodyExpr))
-                assertEquals(1000f, executor.execute(expr).innerValue)
+                assertEquals(1000f, executor.execute(expr).numericValue)
             }
 
             private fun makeLetBinding(bindings: Map<String, Float>, body: ExpressionPart): Expression {
@@ -201,12 +201,12 @@ class ExecutorTests {
 
                 // This should side-effect the calling scope
                 val definitionResult = executor.execute(expr, scope)
-                assertEquals(DataType.FUNCTION, definitionResult.data.type)
+                assertEquals(DataType.FUNCTION, definitionResult.type)
                 assertNotNull(scope.lookup("f"))
 
                 // Now the execution should pass
                 val executionResult = executor.execute(executionExpr, scope)
-                assertEquals(100f, executionResult.innerValue)
+                assertEquals(100f, executionResult.numericValue)
             }
 
             @Test
@@ -217,7 +217,7 @@ class ExecutorTests {
                 val result = executor.execute(executionExpr, scope)
 
                 assertNotNull(scope.lookup(functionName))
-                assertEquals(100f, result.innerValue)
+                assertEquals(100f, result.numericValue)
             }
         }
     }

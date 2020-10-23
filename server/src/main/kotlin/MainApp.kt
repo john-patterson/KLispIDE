@@ -39,7 +39,7 @@ class Routes {
         return parser.parse(tokens)
     }
 
-    fun execute(request: String, scope: Scope = Scope()): ExecutionResult {
+    fun execute(request: String, scope: Scope = Scope()): Data {
         val tokens = tokenize(request)
         val ast = parser.parse(tokens)
         return executor.execute(ast, scope)

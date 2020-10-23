@@ -17,9 +17,9 @@ class Function(private val executor: Executor,
 
         return when (body.type) {
             ExpressionPartType.BOOLEAN, ExpressionPartType.NUMBER, ExpressionPartType.SYMBOL, ExpressionPartType.STRING ->
-                executor.realizePart(body, boundScope).data
+                executor.realizePart(body, boundScope)
             ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
-                executor.execute(body.expression!!, boundScope).data
+                executor.execute(body.expression!!, boundScope)
         }
     }
 }

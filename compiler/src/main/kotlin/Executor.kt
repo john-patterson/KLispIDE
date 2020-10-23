@@ -4,8 +4,8 @@ import tornadofx.times
 
 
 class Executor {
-    fun execute(part: ExpressionPart, env: Scope = Scope()): ExecutionResult = realizePart(part, env)
-    fun execute(expr: Expression, env: Scope = Scope()): ExecutionResult {
+    fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
+    fun execute(expr: Expression, env: Scope = Scope()): Data {
         if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.name?.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
         } else if (expr.head.type == ExpressionPartType.KEYWORD) {
@@ -13,42 +13,35 @@ class Executor {
         }
 
         val headResult = realizePart(expr.head, env)
-        if (!headResult.successful || headResult.data.type != DataType.FUNCTION) {
+        if (headResult.type != DataType.FUNCTION) {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
         }
 
         val argsResults = expr.tail.map { Pair(it, realizePart(it, env)) }
-        for ((arg, result) in argsResults) {
-            if (!result.successful) {
-                throw RuntimeException("Could not resolve argument $arg.")
-            }
-        }
-
-        val argsData = argsResults.map { it.second.data }
-        val finalResult = headResult.innerFunction!!.run(argsData, env)
-        return dataToResult(finalResult)
+        val argsData = argsResults.map { it.second }
+        return headResult.functionValue!!.run(argsData, env)
     }
 
     private val builtinFunctions: Set<String> = setOf("+", "-", "/", "*", "print")
-    private fun handleBuiltinFunction(expr: Expression, scope: Scope): ExecutionResult {
+    private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
         val functionName = expr.head.name?.toLowerCase()
 
         if (functionName == "print") {
-            if (!args.all { it.innerText != null }) {
+            if (!args.all { it.stringValue != null }) {
                 throw RuntimeException("Only strings are printable.")
             }
 
-            val s = args.map { it.innerText!! }.reduce {acc, s -> "$acc $s" }
+            val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
             print(s)
-            return literalResult(s)
+            return createData(s)
         }
 
-        if (!args.all { it.innerValue != null }) {
+        if (!args.all { it.numericValue != null }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
-        val argsAsNums = args.map { it.innerValue!! }
-        return literalResult(when (functionName) {
+        val argsAsNums = args.map { it.numericValue!! }
+        return createData(when (functionName) {
             "*" -> argsAsNums.reduce {acc, number -> acc * number }
             "+" -> argsAsNums.reduce {acc, number -> acc + number }
             "-" -> argsAsNums.reduce {acc, number -> acc - number }
@@ -57,7 +50,7 @@ class Executor {
         })
     }
 
-    private fun handleKeyword(expr: Expression, scope: Scope): ExecutionResult {
+    private fun handleKeyword(expr: Expression, scope: Scope): Data {
         return when (expr.head.keywordType!!) {
             KeywordType.LET -> {
                 val bindings = expr.tail[0]
@@ -74,8 +67,9 @@ class Executor {
                     Function(this, funName, emptyList(), expr.tail[1])
                 }
 
-                scope.add(funName, functionData(f))
-                literalResult(f)
+                val data = createData(f)
+                scope.add(funName, data)
+                data
             }
             KeywordType.IF -> {
                 val boolPart = expr.tail[0]
@@ -84,37 +78,37 @@ class Executor {
 
                 val boolResult = realizePart(boolPart, scope)
 
-                return if (boolResult.innerTruth == null) {
+                return if (boolResult.truthyValue == null) {
                     throw RuntimeException("Boolean conditions in if-statements must be truthy: $boolPart.")
-                } else if (boolResult.innerTruth!!) {
+                } else if (boolResult.truthyValue!!) {
                     execute(ifTruePart, scope)
-                } else if (!boolResult.innerTruth!! && ifFalsePart != null) {
+                } else if (!boolResult.truthyValue!! && ifFalsePart != null) {
                     execute(ifFalsePart, scope)
                 } else {
-                    literalResult(false)
+                    createData(false)
                 }
             }
         }
     }
 
-    private fun handleLet(bindings: ExpressionPart, body: ExpressionPart, scope: Scope): ExecutionResult {
+    private fun handleLet(bindings: ExpressionPart, body: ExpressionPart, scope: Scope): Data {
         val newScope = Scope(scope)
         val unitedBindings = listOf(bindings.expression!!.head) + bindings.expression!!.tail
         unitedBindings
             .forEach {
                 val symbol = it.expression!!.head.name!!
                 val value = execute(it.expression!!.tail[0], newScope)
-                newScope.add(symbol, value.data)
+                newScope.add(symbol, value)
             }
 
         return execute(body, newScope)
     }
 
-    fun realizePart(arg: ExpressionPart, env: Scope): ExecutionResult {
+    fun realizePart(arg: ExpressionPart, env: Scope): Data {
         return when (arg.type) {
-            ExpressionPartType.STRING -> literalResult(arg.innerText!!)
-            ExpressionPartType.BOOLEAN -> literalResult(arg.truth!!)
-            ExpressionPartType.NUMBER -> literalResult(arg.value!!)
+            ExpressionPartType.STRING -> createData(arg.innerText!!)
+            ExpressionPartType.BOOLEAN -> createData(arg.truth!!)
+            ExpressionPartType.NUMBER -> createData(arg.value!!)
             ExpressionPartType.SYMBOL -> handleSymbol(arg.name!!, env)
             ExpressionPartType.KEYWORD ->
                 throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
@@ -122,36 +116,10 @@ class Executor {
         }
     }
 
-    private fun handleSymbol(symbol: String, env: Scope): ExecutionResult {
-        val data = env.lookup(symbol)
-        return when (data.type) {
-            DataType.BOOLEAN -> literalResult(data.truthyValue!!)
-            DataType.STRING -> literalResult(data.stringValue!!)
-            DataType.NUMBER -> literalResult(data.numericValue!!)
-            DataType.FUNCTION -> literalResult(data.functionValue!!)
-        }
+    private fun handleSymbol(symbol: String, env: Scope): Data {
+        return env.lookup(symbol)
     }
 }
-
-fun literalResult(s: String): ExecutionResult = ExecutionResult(true, stringData(s))
-fun literalResult(b: Boolean): ExecutionResult = ExecutionResult(true, truthyData(b))
-fun literalResult(n: Float): ExecutionResult = ExecutionResult(true, numericData(n))
-fun literalResult(f: Function): ExecutionResult = ExecutionResult(true, functionData(f))
-fun dataToResult(d: Data): ExecutionResult = when (d.type) {
-    DataType.NUMBER -> literalResult(d.numericValue!!)
-    DataType.STRING -> literalResult(d.stringValue!!)
-    DataType.BOOLEAN -> literalResult(d.truthyValue!!)
-    DataType.FUNCTION -> literalResult(d.functionValue!!)
-}
-
-// TODO: This is a redundant type
-class ExecutionResult(val successful: Boolean, val data: Data) {
-    var innerText: String? = data.stringValue
-    var innerValue: Float? = data.numericValue
-    var innerTruth: Boolean? = data.truthyValue
-    var innerFunction: Function? = data.functionValue
-}
-
 
 
 
