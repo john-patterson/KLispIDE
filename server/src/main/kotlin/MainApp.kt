@@ -2,7 +2,6 @@ package com.statelesscoder.klisp.server
 
 import com.statelesscoder.klisp.compiler.*
 import io.javalin.Javalin
-import io.javalin.http.Context
 
 fun main(args: Array<String>) {
     val app = Javalin.create().start(7340)
@@ -36,12 +35,12 @@ class Routes {
 
     fun parse(request: String): Expression {
         val tokens = tokenize(request)
-        return parser.parse(tokens)
+        return parser.parseSingleExpression(tokens)
     }
 
     fun execute(request: String, scope: Scope = Scope()): Data {
         val tokens = tokenize(request)
-        val ast = parser.parse(tokens)
+        val ast = parser.parseSingleExpression(tokens)
         return executor.execute(ast, scope)
     }
 }

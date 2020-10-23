@@ -3,8 +3,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.lang.Exception
-import kotlin.math.exp
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParserTests {
@@ -13,14 +11,14 @@ class ParserTests {
         @Test
         fun `throws when expression isn't started by (`() {
             assertThrows(ParsingException::class.java) {
-                Parser().parse(listOf(identifierToken("foo", 0), rightParensToken( 3)))
+                Parser().parseSingleExpression(listOf(identifierToken("foo", 0), rightParensToken( 3)))
             }
         }
 
         @Test
         fun `throws when expr head is a number`() {
             assertThrows(ParsingException::class.java) {
-                Parser().parse(listOf(
+                Parser().parseSingleExpression(listOf(
                     leftParensToken(0),
                     numericToken("1", 1),
                     numericToken("2", 2),
@@ -31,7 +29,7 @@ class ParserTests {
 
         @Test
         fun `parses function with no args`() {
-            val result = Parser().parse(listOf(
+            val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
                 identifierToken("fOo", 1),
                 rightParensToken(4)))
@@ -42,7 +40,7 @@ class ParserTests {
 
         @Test
         fun `parses function tail full of simple things`() {
-            val result = Parser().parse(listOf(
+            val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
                 identifierToken("f", 1),
                 numericToken("123", 2),
@@ -61,7 +59,7 @@ class ParserTests {
 
         @Test
         fun `parses function with expression in tail`() {
-            val result = Parser().parse(listOf(
+            val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
                     identifierToken("f",1),
                     leftParensToken(2),
@@ -82,7 +80,7 @@ class ParserTests {
 
         @Test
         fun `parses function with expression in head`() {
-            val result = Parser().parse(listOf(
+            val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
                     leftParensToken(1),
                         identifierToken("f", 2),
@@ -109,7 +107,7 @@ class ParserTests {
             val parser = Parser()
             val tokens = tokenizer.scan("(let ((a 1)) (f a))")
 
-            val result = parser.parse(tokens)
+            val result = parser.parseSingleExpression(tokens)
             assertIsKeyword(KeywordType.LET, result.head)
 
             assertIsExpression({ expr ->
@@ -131,7 +129,7 @@ class ParserTests {
             val parser = Parser()
             val tokens = tokenizer.scan("(let ((a 1) (b 2)) (f a b))")
 
-            val result = parser.parse(tokens)
+            val result = parser.parseSingleExpression(tokens)
             assertIsKeyword(KeywordType.LET, result.head)
 
             assertIsExpression({ expr ->
@@ -159,7 +157,7 @@ class ParserTests {
             val tokens = tokenizer.scan("(let () (f 1))")
 
             assertThrows(ParsingException::class.java) {
-                parser.parse(tokens)
+                parser.parseSingleExpression(tokens)
             }
         }
 
@@ -170,7 +168,7 @@ class ParserTests {
             val tokens = tokenizer.scan("(let ((a 1)) ())")
 
             assertThrows(ParsingException::class.java) {
-                parser.parse(tokens)
+                parser.parseSingleExpression(tokens)
             }
         }
     }
@@ -183,7 +181,7 @@ class ParserTests {
             val parser = Parser()
             val tokens = tokenizer.scan("(if true 0 1)")
 
-            val result = parser.parse(tokens)
+            val result = parser.parseSingleExpression(tokens)
 
             assertIsKeyword(KeywordType.IF, result.head)
             assertIsBoolean(true, result.tail[0])
@@ -197,7 +195,7 @@ class ParserTests {
             val parser = Parser()
             val tokens = tokenizer.scan("(if (f 3) 0 1)")
 
-            val result = parser.parse(tokens)
+            val result = parser.parseSingleExpression(tokens)
 
             assertIsKeyword(KeywordType.IF, result.head)
             assertIsExpression({expr ->
@@ -214,7 +212,7 @@ class ParserTests {
             val parser = Parser()
             val tokens = tokenizer.scan("(if true (f 0) (f 1))")
 
-            val result = parser.parse(tokens)
+            val result = parser.parseSingleExpression(tokens)
 
             assertIsKeyword(KeywordType.IF, result.head)
             assertIsBoolean(true, result.tail[0])
@@ -231,15 +229,15 @@ class ParserTests {
         @Test
         fun `must have correct number of parts`() {
             assertThrows(ParsingException::class.java) {
-                Parser().parse(Tokenizer().scan("(if true 1)"))
+                Parser().parseSingleExpression(Tokenizer().scan("(if true 1)"))
             }
 
             assertThrows(ParsingException::class.java) {
-                Parser().parse(Tokenizer().scan("(if true)"))
+                Parser().parseSingleExpression(Tokenizer().scan("(if true)"))
             }
 
             assertThrows(ParsingException::class.java) {
-                Parser().parse(Tokenizer().scan("(if)"))
+                Parser().parseSingleExpression(Tokenizer().scan("(if)"))
             }
         }
     }
@@ -319,11 +317,49 @@ class ParserTests {
         }
     }
 
+    @Nested
+    inner class ParseMany {
+        @Test
+        fun `parse single expression`() {
+            val tokens = getTokenStream("( f 1 2 )")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(ExpressionPartType.SYMBOL, result.first().head.type)
+            assertEquals(ExpressionPartType.NUMBER, result.first().tail[0].type)
+            assertEquals(1f, result.first().tail[0].value)
+            assertEquals(ExpressionPartType.NUMBER, result.first().tail[1].type)
+            assertEquals(2f, result.first().tail[1].value)
+        }
+
+        @Test
+        fun `parse multiple expressions`() {
+            val tokens = getTokenStream("  ( f 1 2 )        (g 3)")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(ExpressionPartType.SYMBOL, result.first().head.type)
+            assertEquals("f", result.first().head.name)
+            assertEquals(ExpressionPartType.NUMBER, result.first().tail[0].type)
+            assertEquals(1f, result.first().tail[0].value)
+            assertEquals(ExpressionPartType.NUMBER, result.first().tail[1].type)
+            assertEquals(2f, result.first().tail[1].value)
+
+            assertEquals(ExpressionPartType.SYMBOL, result[1].head.type)
+            assertEquals("g", result[1].head.name)
+            assertEquals(ExpressionPartType.NUMBER, result[1].tail[0].type)
+            assertEquals(3f, result[1].tail[0].value)
+        }
+    }
+
+    fun getTokenStream(text: String): List<Token> {
+        val tokenizer = Tokenizer()
+        return tokenizer.scan(text)
+    }
+
     fun getParseTree(text: String): Expression {
         val tokenizer = Tokenizer()
         val parser = Parser()
         val tokens = tokenizer.scan(text)
-        return parser.parse(tokens)
+        return parser.parseSingleExpression(tokens)
     }
 
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {

@@ -32,7 +32,7 @@ class IntegrationTests {
 
     private fun run(text: String, env: Scope = Scope()): Data {
         val tokens = Tokenizer().scan(text)
-        val ast = Parser().parse(tokens)
+        val ast = Parser().parseSingleExpression(tokens)
         return Executor().execute(ast, env)
     }
 }

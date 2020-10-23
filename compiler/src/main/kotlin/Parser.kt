@@ -60,7 +60,29 @@ data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>)
 class ParsingException(message:String): Exception(message)
 
 class Parser() {
-    fun parse(tokens: List<Token>): Expression {
+    fun parse(tokens: List<Token>): List<Expression> {
+        var start = 0
+        var end = 0
+        var balance = 0
+
+        val collection = mutableListOf<Expression>()
+        for (i in tokens.indices) {
+            if (balance == 0 && tokens[i].type == TokenType.LEFT_PARENS) {
+                start = i
+                balance += 1
+            } else if (tokens[i].type == TokenType.LEFT_PARENS) {
+                balance += 1
+            } else if (balance == 1 && tokens[i].type == TokenType.RIGHT_PARENS) {
+                end = i
+                balance -= 1
+                collection.add(parseSingleExpression(tokens.subList(start, end + 1)))
+            }
+        }
+
+        return collection
+    }
+
+    fun parseSingleExpression(tokens: List<Token>): Expression {
         if (tokens.isEmpty()) {
             throw ParsingException("Expected start of expression, but got nothing.")
         }
@@ -143,7 +165,7 @@ class Parser() {
     private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findExpressionEnd(tokens, start)
         val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
-        expr.expression = parse(tokens.subList(start, end + 1))
+        expr.expression = parseSingleExpression(tokens.subList(start, end + 1))
         return Pair(end, expr)
     }
 
