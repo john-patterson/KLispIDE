@@ -1,4 +1,4 @@
-package com.statlesscoder.klisp.editor
+package com.statelesscoder.klisp.editor
 
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight

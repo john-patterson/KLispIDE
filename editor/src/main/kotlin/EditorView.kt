@@ -1,6 +1,8 @@
-package com.statlesscoder.klisp.editor
+package com.statelesscoder.klisp.editor
 
+import com.statelesscoder.klisp.compiler.Data
 import com.statelesscoder.klisp.compiler.Token
+import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import javafx.scene.Parent
 import javafx.scene.control.Alert
@@ -22,9 +24,14 @@ class EditorView: View() {
         Executors.newSingleThreadExecutor()
     private val controller: EditorController by inject()
     private val label: Text = text("Editing 'Untitled' KLisp document.")
+    private val bindings = emptyList<Pair<String, Data>>().asObservable()
 
     override val root = borderpane {
-        top = label
+        top = tableview(bindings) {
+            readonlyColumn("Name", Pair<String, Data>::first)
+            readonlyColumn("Value", Pair<String, Data>::second)
+        }
+
         center = codeArea.apply {
             paragraphGraphicFactory = LineNumberFactory.get(this)
             multiPlainChanges()
@@ -42,6 +49,15 @@ class EditorView: View() {
                     setStyleSpans(0, it)
                 }
         }
+
+        bottom = hbox {
+            button("Run") {
+                action {
+                    val result = controller.execute(codeArea.text)
+                }
+            }
+        }
+
     }
 
     private fun computeHighlightingAsync(): Task<StyleSpans<Collection<String>>> {

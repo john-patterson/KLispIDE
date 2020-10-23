@@ -13,7 +13,7 @@ repositories {
 }
 
 application {
-    mainClassName = 'com.statelesscoder.klisp.editor.EditorMainKt'
+    mainClassName = 'com.statelesscoder.klisp.editor.MainKt'
 }
 
 compileKotlin {

@@ -15,12 +15,7 @@ fun main(args: Array<String>) {
     }
 
     app.post("/execute") { ctx ->
-        val scope = ctx.formParam("scope", Scope::class.java)
-        if (scope.isValid()) {
-            ctx.json(router.execute(ctx.body(), scope.value!!))
-        } else {
-            ctx.json(router.execute(ctx.body()))
-        }
+        ctx.json(router.execute(ctx.body()))
     }
 }
 
@@ -38,9 +33,7 @@ class Routes {
         return parser.parseSingleExpression(tokens)
     }
 
-    fun execute(request: String, scope: Scope = Scope()): Data {
-        val tokens = tokenize(request)
-        val ast = parser.parseSingleExpression(tokens)
-        return executor.execute(ast, scope)
+    fun execute(request: String): ExecutionResult {
+        return runCode(request)
     }
 }

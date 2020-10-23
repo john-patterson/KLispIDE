@@ -1,27 +1,28 @@
-package com.statlesscoder.klisp.editor
+package com.statelesscoder.klisp.editor
 
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
+import com.statelesscoder.klisp.compiler.ExecutionResult
 import com.statelesscoder.klisp.compiler.Token
 
 interface TokenSource {
     fun getTokens(text: String): Array<Token>
+    fun execute(text: String): ExecutionResult
 }
 
 class TokenAgentException(message: String) : Exception(message) {
 }
 
 class TokenAgent: TokenSource {
-    private val baseUrl = "http://localhost:7340/tokenize"
+    private val baseUrl = "http://localhost:7340"
 
     override fun getTokens(text: String): Array<Token> {
         var tokenArray: Array<Token> = emptyArray()
-
         var shouldThrow: Boolean = false
         var errorString: String = ""
 
-        val httpAsync = baseUrl
+        val httpAsync = "$baseUrl/tokenize"
             .httpPost()
             .body(text)
             .responseString { _, response, result ->
@@ -45,5 +46,36 @@ class TokenAgent: TokenSource {
         }
 
         return tokenArray
+    }
+
+    override fun execute(text: String): ExecutionResult {
+        var executionResult: ExecutionResult? = null
+        var shouldThrow: Boolean = false
+        var errorString: String = ""
+
+        val httpAsync = "$baseUrl/execute"
+            .httpPost()
+            .body(text)
+            .responseString { _, response, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        shouldThrow = true
+                        errorString = "Could not execute, got result code ${response.statusCode}: ${result.error.message}"
+                    }
+                    is Result.Success -> {
+                        val data = result.get()
+                        executionResult = Gson()
+                            .fromJson(data, ExecutionResult::class.java)
+                    }
+                }
+            }
+
+        httpAsync.join()
+
+        if (shouldThrow) {
+            throw TokenAgentException(errorString)
+        }
+
+        return executionResult!!
     }
 }
