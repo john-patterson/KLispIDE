@@ -1,16 +1,9 @@
 package com.statelesscoder.klisp.editor
 
-import com.statelesscoder.klisp.compiler.Data
 import com.statelesscoder.klisp.compiler.Token
-import javafx.beans.Observable
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
-import javafx.beans.value.ObservableValue
-import javafx.collections.ObservableList
 import javafx.concurrent.Task
-import javafx.scene.Parent
-import javafx.scene.control.Alert
-import javafx.scene.text.Text
+import javafx.scene.control.TabPane
 import org.fxmisc.richtext.CodeArea
 import org.fxmisc.richtext.LineNumberFactory
 import org.fxmisc.richtext.model.StyleSpans
@@ -22,43 +15,14 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class EditorView: View() {
-    private val codeArea: CodeArea =
-        CodeArea()
+    private val codeArea: CodeArea = CodeArea()
     private val executor: ExecutorService =
         Executors.newSingleThreadExecutor()
     private val controller: EditorController by inject()
-    private var bindings = mutableListOf<Pair<String, String>>()
-    private var results = mutableListOf<Pair<String, String>>()
-    private var showScopeView = SimpleBooleanProperty(false)
     private var scopeViewOffset = SimpleIntegerProperty(3)
 
+
     override val root = borderpane {
-        val scopeView = tableview(bindings.asObservable()) {
-            readonlyColumn("Name", Pair<String, String>::first) {
-                prefWidthProperty().bind(this@tableview.widthProperty().divide(4))
-            }
-            readonlyColumn("Value", Pair<String, String>::second) {
-                prefWidthProperty().bind(this@tableview.widthProperty().divide(4) * 3)
-            }
-
-            prefHeightProperty().bind(this@borderpane
-                .heightProperty()
-                .divide(10) * scopeViewOffset.get())
-            visibleWhen(showScopeView)
-        }
-        val resultsView = tableview(results.asObservable()) {
-            readonlyColumn("Expression", Pair<String, String>::first) {
-                prefWidthProperty().bind(this@tableview.widthProperty().divide(2))
-            }
-            readonlyColumn("Result", Pair<String, String>::second) {
-                prefWidthProperty().bind(this@tableview.widthProperty().divide(2))
-            }
-
-            prefHeightProperty().bind(this@borderpane
-                .heightProperty()
-                .divide(10) * scopeViewOffset.get())
-            visibleWhen(!showScopeView)
-        }
 
         top = codeArea.apply {
             paragraphGraphicFactory = LineNumberFactory.get(this)
@@ -81,32 +45,25 @@ class EditorView: View() {
                 .divide(10) * (9 - scopeViewOffset.get()))
         }
 
-        center = resultsView
+        center = tabpane {
+            tab<ScopeInspectorView>()
+            tab<ResultsView>()
+
+            tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
+        }
+
         bottom = hbox {
             button("Run") {
                 action {
                     val result = controller.execute(codeArea.text)
-                    bindings.clear()
-                    bindings.addAll(result.last().scope.entries.map { Pair(it.key, it.value) })
-                    results.clear()
-                    results.addAll(result.map { Pair(it.expression, it.result) })
-                    scopeView.refresh()
-                    resultsView.refresh()
+
+                    val newResults = result.map { Pair(it.expression, it.result) }
+                    find<ResultsView>().updateView(newResults)
+
+                    val newBindings = result.last().scope.entries.map { Pair(it.key, it.value) }
+                    find<ScopeInspectorView>().updateView(newBindings)
                 }
 
-            }
-            button ("Show Scope Inspector") {
-                action {
-                    if (showScopeView.get()) {
-                        showScopeView.set(false)
-                        this@borderpane.center = resultsView
-                        this.text = "Show Scope Inspector"
-                    } else {
-                        showScopeView.set(true)
-                        this@borderpane.center = scopeView
-                        this.text = "Show Run Results"
-                    }
-                }
             }
             prefHeightProperty().bind(this@borderpane.heightProperty().divide(10))
         }
