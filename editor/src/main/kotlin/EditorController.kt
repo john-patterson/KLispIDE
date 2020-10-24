@@ -4,17 +4,28 @@ import com.statelesscoder.klisp.compiler.SimpleResult
 import com.statelesscoder.klisp.compiler.Token
 import tornadofx.Controller
 
+
 class EditorController(private val tokenSource: TokenSource) : Controller() {
     private val codeAreaView: CodeAreaView by inject()
     private val resultsView: ResultsView by inject()
     private val scopeInspectorView: ScopeInspectorView by inject()
 
     fun getTokens(text: String): Array<Token> {
-        return tokenSource.getTokens(text)
+        return try {
+            tokenSource.getTokens(text)
+        } catch (e: TokenAgentException) {
+            find<ErrorFragment>("errorText" to e.message.toString()).openModal()
+            emptyArray()
+        }
     }
 
     private fun execute(text: String): Array<SimpleResult> {
-        return tokenSource.execute(text)
+        return try {
+            tokenSource.execute(text)
+        } catch (e: TokenAgentException) {
+            find<ErrorFragment>("errorText" to e.message.toString()).openModal()
+            emptyArray()
+        }
     }
 
     fun runCodeAndUpdateUi() {
@@ -24,7 +35,11 @@ class EditorController(private val tokenSource: TokenSource) : Controller() {
         val newResults = result.map { Pair(it.expression, it.result) }
         resultsView.updateView(newResults)
 
-        val newBindings = result.last().scope.entries.map { Pair(it.key, it.value) }
+        val newBindings = if (result.isNotEmpty()) {
+            result.last().scope.entries.map { Pair(it.key, it.value) }
+        } else {
+            emptyList()
+        }
         scopeInspectorView.updateView(newBindings)
     }
 }
