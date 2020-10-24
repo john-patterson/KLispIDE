@@ -7,6 +7,7 @@ import org.fxmisc.richtext.LineNumberFactory
 import org.fxmisc.richtext.model.StyleSpans
 import org.fxmisc.richtext.model.StyleSpansBuilder
 import tornadofx.View
+import tornadofx.text
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -18,6 +19,7 @@ class CodeAreaView: View("Code Area") {
         Executors.newSingleThreadExecutor()
     private val codeArea: CodeArea =
         CodeArea()
+
     override val root = codeArea.apply {
         paragraphGraphicFactory = LineNumberFactory.get(this)
         multiPlainChanges()
@@ -34,6 +36,10 @@ class CodeAreaView: View("Code Area") {
             .subscribe {
                 setStyleSpans(0, it)
             }
+    }
+
+    fun currentText(): String {
+        return this.codeArea.text
     }
 
     private fun computeHighlightingAsync(): Task<StyleSpans<Collection<String>>> {
