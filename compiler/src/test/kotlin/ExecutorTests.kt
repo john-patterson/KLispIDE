@@ -13,6 +13,16 @@ class ExecutorTests {
     @Nested
     inner class BuiltinTests {
         @Test
+        fun `car returns the head of a list`() {
+
+        }
+
+        @Test
+        fun `cdr returns the tail of a list`() {
+
+        }
+
+        @Test
         fun `builtin functions work with simple types`() {
             assertEquals(400f, testBuiltin("*", 10f, 20f, 2f).numericValue)
             assertEquals(32f, testBuiltin("+", 10f, 20f, 2f).numericValue)
@@ -111,6 +121,59 @@ class ExecutorTests {
             return e.execute(expr)
         }
 
+    }
+
+    @Nested
+    inner class SimpleDataTests {
+        private val e = Executor()
+
+        @Test
+        fun `can return number`() {
+            val scope = Scope()
+            defineConstantFunction(numericPart(1f), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(1f, result.numericValue)
+        }
+
+        @Test
+        fun `can return string`() {
+            val scope = Scope()
+            defineConstantFunction(stringPart("hey"), scope)
+            val result = callConstantFunction(scope)
+            assertEquals("hey", result.stringValue)
+        }
+
+        @Test
+        fun `can return boolean`() {
+            val scope = Scope()
+            defineConstantFunction(booleanPart(true), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(true, result.truthyValue)
+        }
+
+        @Test
+        fun `can return list`() {
+            val scope = Scope()
+            val klist = KList(listOf(stringPart("a"), numericPart(1f)))
+            defineConstantFunction(listPart(klist), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(2, result.listValue!!.items.size)
+            assertEquals("a", result.listValue!!.items[0].innerText)
+            assertEquals(1f, result.listValue!!.items[1].value)
+        }
+
+        private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {
+            val definition = Expression(keywordPart(KeywordType.FUN), listOf(
+                symbolPart("foo"),
+                returnValue
+            ))
+            e.execute(definition, scope)
+        }
+
+        private fun callConstantFunction(scope: Scope): Data {
+            val functionCall = Expression(symbolPart("foo"), emptyList())
+            return e.execute(functionCall, scope)
+        }
     }
 
     @Nested
