@@ -1,5 +1,8 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
+import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -70,7 +73,10 @@ class ExecutorTests {
             val id = Function(e, "id", listOf(symbolPart("x")), symbolPart("x"))
             scope.add("id", createData(id))
 
-            val expr = Expression(symbolPart("id"), listOf(stringPart("test")))
+            val expr = Expression(
+                symbolPart("id"),
+                listOf(stringPart("test"))
+            )
             val result = e.execute(
                 Expression(
                     symbolPart("pRINt"),
@@ -99,7 +105,9 @@ class ExecutorTests {
 
         private fun testBuiltin(op: String, vararg args: Float): Data {
             val e = Executor()
-            val expr = Expression(symbolPart(op), args.map { numericPart(it) })
+            val expr = Expression(
+                symbolPart(op),
+                args.map { numericPart(it) })
             return e.execute(expr)
         }
 
@@ -166,17 +174,32 @@ class ExecutorTests {
             fun `let binding with complex body`() {
                 val executor: Executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f), Pair("y", 100f))
-                val bodyExpr = Expression(symbolPart("*"), listOf(symbolPart("x"), symbolPart("y")))
+                val bodyExpr = Expression(
+                    symbolPart("*"),
+                    listOf(symbolPart("x"), symbolPart("y"))
+                )
                 val expr = makeLetBinding(binding, expressionPart(bodyExpr))
                 assertEquals(1000f, executor.execute(expr).numericValue)
             }
 
             private fun makeLetBinding(bindings: Map<String, Float>, body: ExpressionPart): Expression {
                 val bindingsAsParts = bindings.entries
-                    .map { entry -> Expression(symbolPart(entry.key), listOf(numericPart(entry.value))) }
+                    .map { entry ->
+                        Expression(
+                            symbolPart(
+                                entry.key
+                            ), listOf(numericPart(entry.value))
+                        )
+                    }
                     .map { e -> expressionPart(e) }
-                val bindingExpr = Expression(bindingsAsParts.first(), bindingsAsParts.drop(1))
-                return Expression(keywordPart(KeywordType.LET), listOf(expressionPart(bindingExpr), body))
+                val bindingExpr = Expression(
+                    bindingsAsParts.first(),
+                    bindingsAsParts.drop(1)
+                )
+                return Expression(
+                    keywordPart(KeywordType.LET),
+                    listOf(expressionPart(bindingExpr), body)
+                )
             }
         }
 
@@ -184,15 +207,25 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = expressionPart(Expression(symbolPart("a"), listOf(symbolPart("b"), symbolPart("c"))))
+            private val params = expressionPart(
+                Expression(
+                    symbolPart("a"),
+                    listOf(symbolPart("b"), symbolPart("c"))
+                )
+            )
             private val bodyPart = expressionPart(formIfExpr(symbolPart("a"), symbolPart("b"), symbolPart("c")))
-            private val expr = Expression(keywordPart(KeywordType.FUN), listOf(symbolPart(functionName), params, bodyPart))
+            private val expr = Expression(
+                keywordPart(KeywordType.FUN),
+                listOf(symbolPart(functionName), params, bodyPart)
+            )
 
             @Test
             fun `executes complex function and sets in scope`() {
                 val scope = Scope()
-                val executionExpr = Expression(symbolPart("f"),
-                    listOf(booleanPart(false), numericPart(10f), numericPart(100f)))
+                val executionExpr = Expression(
+                    symbolPart("f"),
+                    listOf(booleanPart(false), numericPart(10f), numericPart(100f))
+                )
 
                 // Before definition, this should make a symbol lookup error
                 assertThrows(ScopeDataException::class.java) {
@@ -212,8 +245,10 @@ class ExecutorTests {
             @Test
             fun `executes with returned function`() {
                 val scope = Scope()
-                val executionExpr = Expression(expressionPart(expr),
-                    listOf(booleanPart(false), numericPart(10f), numericPart(100f)))
+                val executionExpr = Expression(
+                    expressionPart(expr),
+                    listOf(booleanPart(false), numericPart(10f), numericPart(100f))
+                )
                 val result = executor.execute(executionExpr, scope)
 
                 assertNotNull(scope.lookup(functionName))
@@ -238,5 +273,9 @@ class ExecutorTests {
         switchPart: ExpressionPart,
         truePart: ExpressionPart,
         falsePart: ExpressionPart
-    ): Expression = Expression(keywordPart(KeywordType.IF), listOf(switchPart, truePart, falsePart))
+    ): Expression =
+        Expression(
+            keywordPart(KeywordType.IF),
+            listOf(switchPart, truePart, falsePart)
+        )
 }

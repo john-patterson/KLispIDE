@@ -3,9 +3,8 @@ package com.statelesscoder.klisp.editor
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
-import com.statelesscoder.klisp.compiler.ExecutionResult
-import com.statelesscoder.klisp.compiler.SimpleResult
-import com.statelesscoder.klisp.compiler.Token
+import com.statelesscoder.klisp.compiler.types.SimpleResult
+import com.statelesscoder.klisp.compiler.types.Token
 
 interface TokenSource {
     fun getTokens(text: String): Array<Token>

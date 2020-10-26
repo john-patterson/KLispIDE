@@ -1,6 +1,7 @@
 package com.statelesscoder.klisp.compiler
 
-class ScopeDataException(message: String): Exception(message)
+import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
+import com.statelesscoder.klisp.compiler.types.Data
 
 class Scope {
     private var symbolTable: MutableMap<String, Data> = mutableMapOf()

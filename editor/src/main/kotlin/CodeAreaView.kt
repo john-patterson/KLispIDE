@@ -1,13 +1,12 @@
 package com.statelesscoder.klisp.editor
 
-import com.statelesscoder.klisp.compiler.Token
+import com.statelesscoder.klisp.compiler.types.Token
 import javafx.concurrent.Task
 import org.fxmisc.richtext.CodeArea
 import org.fxmisc.richtext.LineNumberFactory
 import org.fxmisc.richtext.model.StyleSpans
 import org.fxmisc.richtext.model.StyleSpansBuilder
 import tornadofx.View
-import tornadofx.text
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ExecutorService

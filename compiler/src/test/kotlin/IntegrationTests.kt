@@ -1,4 +1,6 @@
 import com.statelesscoder.klisp.compiler.*
+import com.statelesscoder.klisp.compiler.types.Data
+import com.statelesscoder.klisp.compiler.types.DataType
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

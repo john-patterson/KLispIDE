@@ -1,7 +1,7 @@
 package com.statelesscoder.klisp.editor
 
-import com.statelesscoder.klisp.compiler.SimpleResult
-import com.statelesscoder.klisp.compiler.Token
+import com.statelesscoder.klisp.compiler.types.SimpleResult
+import com.statelesscoder.klisp.compiler.types.Token
 import tornadofx.Controller
 
 

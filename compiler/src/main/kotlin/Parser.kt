@@ -1,78 +1,8 @@
 package com.statelesscoder.klisp.compiler
 
+import com.statelesscoder.klisp.compiler.exceptions.ParsingException
+import com.statelesscoder.klisp.compiler.types.*
 
-enum class KeywordType {
-    LET,
-    IF,
-    FUN
-}
-
-enum class ExpressionPartType {
-    SYMBOL,
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    EXPRESSION,
-    KEYWORD,
-}
-
-fun keywordPart(type: KeywordType): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.KEYWORD)
-    p.keywordType = type
-    return p
-}
-fun symbolPart(name: String): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.SYMBOL)
-    p.name = name
-    return p
-}
-fun numericPart(value: Float): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.NUMBER)
-    p.value = value
-    return p
-}
-fun booleanPart(truth: Boolean): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.BOOLEAN)
-    p.truth = truth
-    return p
-}
-fun expressionPart(expr: Expression): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.EXPRESSION)
-    p.expression = expr
-    return p
-}
-fun stringPart(s: String): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.STRING)
-    p.innerText = s
-    return p
-}
-
-class ExpressionPart(val type: ExpressionPartType) {
-    var value: Float? = null
-    var truth: Boolean? = null
-    var name: String? = null
-    var innerText: String? = null
-    var keywordType: KeywordType? = null
-    var expression: Expression? = null
-
-    override fun toString(): String = when(type) {
-        ExpressionPartType.NUMBER -> value.toString()
-        ExpressionPartType.SYMBOL -> name.toString()
-        ExpressionPartType.BOOLEAN -> if (truth!!) "true" else "false"
-        ExpressionPartType.KEYWORD -> keywordType.toString()
-        ExpressionPartType.STRING -> "\"$innerText\""
-        ExpressionPartType.EXPRESSION -> expression.toString()
-    }
-}
-data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>) {
-    override fun toString(): String {
-        val headString = head.toString()
-        val tailString = tail.joinToString(separator = " ") { it.toString() }
-        return "($headString $tailString)"
-    }
-}
-
-class ParsingException(message:String): Exception(message)
 
 class Parser() {
     fun parse(tokens: List<Token>): List<Expression> {
@@ -181,7 +111,8 @@ class Parser() {
 
     private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findExpressionEnd(tokens, start)
-        val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
+        val expr =
+            ExpressionPart(ExpressionPartType.EXPRESSION)
         expr.expression = parseSingleExpression(tokens.subList(start, end + 1))
         return Pair(end, expr)
     }
@@ -189,37 +120,44 @@ class Parser() {
     private fun parsePart(token: Token): ExpressionPart {
         return when (token.type) {
             TokenType.NUMERIC -> {
-                val part = ExpressionPart(ExpressionPartType.NUMBER)
+                val part =
+                    ExpressionPart(ExpressionPartType.NUMBER)
                 part.value = token.text.toFloat()
                 part
             }
             TokenType.STRING -> {
-                val part = ExpressionPart(ExpressionPartType.STRING)
+                val part =
+                    ExpressionPart(ExpressionPartType.STRING)
                 part.innerText = token.text.substring(1, token.text.length - 1)
                 part
             }
             TokenType.IDENTIFIER -> {
-                val part = ExpressionPart(ExpressionPartType.SYMBOL)
+                val part =
+                    ExpressionPart(ExpressionPartType.SYMBOL)
                 part.name = token.text
                 part
             }
             TokenType.BOOLEAN -> {
-                val part = ExpressionPart(ExpressionPartType.BOOLEAN)
+                val part =
+                    ExpressionPart(ExpressionPartType.BOOLEAN)
                 part.truth = token.text.toBoolean()
                 part
             }
             TokenType.LET -> {
-                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                val part =
+                    ExpressionPart(ExpressionPartType.KEYWORD)
                 part.keywordType = KeywordType.LET
                 part
             }
             TokenType.IF -> {
-                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                val part =
+                    ExpressionPart(ExpressionPartType.KEYWORD)
                 part.keywordType = KeywordType.IF
                 part
             }
             TokenType.FUN -> {
-                val part = ExpressionPart(ExpressionPartType.KEYWORD)
+                val part =
+                    ExpressionPart(ExpressionPartType.KEYWORD)
                 part.keywordType = KeywordType.FUN
                 part
             }

@@ -1,12 +1,5 @@
-package com.statelesscoder.klisp.compiler
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
-
-class RuntimeException(message: String): Exception(message)
+package com.statelesscoder.klisp.compiler.types
+import com.statelesscoder.klisp.compiler.Function
 
 enum class DataType {
     STRING,
@@ -30,25 +23,29 @@ class Data(val type: DataType) {
 }
 
 fun createData(s: String): Data {
-    val d = Data(DataType.STRING)
+    val d =
+        Data(DataType.STRING)
     d.stringValue = s
     return d
 }
 
 fun createData(n: Float): Data {
-    val d = Data(DataType.NUMBER)
+    val d =
+        Data(DataType.NUMBER)
     d.numericValue = n
     return d
 }
 
 fun createData(b: Boolean): Data {
-    val d = Data(DataType.BOOLEAN)
+    val d =
+        Data(DataType.BOOLEAN)
     d.truthyValue = b
     return d
 }
 
 fun createData(f: Function): Data {
-    val d = Data(DataType.FUNCTION)
+    val d =
+        Data(DataType.FUNCTION)
     d.functionValue = f
     return d
 }

@@ -1,4 +1,6 @@
 import com.statelesscoder.klisp.compiler.*
+import com.statelesscoder.klisp.compiler.exceptions.ParsingException
+import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -11,7 +13,12 @@ class ParserTests {
         @Test
         fun `throws when expression isn't started by (`() {
             assertThrows(ParsingException::class.java) {
-                Parser().parseSingleExpression(listOf(identifierToken("foo", 0), rightParensToken( 3)))
+                Parser().parseSingleExpression(listOf(
+                    identifierToken(
+                        "foo",
+                        0
+                    ), rightParensToken(3)
+                ))
             }
         }
 
@@ -32,7 +39,8 @@ class ParserTests {
             val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
                 identifierToken("fOo", 1),
-                rightParensToken(4)))
+                rightParensToken(4)
+            ))
             assertEquals(ExpressionPartType.SYMBOL, result.head.type)
             assertIsSymbol("fOo", result.head)
             assertTrue(result.tail.isEmpty())
@@ -47,7 +55,8 @@ class ParserTests {
                 booleanToken("true", 5),
                 identifierToken("foo", 9),
                 stringToken("\"s\"", 12),
-                rightParensToken(15)))
+                rightParensToken(15)
+            ))
 
             assertIsSymbol("f", result.head)
             assertEquals(4, result.tail.size)
@@ -61,13 +70,14 @@ class ParserTests {
         fun `parses function with expression in tail`() {
             val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
-                    identifierToken("f",1),
-                    leftParensToken(2),
-                        identifierToken("g", 3),
-                        numericToken("1", 4),
-                    rightParensToken(5),
-                    numericToken("2", 6),
-                rightParensToken(7)))
+                identifierToken("f", 1),
+                leftParensToken(2),
+                identifierToken("g", 3),
+                numericToken("1", 4),
+                rightParensToken(5),
+                numericToken("2", 6),
+                rightParensToken(7)
+            ))
 
             assertIsSymbol("f", result.head)
             assertEquals(2, result.tail.size)
@@ -82,12 +92,13 @@ class ParserTests {
         fun `parses function with expression in head`() {
             val result = Parser().parseSingleExpression(listOf(
                 leftParensToken(0),
-                    leftParensToken(1),
-                        identifierToken("f", 2),
-                        numericToken("1", 3),
-                    rightParensToken(4),
+                leftParensToken(1),
+                identifierToken("f", 2),
+                numericToken("1", 3),
+                rightParensToken(4),
                 numericToken("2", 5),
-                rightParensToken(6)))
+                rightParensToken(6)
+            ))
 
             assertIsExpression({e ->
                 assertIsSymbol("f", e.head)

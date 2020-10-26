@@ -1,5 +1,10 @@
 package com.statelesscoder.klisp.compiler
 
+import com.statelesscoder.klisp.compiler.types.Data
+import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.types.ExpressionPart
+import com.statelesscoder.klisp.compiler.types.ExpressionPartType
+
 class Function(private val executor: Executor,
                private val name: String,
                private val params: List<ExpressionPart>,

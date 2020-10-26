@@ -1,13 +1,8 @@
 package com.statelesscoder.klisp.compiler
 
-class SimpleResult(r: ExecutionResult) {
-    val expression = r.expression.toString()
-    val result = r.result.toString()
-    val scope = r.scope.getBindings()
-        .map { Pair(it.first, it.second.toString()) }
-        .toMap()
-}
-data class ExecutionResult(val expression: Expression, val result: Data, val scope: Scope)
+import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.types.*
+
 fun runCode(code: String): List<ExecutionResult> {
     val tokenizer = Tokenizer()
     val parser = Parser()
@@ -18,7 +13,11 @@ fun runCode(code: String): List<ExecutionResult> {
     val tokens = tokenizer.scan(code)
     val expressions = parser.parse(tokens)
     for (expression in expressions) {
-        val result = ExecutionResult(expression, executor.execute(expression, scope), scope)
+        val result = ExecutionResult(
+            expression,
+            executor.execute(expression, scope),
+            scope
+        )
         results.add(result)
     }
 
@@ -64,10 +63,10 @@ class Executor {
         }
         val argsAsNums = args.map { it.numericValue!! }
         return createData(when (functionName) {
-            "*" -> argsAsNums.reduce {acc, number -> acc * number }
-            "+" -> argsAsNums.reduce {acc, number -> acc + number }
-            "-" -> argsAsNums.reduce {acc, number -> acc - number }
-            "/" -> argsAsNums.reduce {acc, number -> acc / number }
+            "*" -> argsAsNums.reduce { acc, number -> acc * number }
+            "+" -> argsAsNums.reduce { acc, number -> acc + number }
+            "-" -> argsAsNums.reduce { acc, number -> acc - number }
+            "/" -> argsAsNums.reduce { acc, number -> acc / number }
             else -> throw RuntimeException("$functionName is not a built-in function.")
         })
     }
