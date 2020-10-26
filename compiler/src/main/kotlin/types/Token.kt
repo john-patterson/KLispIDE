@@ -3,6 +3,8 @@ package com.statelesscoder.klisp.compiler.types
 data class Token(val text: String, val type: TokenType, val pos: Int)
 
 enum class TokenType {
+    RIGHT_BRACKET,
+    LEFT_BRACKET,
     RIGHT_PARENS,
     LEFT_PARENS,
     NUMERIC,
@@ -50,4 +52,15 @@ fun rightParensToken(pos: Int) =
         TokenType.RIGHT_PARENS,
         pos
     )
-
+fun leftBracketToken(pos: Int) =
+    Token(
+        "[",
+        TokenType.LEFT_BRACKET,
+        pos
+    )
+fun rightBracketToken(pos: Int) =
+    Token(
+        "]",
+        TokenType.RIGHT_BRACKET,
+        pos
+    )
