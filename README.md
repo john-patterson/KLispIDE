@@ -91,8 +91,8 @@ Here you can see a screenshot of the editor:
 Here are the highlighted parts:
  1. The Run menu. This is where you can execute the code from the code area. Simply press `Run` > `Run entire file`.
  2. The code area. This where you author your code. Note the syntax highlighting and line numbers.
- 3. The Scope Inspector tab. This tab launches [the Scope Inspector](#The%20Scope%20Inspector).
- 4. The Results Viewer tab. This tab launches [the Results Viewer](#The%20Results%20Viewer).
+ 3. The Scope Inspector tab.
+ 4. The Results Viewer tab.
 
 ### The Scope Inspector
 ![Screenshot of the Scope Inspector](static/screenshots/scope_viewer.png)
