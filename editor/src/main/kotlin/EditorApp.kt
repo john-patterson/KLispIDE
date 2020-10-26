@@ -5,6 +5,10 @@ import tornadofx.launch
 import tornadofx.setInScope
 
 
-class EditorApp : App(EditorView::class, EditorStyles::class, FX.defaultScope)
+class EditorApp : App(EditorView::class, EditorStyles::class, FX.defaultScope) {
+    override fun stop() {
+        super.stop()
+    }
+}
 
 
