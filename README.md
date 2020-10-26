@@ -28,6 +28,8 @@ launch the language server and another to launch the editor itself.
   - `gradlew.bat :server:run`
   - `gradlew.bat :editor:run`
   
+Traffic uses TDP port 7340. The editor is also hard-coded to hit localhost at the moment.
+  
 ## Language Overview
 I will focus on the features and description of the language. For implementation details, check out the
 [language architecture documentation](compiler/ARCHITECTURE.md).
