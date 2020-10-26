@@ -25,6 +25,8 @@ class Function(private val executor: Executor,
                 executor.realizePart(body, boundScope)
             ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
                 executor.execute(body.expression!!, boundScope)
+            ExpressionPartType.LIST ->
+                throw RuntimeException("Lists are not supported yet.")
         }
     }
 

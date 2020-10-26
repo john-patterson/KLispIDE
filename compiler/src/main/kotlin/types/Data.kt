@@ -6,6 +6,7 @@ enum class DataType {
     NUMBER,
     BOOLEAN,
     FUNCTION,
+    LIST,
 }
 
 class Data(val type: DataType) {
@@ -13,12 +14,14 @@ class Data(val type: DataType) {
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
+    var listValue: KList? = null
 
     override fun toString(): String = when (type) {
         DataType.STRING -> "\"$stringValue\""
         DataType.NUMBER -> "$numericValue"
         DataType.BOOLEAN -> "$truthyValue"
-        DataType.FUNCTION -> "$functionValue"
+        DataType.FUNCTION -> functionValue.toString()
+        DataType.LIST -> listValue.toString()
     }
 }
 
@@ -47,5 +50,12 @@ fun createData(f: Function): Data {
     val d =
         Data(DataType.FUNCTION)
     d.functionValue = f
+    return d
+}
+
+fun createData(l: KList): Data {
+    val d =
+        Data(DataType.LIST)
+    d.listValue = l
     return d
 }

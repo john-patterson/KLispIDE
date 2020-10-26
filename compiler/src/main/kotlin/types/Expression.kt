@@ -7,3 +7,4 @@ data class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>) 
         return "($headString $tailString)"
     }
 }
+
