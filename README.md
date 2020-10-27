@@ -40,8 +40,8 @@ I will focus on the features and description of the language. For implementation
 * __numbers__: All numbers are floating-point and are expressible in their usual manner (1, 0, 0.0, -2.434, etc).
 * __strings__: Strings start and end with `"` and cannot contain a double quote.
   - Example: `"Hello World!"`
-* __lists__: Lists appear as a part of the `fun` and `let` special constructs, but no other context.
-  - Example: `(a b)` or `((a 1) (b 2))`
+* __lists__: Lists are created using square brackets `[]`.
+  - Example: `[a b]` or `[1 a "foo" [1 2 3]]`
 * __expressions__: Everything else. Expressions start with a symbol or expression which evaluates to a function. The rest of the
 body is passed as arguments to that function at interpretation time.
    - Example: `(function 1 2 3)`
@@ -54,8 +54,11 @@ body is passed as arguments to that function at interpretation time.
 Three parts to a function: the name, the parameter list, and the body.
   - Example: `(fun foo (a b) (+ a b))`
   
-  Functions which take no parameter are expressed by omitting the parameter list. For instance:
+  Functions which take no parameter are expressed by either omitting the parameter list, for instance:
   - Example: `(fun bar true)`
+  
+  Or by using the empty list as the parameter list:
+  - Example: `(fun bar [] true)`
   
 * __if__: If expected 3 values: (1) a boolean expression, (2) a value to return if (1) is true,
 and (3) a value to return if (1) is false.
@@ -71,8 +74,22 @@ and (3) a value to return if (1) is false.
    - Example: `(- 10 5 2) => 3` 
  * __/__: Division
    - Example: `(/ 30 15 2) => 1` 
- * __*__: Binary multiplication
+ * __*__: Multiplication
    - Example: `(* 1 2) => 2` 
+ * __and__: Logical and 
+   - Example: `(and true false true) => false` 
+ * __or__: Logical or
+   - Example: `(or true false true) => true` 
+ * __eq__: Deep equality operator
+   - Example: `(eq [1 2] [1 2]) => true` 
+ * __neq__: Deep inequality operator
+   - Example: `(neq [1 2] [1 3]) => true` 
+ * __car__: Returns the head of a list
+   - Example: `(car [1 2 3]) => 1` 
+ * __cdr__: Returns the tail of a list
+   - Example: `(cdr [1 2 3]) => [2 3]` 
+ * __cons__: Appends an item to a list
+   - Example: `(cons [] 1) => [1]` 
  * __print__: Writes the value given to the console output and evaluates to the passed string.
    - Example: `(print "foo") => foo`
    

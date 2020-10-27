@@ -257,11 +257,11 @@ class ParserTests {
     inner class FunExpression {
         @Test
         fun `parses identity function`() {
-            val result = getParseTree("(fun id (x) x)")
+            val result = getParseTree("(fun id [x] x)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("x", expr.head)
+            assertIsList({ls ->
+                assertIsSymbol("x", ls.unrealizedItems[0])
             }, result.tail[1])
             assertIsSymbol("x", result.tail[2])
         }
@@ -279,8 +279,8 @@ class ParserTests {
         @Test
         fun `function with strange amounts of parts not allowed`() {
             assertThrows(ParsingException::class.java) { getParseTree("(fun)") }
-            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3)") }
-            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3 3)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id [a] 3 3)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id [a] 3 3 3)") }
         }
 
         @Test
@@ -292,13 +292,23 @@ class ParserTests {
         }
 
         @Test
+        fun `function with empty args section allowed`() {
+            val result = getParseTree("(fun id [] 3)")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("id", result.tail[0])
+            assertIsList({ assertEquals(emptyList<ExpressionPart>(), it.unrealizedItems) },
+                result.tail[1])
+            assertIsNumber(3f, result.tail[2])
+        }
+
+        @Test
         fun `function with two arg`() {
-            val result = getParseTree("(fun foo (a b) a)")
+            val result = getParseTree("(fun foo [a b] a)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("a", expr.head)
-                assertIsSymbol("b", expr.tail[0])
+            assertIsList({list ->
+                assertIsSymbol("a", list.unrealizedItems[0])
+                assertIsSymbol("b", list.unrealizedItems[1])
             }, result.tail[1])
             assertIsSymbol("a", result.tail[2])
         }
@@ -315,16 +325,64 @@ class ParserTests {
 
         @Test
         fun `allows expression return`() {
-            val result = getParseTree("(fun foo (g) (g 1))")
+            val result = getParseTree("(fun foo [g] (g 1))")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("g", expr.head)
+            assertIsList({ls ->
+                assertIsSymbol("g", ls.unrealizedItems[0])
             }, result.tail[1])
             assertIsExpression({expr ->
                 assertIsSymbol("g", expr.head)
                 assertIsNumber(1f, expr.tail[0])
             }, result.tail[2])
+        }
+    }
+
+    @Nested
+    inner class ListParsing {
+        @Test
+        fun `parse empty list`() {
+            val tokens = getTokenStream("(f [])")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(1, result.size)
+            val expr = result.first()
+            assertIsSymbol("f", expr.head)
+            assertEquals(1, expr.tail.size)
+            assertIsList({got ->
+                assertEquals(0, got.unrealizedItems.size)
+            }, expr.tail.first())
+        }
+
+        @Test
+        fun `parse single list`() {
+            val tokens = getTokenStream("(f [1])")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(1, result.size)
+            val expr = result.first()
+            assertIsSymbol("f", expr.head)
+            assertEquals(1, expr.tail.size)
+            assertIsList({got ->
+                assertEquals(1, got.unrealizedItems.size)
+                assertIsNumber(1f, got.unrealizedItems.first())
+            }, expr.tail.first())
+        }
+
+        @Test
+        fun `parse list with many things`() {
+            val tokens = getTokenStream("(f [1 b])")
+            val parser = Parser()
+            val result = parser.parse(tokens)
+            assertEquals(1, result.size)
+            val expr = result.first()
+            assertIsSymbol("f", expr.head)
+            assertEquals(1, expr.tail.size)
+            assertIsList({got ->
+                assertEquals(2, got.unrealizedItems.size)
+                assertIsNumber(1f, got.unrealizedItems.first())
+                assertIsSymbol("b", got.unrealizedItems.last())
+            }, expr.tail.first())
         }
     }
 
@@ -362,16 +420,16 @@ class ParserTests {
 
         @Test
         fun `parse multiple nested expressions`() {
-            val tokens = getTokenStream("(fun foo (a b) (+ a b 1))(foo 10 20)")
+            val tokens = getTokenStream("(fun foo [a b] (+ a b 1))(foo 10 20)")
             val parser = Parser()
             val result = parser.parse(tokens)
             assertEquals(ExpressionPartType.KEYWORD, result.first().head.type)
             assertEquals(KeywordType.FUN, result.first().head.keywordType)
             assertEquals(ExpressionPartType.SYMBOL, result.first().tail[0].type)
             assertEquals("foo", result.first().tail[0].name)
-            assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[1].type)
-            assertEquals("a", result.first().tail[1].expression!!.head.name)
-            assertEquals("b", result.first().tail[1].expression!!.tail[0].name)
+            assertEquals(ExpressionPartType.LIST, result.first().tail[1].type)
+            assertEquals("a", result.first().tail[1].list!!.unrealizedItems[0].name)
+            assertEquals("b", result.first().tail[1].list!!.unrealizedItems[1].name)
             assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[2].type)
             assertEquals("+", result.first().tail[2].expression!!.head.name)
             assertEquals("a", result.first().tail[2].expression!!.tail[0].name)
@@ -407,6 +465,7 @@ class ParserTests {
         expressionAssertion(actual.expression!!) // Value verified by previous line
         assertNull(actual.keywordType)
         assertNull(actual.innerText)
+        assertNull(actual.list)
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
@@ -418,6 +477,7 @@ class ParserTests {
         assertNull(actual.expression)
         assertNull(actual.keywordType)
         assertNull(actual.innerText)
+        assertNull(actual.list)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
@@ -429,6 +489,7 @@ class ParserTests {
         assertNull(actual.expression)
         assertNull(actual.keywordType)
         assertNull(actual.innerText)
+        assertNull(actual.list)
     }
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {
@@ -440,6 +501,7 @@ class ParserTests {
         assertNull(actual.expression)
         assertNull(actual.keywordType)
         assertNull(actual.innerText)
+        assertNull(actual.list)
     }
 
     fun assertIsKeyword(expected: KeywordType, actual: ExpressionPart) {
@@ -451,6 +513,7 @@ class ParserTests {
         assertNotNull(actual.keywordType)
         assertEquals(expected, actual.keywordType)
         assertNull(actual.innerText)
+        assertNull(actual.list)
     }
 
     fun assertIsString(expectedText: String, actual: ExpressionPart) {
@@ -462,5 +525,18 @@ class ParserTests {
         assertNull(actual.keywordType)
         assertNotNull(actual.innerText)
         assertEquals(expectedText, actual.innerText)
+        assertNull(actual.list)
+    }
+
+    fun assertIsList(listAssertion: (KList) -> Unit, actual: ExpressionPart) {
+        assertEquals(ExpressionPartType.LIST, actual.type)
+        assertNull(actual.value)
+        assertNull(actual.truth)
+        assertNull(actual.name)
+        assertNull(actual.expression)
+        assertNull(actual.keywordType)
+        assertNull(actual.innerText)
+        assertNotNull(actual.list)
+        listAssertion(actual.list!!) // Value verified by previous line
     }
 }

@@ -13,7 +13,66 @@ class TokenizerTests {
     @Nested
     inner class ListTests {
         @Test
-        fun `empty list`() {
+        fun `empty expr`() {
+            val result = Tokenizer().scan("[]")
+            val (leftBracket, rightBracket) = result
+            assertEquals(2, result.size)
+            assertLeftBracket(0, leftBracket)
+            assertRightBracket(1, rightBracket)
+        }
+
+        @Test
+        fun `skips whitespace between components`() {
+            val result = Tokenizer().scan("      [             ]     ")
+            val (leftBracket, rightBracket) = result
+            assertEquals(2, result.size)
+            assertLeftBracket(6, leftBracket)
+            assertRightBracket(20, rightBracket)
+        }
+
+        @Test
+        fun `tokenizes list with mixed types`() {
+            val result = Tokenizer().scan("[g 1]")
+            assertEquals(4, result.size)
+            assertLeftBracket(0, result[0])
+            assertEquals(
+                Token(
+                    "g",
+                    TokenType.IDENTIFIER,
+                    1
+                ), result[1])
+            assertEquals(
+                Token(
+                    "1",
+                    TokenType.NUMERIC,
+                    3
+                ), result[2])
+            assertRightBracket(4, result[3])
+        }
+
+        private fun assertLeftBracket(pos: Int, leftBracket: Token) {
+            assertEquals(
+                Token(
+                    "[",
+                    TokenType.LEFT_BRACKET,
+                    pos
+                ), leftBracket)
+        }
+
+        private fun assertRightBracket(pos: Int, rightBracket: Token) {
+            assertEquals(
+                Token(
+                    "]",
+                    TokenType.RIGHT_BRACKET,
+                    pos
+                ), rightBracket)
+        }
+    }
+
+    @Nested
+    inner class ExpressionTests {
+        @Test
+        fun `empty expr`() {
             val result = Tokenizer().scan("()")
             val (leftParen, rightParen) = result
             assertEquals(2, result.size)
@@ -59,13 +118,13 @@ class TokenizerTests {
                 ), leftParen)
         }
 
-        private fun assertRightParen(pos: Int, leftParen: Token) {
+        private fun assertRightParen(pos: Int, rightParen: Token) {
             assertEquals(
                 Token(
                     ")",
                     TokenType.RIGHT_PARENS,
                     pos
-                ), leftParen)
+                ), rightParen)
         }
     }
 

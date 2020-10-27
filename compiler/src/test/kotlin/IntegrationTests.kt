@@ -24,12 +24,80 @@ class IntegrationTests {
     @Test
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
-        val bindingResult = run("(fun foo (a b c) (if a b c))", scope)
+        val bindingResult = run("(fun foo [a b c] (if a b c))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.type)
         assertNotNull(scope.lookup("foo"))
 
         val executionResult = run("(let ((switch false)) (foo switch 50 100))", scope)
         assertEquals(100f, executionResult.numericValue)
+    }
+
+    @Test
+    fun `cons builds up a list`() {
+        val result = run("(cons (cons (cons [] 1f) true) \"okay\")")
+        assertEquals(DataType.LIST, result.type)
+        assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
+        assertEquals(true, result.listValue!!.realizedData[1].truthyValue)
+        assertEquals("okay", result.listValue!!.realizedData[2].stringValue)
+        assertEquals("[1.0 true \"okay\"]", result.listValue.toString())
+    }
+
+    @Test
+    fun `can get third item of a list`() {
+        val result = run("(car (cdr (cdr [1f 2f 3f 4f])))")
+        assertEquals(DataType.NUMBER, result.type)
+        assertEquals(3f, result.numericValue)
+    }
+
+    @Test
+    fun `function equality`() {
+        val scope = Scope()
+        run("(fun f [a b] (and a b))", scope)
+        run("(fun g [a b] (and a b))", scope)
+        val resultSameName = run("(eq f f)", scope)
+        val resultOtherName = run("(eq f g)", scope)
+        assertEquals(true, resultSameName.truthyValue)
+        assertEquals(false, resultOtherName.truthyValue)
+    }
+
+    @Test
+    fun `symbolic equality`() {
+        val resultSame = run("(let ((a 1) (b 1)) (eq a b))")
+        val resultDifferent = run("(let ((a 1) (b 4)) (eq a b))")
+        assertEquals(true, resultSame.truthyValue)
+        assertEquals(false, resultDifferent.truthyValue)
+    }
+
+    @Test
+    fun `recursive function`() {
+        val scope = Scope()
+        val bindingResult = run("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        assertEquals(DataType.FUNCTION, bindingResult.type)
+        val executionResult = run("(f 3)", scope)
+        assertEquals(6f, executionResult.numericValue)
+    }
+
+    @Test
+    fun `filter definable`() {
+        val scope = Scope()
+        val bindingResult = run("(fun filter [ls nls f] " +
+                "(if (eq ls []) " +
+                    "nls " +
+                    "(if (f (car ls)) " +
+                        "(filter (cdr ls) (cons nls (car ls)) f) " +
+                        "(filter (cdr ls) nls f))))", scope)
+        assertEquals(DataType.FUNCTION, bindingResult.type)
+        val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope)
+        assertEquals(2, executionResult.listValue!!.realizedData.size)
+    }
+
+    @Test
+    fun `constant functions`() {
+        val scope = Scope()
+        run("(fun f1 2)", scope)
+        run("(fun f2 [] 3)", scope)
+        val result = run("(+ (f1) (f2))", scope)
+        assertEquals(5f, result.numericValue)
     }
 
     private fun run(text: String, env: Scope = Scope()): Data {

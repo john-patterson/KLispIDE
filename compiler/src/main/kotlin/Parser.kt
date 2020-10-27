@@ -29,6 +29,32 @@ class Parser() {
         return collection
     }
 
+    private fun parseSingleList(tokens: List<Token>): List<ExpressionPart> {
+        val list = mutableListOf<ExpressionPart>()
+        var pos = 1
+        while (pos < tokens.size - 1) {
+            val part = when (tokens[pos].type) {
+                TokenType.LEFT_BRACKET -> {
+                    val (end, ls) = parseListPart(tokens, pos)
+                    pos = end + 1
+                    ls
+                }
+                TokenType.RIGHT_PARENS -> {
+                    val (end, expr) = parseExprPart(tokens, pos)
+                    pos = end + 1
+                    expr
+                }
+                else -> {
+                    val p = parseSimplePart(tokens[pos])
+                    pos += 1
+                    p
+                }
+            }
+            list.add(part)
+        }
+        return list
+    }
+
     fun parseSingleExpression(tokens: List<Token>): Expression {
         if (tokens.isEmpty()) {
             throw ParsingException("Expected start of expression, but got nothing.")
@@ -41,19 +67,23 @@ class Parser() {
             val (end, expr) = parseExprPart(tokens, 1)
             i = end + 1
             expr
-        } else {
+        }  else {
             assertTokenTypeIsOneOf(tokens[1],
                 TokenType.IDENTIFIER,
                 TokenType.LET,
                 TokenType.IF,
                 TokenType.FUN
             )
-            parsePart(tokens[1])
+            parseSimplePart(tokens[1])
         }
 
         while (i < (tokens.size - 1)) {
             if (tokens[i].type == TokenType.LEFT_PARENS) {
                 val (end, expr) = parseExprPart(tokens, i)
+                tail.add(expr)
+                i = end + 1
+            } else if (tokens[i].type == TokenType.LEFT_BRACKET) {
+                val (end, expr) = parseListPart(tokens, i)
                 tail.add(expr)
                 i = end + 1
             } else {
@@ -62,7 +92,7 @@ class Parser() {
                     TokenType.NUMERIC,
                     TokenType.BOOLEAN,
                     TokenType.STRING)
-                tail.add(parsePart(tokens[i]))
+                tail.add(parseSimplePart(tokens[i]))
                 i +=1
             }
         }
@@ -91,10 +121,9 @@ class Parser() {
             } else if (tail.size == 3) { // This has all parts
                 // This is the case without args
                 val nameValid = tail[0].type == ExpressionPartType.SYMBOL
-                val argsValid = tail[1].type == ExpressionPartType.EXPRESSION
-                        && tail[1].expression != null
-                        && tail[1].expression!!.head.type == ExpressionPartType.SYMBOL
-                        && tail[1].expression!!.tail.all { it.type == ExpressionPartType.SYMBOL }
+                val argsValid = tail[1].type == ExpressionPartType.LIST
+                        && tail[1].list != null
+                        && tail[1].list!!.unrealizedItems.all { it.type == ExpressionPartType.SYMBOL }
 
                 if (!nameValid) {
                     throw ParsingException("Encountered function without symbol as name: $tail")
@@ -110,14 +139,20 @@ class Parser() {
     }
 
     private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
-        val end = findExpressionEnd(tokens, start)
-        val expr =
-            ExpressionPart(ExpressionPartType.EXPRESSION)
+        val end = findMatchingEnd(tokens, start, TokenType.LEFT_PARENS, TokenType.RIGHT_PARENS)
+        val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
         expr.expression = parseSingleExpression(tokens.subList(start, end + 1))
         return Pair(end, expr)
     }
 
-    private fun parsePart(token: Token): ExpressionPart {
+    private fun parseListPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
+        val end = findMatchingEnd(tokens, start, TokenType.LEFT_BRACKET, TokenType.RIGHT_BRACKET)
+        val list = ExpressionPart(ExpressionPartType.LIST)
+        list.list = KList(parseSingleList(tokens.subList(start, end + 1)))
+        return Pair(end, list)
+    }
+
+    private fun parseSimplePart(token: Token): ExpressionPart {
         return when (token.type) {
             TokenType.NUMERIC -> {
                 val part =
@@ -165,13 +200,13 @@ class Parser() {
         }
     }
 
-    private fun findExpressionEnd(tokens: List<Token>, start: Int): Int {
+    private fun findMatchingEnd(tokens: List<Token>, start: Int, startType: TokenType, endType: TokenType): Int {
         var balance = 1
         var pos = start + 1
         while (pos < tokens.size && balance != 0) {
-            if (tokens[pos].type == TokenType.LEFT_PARENS) {
+            if (tokens[pos].type == startType) {
                 balance += 1
-            } else if (tokens[pos].type == TokenType.RIGHT_PARENS) {
+            } else if (tokens[pos].type == endType) {
                 balance -= 1
             }
             pos += 1

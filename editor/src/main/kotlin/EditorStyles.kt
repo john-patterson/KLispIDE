@@ -11,6 +11,8 @@ class EditorStyles : Stylesheet() {
         val command by cssclass()
         val class_right_parens by cssclass()
         val class_left_parens by cssclass()
+        val class_right_bracket by cssclass()
+        val class_left_bracket by cssclass()
         val class_numeric by cssclass()
         val class_string by cssclass()
         val class_boolean by cssclass()
@@ -33,6 +35,14 @@ class EditorStyles : Stylesheet() {
         }
         class_left_parens {
             fill = Color.DARKSALMON
+            fontWeight = FontWeight.BOLD
+        }
+        class_right_bracket {
+            fill = Color.OLIVEDRAB
+            fontWeight = FontWeight.BOLD
+        }
+        class_left_bracket {
+            fill = Color.OLIVEDRAB
             fontWeight = FontWeight.BOLD
         }
         class_numeric {

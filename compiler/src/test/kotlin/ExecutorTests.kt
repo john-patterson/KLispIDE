@@ -7,11 +7,131 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.math.exp
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExecutorTests {
     @Nested
     inner class BuiltinTests {
+        @Test
+        fun `car returns the head of a list`() {
+            val e = Executor()
+            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val expr = Expression(
+                symbolPart("car"),
+                listOf(listPart(list)))
+            val result = e.execute(expr)
+            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(1f, result.numericValue)
+        }
+
+        @Test
+        fun `car on an empty list fails`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val expr = Expression(
+                symbolPart("car"),
+                listOf(listPart(list)))
+
+            assertThrows(RuntimeException::class.java) {
+                e.execute(expr)
+            }
+        }
+
+        @Test
+        fun `cdr returns the tail of a list`() {
+            val e = Executor()
+            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val expr = Expression(
+                symbolPart("cdr"),
+                listOf(listPart(list)))
+            val result = e.execute(expr)
+            assertEquals(DataType.LIST, result.type)
+            assertEquals(2f, result.listValue!!.realizedData[0].numericValue)
+        }
+
+        @Test
+        fun `cdr on an empty list fails`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val expr = Expression(
+                symbolPart("cdr"),
+                listOf(listPart(list)))
+
+            assertThrows(RuntimeException::class.java) {
+                e.execute(expr)
+            }
+        }
+
+        @Test
+        fun `cons adds items to list`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val innerExpr = Expression(symbolPart("cons"),
+                listOf(listPart(list), numericPart(1f)))
+            val expr = Expression(
+                symbolPart("cons"),
+                listOf(expressionPart(innerExpr), numericPart(2f)))
+            val result = e.execute(expr)
+            assertEquals(DataType.LIST, result.type)
+            assertEquals(2, result.listValue!!.realizedData.size)
+            assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
+            assertEquals(2f, result.listValue!!.realizedData[1].numericValue)
+        }
+
+        @Test
+        fun `logic functions work`() {
+            fun testLogicFunction(func: String, expected: Boolean, vararg args: Boolean) {
+                val e = Executor()
+                val expr = Expression(symbolPart(func), args.map { booleanPart(it) })
+                val result = e.execute(expr)
+                assertEquals(expected, result.truthyValue)
+            }
+
+            testLogicFunction("and", true, true, true, true)
+            testLogicFunction("and", false, true, true, false)
+            testLogicFunction("and", false, true, false, true)
+            testLogicFunction("and", false, false, false, false)
+            testLogicFunction("or", true, true, true)
+            testLogicFunction("or", true, true, false)
+            testLogicFunction("or", true, false, true)
+            testLogicFunction("or", false, false, false)
+            testLogicFunction("not", true, false)
+            testLogicFunction("not", false, true)
+        }
+
+        @Test
+        fun `equality functions work`() {
+            fun testEqualityFunction(areEqual: Boolean, vararg parts: ExpressionPart) {
+                val e = Executor()
+
+                val equalExpr = Expression(symbolPart("eq"), parts.asList())
+                val equalResult = e.execute(equalExpr).truthyValue
+                val notEqualExpr = Expression(symbolPart("neq"), parts.asList())
+                val notEqualResult = e.execute(notEqualExpr).truthyValue
+                assertEquals(areEqual, equalResult)
+                assertNotEquals(areEqual, notEqualResult)
+            }
+
+            testEqualityFunction(true, numericPart(1f), numericPart(1f))
+            testEqualityFunction(false, numericPart(1f), stringPart("1"))
+            testEqualityFunction(false, numericPart(1f), numericPart(2f))
+            testEqualityFunction(false, stringPart("1"), stringPart("2"))
+            testEqualityFunction(true, stringPart("1"), stringPart("1"))
+            testEqualityFunction(true, booleanPart(true), booleanPart(true))
+            testEqualityFunction(false, booleanPart(true), booleanPart(false))
+
+            val list1 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
+            val list2 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
+            val list3 = listPart(KList(listOf(numericPart(1f))))
+            val emptylist = listPart(KList(emptyList()))
+            testEqualityFunction(true, list1, list1)
+            testEqualityFunction(true, list1, list2)
+            testEqualityFunction(false, list1, list3)
+            testEqualityFunction(false, emptylist, list3)
+            testEqualityFunction(true, emptylist, emptylist)
+        }
+
         @Test
         fun `builtin functions work with simple types`() {
             assertEquals(400f, testBuiltin("*", 10f, 20f, 2f).numericValue)
@@ -114,6 +234,59 @@ class ExecutorTests {
     }
 
     @Nested
+    inner class SimpleDataTests {
+        private val e = Executor()
+
+        @Test
+        fun `can return number`() {
+            val scope = Scope()
+            defineConstantFunction(numericPart(1f), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(1f, result.numericValue)
+        }
+
+        @Test
+        fun `can return string`() {
+            val scope = Scope()
+            defineConstantFunction(stringPart("hey"), scope)
+            val result = callConstantFunction(scope)
+            assertEquals("hey", result.stringValue)
+        }
+
+        @Test
+        fun `can return boolean`() {
+            val scope = Scope()
+            defineConstantFunction(booleanPart(true), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(true, result.truthyValue)
+        }
+
+        @Test
+        fun `can return list`() {
+            val scope = Scope()
+            val klist = KList(listOf(stringPart("a"), numericPart(1f)))
+            defineConstantFunction(listPart(klist), scope)
+            val result = callConstantFunction(scope)
+            assertEquals(2, result.listValue!!.realizedData.size)
+            assertEquals("a", result.listValue!!.realizedData[0].stringValue)
+            assertEquals(1f, result.listValue!!.realizedData[1].numericValue)
+        }
+
+        private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {
+            val definition = Expression(keywordPart(KeywordType.FUN), listOf(
+                symbolPart("foo"),
+                returnValue
+            ))
+            e.execute(definition, scope)
+        }
+
+        private fun callConstantFunction(scope: Scope): Data {
+            val functionCall = Expression(symbolPart("foo"), emptyList())
+            return e.execute(functionCall, scope)
+        }
+    }
+
+    @Nested
     inner class KeywordTests {
         @Nested
         inner class IfExpressionTests {
@@ -207,12 +380,12 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = expressionPart(
-                Expression(
-                    symbolPart("a"),
-                    listOf(symbolPart("b"), symbolPart("c"))
+            private val params = listPart(
+                    KList(
+                        listOf(symbolPart("a"), symbolPart("b"), symbolPart("c"))
+                    )
                 )
-            )
+
             private val bodyPart = expressionPart(formIfExpr(symbolPart("a"), symbolPart("b"), symbolPart("c")))
             private val expr = Expression(
                 keywordPart(KeywordType.FUN),

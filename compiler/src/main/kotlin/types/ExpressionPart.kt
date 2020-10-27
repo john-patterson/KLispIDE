@@ -7,6 +7,7 @@ class ExpressionPart(val type: ExpressionPartType) {
     var innerText: String? = null
     var keywordType: KeywordType? = null
     var expression: Expression? = null
+    var list: KList? = null
 
     override fun toString(): String = when(type) {
         ExpressionPartType.NUMBER -> value.toString()
@@ -15,6 +16,8 @@ class ExpressionPart(val type: ExpressionPartType) {
         ExpressionPartType.KEYWORD -> keywordType.toString()
         ExpressionPartType.STRING -> "\"$innerText\""
         ExpressionPartType.EXPRESSION -> expression.toString()
+        ExpressionPartType.LIST -> list.toString()
+
     }
 }
 
@@ -31,6 +34,7 @@ enum class ExpressionPartType {
     BOOLEAN,
     EXPRESSION,
     KEYWORD,
+    LIST,
 }
 
 fun keywordPart(type: KeywordType): ExpressionPart {
@@ -61,5 +65,10 @@ fun expressionPart(expr: Expression): ExpressionPart {
 fun stringPart(s: String): ExpressionPart {
     val p = ExpressionPart(ExpressionPartType.STRING)
     p.innerText = s
+    return p
+}
+fun listPart(list: KList): ExpressionPart {
+    val p = ExpressionPart(ExpressionPartType.LIST)
+    p.list = list
     return p
 }

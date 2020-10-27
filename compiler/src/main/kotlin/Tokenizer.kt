@@ -4,6 +4,7 @@ import com.statelesscoder.klisp.compiler.exceptions.ScanningException
 import com.statelesscoder.klisp.compiler.types.*
 
 class Tokenizer {
+    private val nonIdentifierCharacters = setOf('[', ']', '(', ')', '"')
     fun scan(source: String): List<Token> {
         var tokens = mutableListOf<Token>()
         var pos = 0
@@ -15,24 +16,20 @@ class Tokenizer {
                         pos += 1
                     }
                 }
+                source[pos] == '[' -> {
+                    tokens.add(leftBracketToken(pos))
+                    pos += 1
+                }
+                source[pos] == ']' -> {
+                    tokens.add(rightBracketToken(pos))
+                    pos += 1
+                }
                 source[pos] == '(' -> {
-                    tokens.add(
-                        Token(
-                            "(",
-                            TokenType.LEFT_PARENS,
-                            pos
-                        )
-                    )
+                    tokens.add(leftParensToken(pos))
                     pos += 1
                 }
                 source[pos] == ')' -> {
-                    tokens.add(
-                        Token(
-                            ")",
-                            TokenType.RIGHT_PARENS,
-                            pos
-                        )
-                    )
+                    tokens.add(rightParensToken(pos))
                     pos += 1
                 }
                 source[pos] == '"' -> {
@@ -50,21 +47,14 @@ class Tokenizer {
                     }
 
                     val s = source.substring(pos, endpos + 1)
-                    tokens.add(
-                        Token(
-                            s,
-                            TokenType.STRING,
-                            pos
-                        )
-                    )
+                    tokens.add(stringToken(s, pos))
                     pos = endpos + 1
                 }
                 else -> {
                     var endpos = pos + 1
                     while (endpos < source.length
                         && !source[endpos].isWhitespace()
-                        && source[endpos] != ')'
-                        && source[endpos] != '"') {
+                        && !nonIdentifierCharacters.contains(source[endpos])) {
                         endpos += 1
                     }
                     val part = source.substring(pos, endpos)
