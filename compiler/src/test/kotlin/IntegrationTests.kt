@@ -68,6 +68,29 @@ class IntegrationTests {
         assertEquals(false, resultDifferent.truthyValue)
     }
 
+    @Test
+    fun `recursive function`() {
+        val scope = Scope()
+        val bindingResult = run("(fun f (n) (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        assertEquals(DataType.FUNCTION, bindingResult.type)
+        val executionResult = run("(f 3)", scope)
+        assertEquals(6f, executionResult.numericValue)
+    }
+
+    @Test
+    fun `filter definable`() {
+        val scope = Scope()
+        val bindingResult = run("(fun filter (ls nls f) " +
+                "(if (eq ls []) " +
+                    "nls " +
+                    "(if (f (car ls)) " +
+                        "(filter (cdr ls) (cons nls (car ls)) f) " +
+                        "(filter (cdr ls) nls f))))", scope)
+        assertEquals(DataType.FUNCTION, bindingResult.type)
+        val executionResult = run("(filter [1 2 1 3] [] (fun foo (a) (eq 1 a)))", scope)
+        assertEquals(2, executionResult.listValue!!.realizedData.size)
+    }
+
     private fun run(text: String, env: Scope = Scope()): Data {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)
