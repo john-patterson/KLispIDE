@@ -6,7 +6,7 @@ import com.statelesscoder.klisp.compiler.types.ExpressionPart
 import com.statelesscoder.klisp.compiler.types.ExpressionPartType
 
 class Function(private val executor: Executor,
-               private val name: String,
+               val name: String,
                private val params: List<ExpressionPart>,
                private val body: ExpressionPart
 ) {

@@ -80,6 +80,59 @@ class ExecutorTests {
         }
 
         @Test
+        fun `logic functions work`() {
+            fun testLogicFunction(func: String, expected: Boolean, vararg args: Boolean) {
+                val e = Executor()
+                val expr = Expression(symbolPart(func), args.map { booleanPart(it) })
+                val result = e.execute(expr)
+                assertEquals(expected, result.truthyValue)
+            }
+
+            testLogicFunction("and", true, true, true, true)
+            testLogicFunction("and", false, true, true, false)
+            testLogicFunction("and", false, true, false, true)
+            testLogicFunction("and", false, false, false, false)
+            testLogicFunction("or", true, true, true)
+            testLogicFunction("or", true, true, false)
+            testLogicFunction("or", true, false, true)
+            testLogicFunction("or", false, false, false)
+            testLogicFunction("not", true, false)
+            testLogicFunction("not", false, true)
+        }
+
+        @Test
+        fun `equality functions work`() {
+            fun testEqualityFunction(areEqual: Boolean, vararg parts: ExpressionPart) {
+                val e = Executor()
+
+                val equalExpr = Expression(symbolPart("eq"), parts.asList())
+                val equalResult = e.execute(equalExpr).truthyValue
+                val notEqualExpr = Expression(symbolPart("neq"), parts.asList())
+                val notEqualResult = e.execute(notEqualExpr).truthyValue
+                assertEquals(areEqual, equalResult)
+                assertNotEquals(areEqual, notEqualResult)
+            }
+
+            testEqualityFunction(true, numericPart(1f), numericPart(1f))
+            testEqualityFunction(false, numericPart(1f), stringPart("1"))
+            testEqualityFunction(false, numericPart(1f), numericPart(2f))
+            testEqualityFunction(false, stringPart("1"), stringPart("2"))
+            testEqualityFunction(true, stringPart("1"), stringPart("1"))
+            testEqualityFunction(true, booleanPart(true), booleanPart(true))
+            testEqualityFunction(false, booleanPart(true), booleanPart(false))
+
+            val list1 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
+            val list2 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
+            val list3 = listPart(KList(listOf(numericPart(1f))))
+            val emptylist = listPart(KList(emptyList()))
+            testEqualityFunction(true, list1, list1)
+            testEqualityFunction(true, list1, list2)
+            testEqualityFunction(false, list1, list3)
+            testEqualityFunction(false, emptylist, list3)
+            testEqualityFunction(true, emptylist, emptylist)
+        }
+
+        @Test
         fun `builtin functions work with simple types`() {
             assertEquals(400f, testBuiltin("*", 10f, 20f, 2f).numericValue)
             assertEquals(32f, testBuiltin("+", 10f, 20f, 2f).numericValue)

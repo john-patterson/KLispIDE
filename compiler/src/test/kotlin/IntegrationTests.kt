@@ -49,6 +49,25 @@ class IntegrationTests {
         assertEquals(3f, result.numericValue)
     }
 
+    @Test
+    fun `function equality`() {
+        val scope = Scope()
+        run("(fun f (a b) (and a b))", scope)
+        run("(fun g (a b) (and a b))", scope)
+        val resultSameName = run("(eq f f)", scope)
+        val resultOtherName = run("(eq f g)", scope)
+        assertEquals(true, resultSameName.truthyValue)
+        assertEquals(false, resultOtherName.truthyValue)
+    }
+
+    @Test
+    fun `symbolic equality`() {
+        val resultSame = run("(let ((a 1) (b 1)) (eq a b))")
+        val resultDifferent = run("(let ((a 1) (b 4)) (eq a b))")
+        assertEquals(true, resultSame.truthyValue)
+        assertEquals(false, resultDifferent.truthyValue)
+    }
+
     private fun run(text: String, env: Scope = Scope()): Data {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)

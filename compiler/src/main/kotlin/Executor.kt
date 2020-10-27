@@ -43,8 +43,15 @@ class Executor {
         return headResult.functionValue!!.run(argsData, env)
     }
 
-    private val builtinFunctions: Set<String> = setOf("+", "-", "/", "*",
-        "print", "car", "cdr", "cons")
+    private val numericBuiltins = setOf("+", "-", "/", "*")
+    private val listBuiltins = setOf("car", "cdr", "cons")
+    private val equalityBuiltins = setOf("eq", "neq")
+    private val logicBuiltins = setOf("and", "or", "not")
+    private val builtinFunctions: Set<String> = numericBuiltins
+        .plus(listBuiltins)
+        .plus(equalityBuiltins)
+        .plus(logicBuiltins)
+        .plusElement("print")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
         val functionName = expr.head.name?.toLowerCase()
@@ -59,6 +66,23 @@ class Executor {
             return createData(s)
         }
 
+        if (listBuiltins.contains(functionName)) {
+            return handleListBuiltIn(functionName!!, expr, args, scope)
+        }
+
+        if (logicBuiltins.contains(functionName)) {
+            return handleLogicBuiltIn(functionName!!, args)
+        }
+
+        if (equalityBuiltins.contains(functionName)) {
+            return handleEqualityBuiltIn(functionName!!, args)
+        }
+
+        return handleNumericBuiltIn(functionName!!, args)
+
+    }
+
+    private fun handleListBuiltIn(functionName: String, expr: Expression, args: List<Data>, scope: Scope): Data {
         if (functionName == "car") {
             if (args.size != 1) {
                 throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
@@ -94,6 +118,39 @@ class Executor {
             return createData(newList)
         }
 
+        throw RuntimeException("Operation $functionName not recognized.")
+    }
+
+    private fun handleLogicBuiltIn(functionName: String, args: List<Data>): Data {
+        if (!args.all { it.truthyValue != null }) {
+            throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
+        }
+        val argsAsBools = args.map { it.truthyValue!! }
+        return createData(when (functionName) {
+            "and" -> argsAsBools.reduce { acc, part -> acc && part }
+            "or" -> argsAsBools.reduce { acc, part -> acc || part }
+            "not" -> {
+                if (args.size != 1) {
+                    throw RuntimeException("NOT only accepts one argument.")
+                }
+                !args[0].truthyValue!!
+            }
+            else -> throw RuntimeException("$functionName is not a built-in function.")
+        })
+    }
+
+    private fun handleEqualityBuiltIn(functionName: String, args: List<Data>): Data {
+        if (args.size != 2) {
+            throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
+        }
+        return createData(when (functionName) {
+            "eq" -> args[0] == args[1]
+            "neq" -> args[0] != args[1]
+            else -> throw RuntimeException("$functionName is not a built-in function.")
+        })
+    }
+
+    private fun handleNumericBuiltIn(functionName: String, args: List<Data>): Data {
         if (!args.all { it.numericValue != null }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
