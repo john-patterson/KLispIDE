@@ -43,7 +43,8 @@ class Executor {
         return headResult.functionValue!!.run(argsData, env)
     }
 
-    private val builtinFunctions: Set<String> = setOf("+", "-", "/", "*", "print")
+    private val builtinFunctions: Set<String> = setOf("+", "-", "/", "*",
+        "print", "car", "cdr", "cons")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
         val functionName = expr.head.name?.toLowerCase()
@@ -56,6 +57,41 @@ class Executor {
             val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
             print(s)
             return createData(s)
+        }
+
+        if (functionName == "car") {
+            if (args.size != 1) {
+                throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
+            }
+
+            args[0].listValue!!.realize(this, scope)
+            if (args[0].listValue!!.realizedData.isEmpty()) {
+                throw RuntimeException("CAR cannot be used on the empty list.")
+            }
+            return args[0].listValue!!.realizedData[0]
+        } else if (functionName == "cdr") {
+            if (args.size != 1) {
+                throw RuntimeException("CDR function expects 1 and only 1 list to be passed.")
+            }
+
+            if (args[0].listValue!!.unrealizedItems.isEmpty()) {
+                throw RuntimeException("CDR cannot be used on the empty list.")
+            }
+
+            val newList = KList(args[0].listValue!!.unrealizedItems.drop(1))
+            newList.realize(this, scope)
+            return createData(newList)
+        } else if (functionName == "cons") {
+            if (args.size != 2) {
+                throw RuntimeException("CONS function expects 1 list and 1 data object.")
+            } else if (args[0].type != DataType.LIST) {
+                throw RuntimeException("CONS function expects list as first argument.")
+            }
+
+            val newListUnrealized = args[0].listValue!!.unrealizedItems + listOf(expr.tail[1])
+            val newList = KList(newListUnrealized)
+            newList.realize(this, scope) // TODO: This is double-work with line 1 of this function
+            return createData(newList)
         }
 
         if (!args.all { it.numericValue != null }) {

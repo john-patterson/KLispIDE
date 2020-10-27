@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.math.exp
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExecutorTests {
@@ -14,12 +15,68 @@ class ExecutorTests {
     inner class BuiltinTests {
         @Test
         fun `car returns the head of a list`() {
+            val e = Executor()
+            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val expr = Expression(
+                symbolPart("car"),
+                listOf(listPart(list)))
+            val result = e.execute(expr)
+            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(1f, result.numericValue)
+        }
 
+        @Test
+        fun `car on an empty list fails`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val expr = Expression(
+                symbolPart("car"),
+                listOf(listPart(list)))
+
+            assertThrows(RuntimeException::class.java) {
+                e.execute(expr)
+            }
         }
 
         @Test
         fun `cdr returns the tail of a list`() {
+            val e = Executor()
+            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val expr = Expression(
+                symbolPart("cdr"),
+                listOf(listPart(list)))
+            val result = e.execute(expr)
+            assertEquals(DataType.LIST, result.type)
+            assertEquals(2f, result.listValue!!.realizedData[0].numericValue)
+        }
 
+        @Test
+        fun `cdr on an empty list fails`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val expr = Expression(
+                symbolPart("cdr"),
+                listOf(listPart(list)))
+
+            assertThrows(RuntimeException::class.java) {
+                e.execute(expr)
+            }
+        }
+
+        @Test
+        fun `cons adds items to list`() {
+            val e = Executor()
+            val list = KList(emptyList())
+            val innerExpr = Expression(symbolPart("cons"),
+                listOf(listPart(list), numericPart(1f)))
+            val expr = Expression(
+                symbolPart("cons"),
+                listOf(expressionPart(innerExpr), numericPart(2f)))
+            val result = e.execute(expr)
+            assertEquals(DataType.LIST, result.type)
+            assertEquals(2, result.listValue!!.realizedData.size)
+            assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
+            assertEquals(2f, result.listValue!!.realizedData[1].numericValue)
         }
 
         @Test

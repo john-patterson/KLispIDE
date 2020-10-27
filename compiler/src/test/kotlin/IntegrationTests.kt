@@ -32,6 +32,23 @@ class IntegrationTests {
         assertEquals(100f, executionResult.numericValue)
     }
 
+    @Test
+    fun `cons builds up a list`() {
+        val result = run("(cons (cons (cons [] 1f) true) \"okay\")")
+        assertEquals(DataType.LIST, result.type)
+        assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
+        assertEquals(true, result.listValue!!.realizedData[1].truthyValue)
+        assertEquals("okay", result.listValue!!.realizedData[2].stringValue)
+        assertEquals("[1.0 true \"okay\"]", result.listValue.toString())
+    }
+
+    @Test
+    fun `can get third item of a list`() {
+        val result = run("(car (cdr (cdr [1f 2f 3f 4f])))")
+        assertEquals(DataType.NUMBER, result.type)
+        assertEquals(3f, result.numericValue)
+    }
+
     private fun run(text: String, env: Scope = Scope()): Data {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)
