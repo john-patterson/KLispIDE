@@ -91,6 +91,15 @@ class IntegrationTests {
         assertEquals(2, executionResult.listValue!!.realizedData.size)
     }
 
+    @Test
+    fun `constant functions`() {
+        val scope = Scope()
+        run("(fun f1 2)", scope)
+        run("(fun f2 [] 3)", scope)
+        val result = run("(+ (f1) (f2))", scope)
+        assertEquals(5f, result.numericValue)
+    }
+
     private fun run(text: String, env: Scope = Scope()): Data {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)
