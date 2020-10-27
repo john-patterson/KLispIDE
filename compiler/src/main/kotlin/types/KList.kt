@@ -15,10 +15,11 @@ data class KList(val unrealizedItems: List<ExpressionPart>) {
     }
 
     override fun toString(): String {
-        if (realizedData.size != unrealizedItems.size) {
-            throw RuntimeException("List $this is not realized, cannot be printed.")
-        }
-        val itemString = realizedData.joinToString(separator = " ") { it.toString() }
+        val itemString = (if (realizedData.size != unrealizedItems.size) {
+            unrealizedItems
+        } else {
+            realizedData
+        }).joinToString(separator = " ") { it.toString() }
         return "[$itemString]"
     }
 }

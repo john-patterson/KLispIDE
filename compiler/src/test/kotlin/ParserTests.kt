@@ -260,8 +260,8 @@ class ParserTests {
             val result = getParseTree("(fun id [x] x)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("x", expr.head)
+            assertIsList({ls ->
+                assertIsSymbol("x", ls.unrealizedItems[0])
             }, result.tail[1])
             assertIsSymbol("x", result.tail[2])
         }
@@ -296,8 +296,9 @@ class ParserTests {
             val result = getParseTree("(fun id [] 3)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsNumber(3f, result.tail[1])
-            assertIsNumber(3f, result.tail[1])
+            assertIsList({ assertEquals(emptyList<ExpressionPart>(), it.unrealizedItems) },
+                result.tail[1])
+            assertIsNumber(3f, result.tail[2])
         }
 
         @Test
@@ -327,8 +328,8 @@ class ParserTests {
             val result = getParseTree("(fun foo [g] (g 1))")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("g", expr.head)
+            assertIsList({ls ->
+                assertIsSymbol("g", ls.unrealizedItems[0])
             }, result.tail[1])
             assertIsExpression({expr ->
                 assertIsSymbol("g", expr.head)
@@ -419,16 +420,16 @@ class ParserTests {
 
         @Test
         fun `parse multiple nested expressions`() {
-            val tokens = getTokenStream("(fun foo (a b) (+ a b 1))(foo 10 20)")
+            val tokens = getTokenStream("(fun foo [a b] (+ a b 1))(foo 10 20)")
             val parser = Parser()
             val result = parser.parse(tokens)
             assertEquals(ExpressionPartType.KEYWORD, result.first().head.type)
             assertEquals(KeywordType.FUN, result.first().head.keywordType)
             assertEquals(ExpressionPartType.SYMBOL, result.first().tail[0].type)
             assertEquals("foo", result.first().tail[0].name)
-            assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[1].type)
-            assertEquals("a", result.first().tail[1].expression!!.head.name)
-            assertEquals("b", result.first().tail[1].expression!!.tail[0].name)
+            assertEquals(ExpressionPartType.LIST, result.first().tail[1].type)
+            assertEquals("a", result.first().tail[1].list!!.unrealizedItems[0].name)
+            assertEquals("b", result.first().tail[1].list!!.unrealizedItems[1].name)
             assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[2].type)
             assertEquals("+", result.first().tail[2].expression!!.head.name)
             assertEquals("a", result.first().tail[2].expression!!.tail[0].name)

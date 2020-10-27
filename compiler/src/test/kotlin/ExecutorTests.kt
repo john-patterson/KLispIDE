@@ -380,12 +380,12 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = expressionPart(
-                Expression(
-                    symbolPart("a"),
-                    listOf(symbolPart("b"), symbolPart("c"))
+            private val params = listPart(
+                    KList(
+                        listOf(symbolPart("a"), symbolPart("b"), symbolPart("c"))
+                    )
                 )
-            )
+
             private val bodyPart = expressionPart(formIfExpr(symbolPart("a"), symbolPart("b"), symbolPart("c")))
             private val expr = Expression(
                 keywordPart(KeywordType.FUN),
