@@ -29,7 +29,7 @@ class Parser() {
         return collection
     }
 
-    private fun parseSingleList(tokens: List<Token>): KList {
+    private fun parseSingleList(tokens: List<Token>): List<ExpressionPart> {
         val list = mutableListOf<ExpressionPart>()
         var pos = 1
         while (pos < tokens.size - 1) {
@@ -52,7 +52,7 @@ class Parser() {
             }
             list.add(part)
         }
-        return KList(list)
+        return list
     }
 
     fun parseSingleExpression(tokens: List<Token>): Expression {
@@ -149,7 +149,7 @@ class Parser() {
     private fun parseListPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findMatchingEnd(tokens, start, TokenType.LEFT_BRACKET, TokenType.RIGHT_BRACKET)
         val list = ExpressionPart(ExpressionPartType.LIST)
-        list.list = parseSingleList(tokens.subList(start, end + 1))
+        list.list = KList(parseSingleList(tokens.subList(start, end + 1)))
         return Pair(end, list)
     }
 

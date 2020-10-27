@@ -134,8 +134,10 @@ class Executor {
             ExpressionPartType.KEYWORD ->
                 throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
             ExpressionPartType.EXPRESSION -> execute(arg.expression!!, env)
-            ExpressionPartType.LIST ->
-                throw RuntimeException("Lists are not supported yet.")
+            ExpressionPartType.LIST -> {
+                arg.list!!.realize(this, env)
+                return createData(arg.list!!)
+            }
         }
     }
 

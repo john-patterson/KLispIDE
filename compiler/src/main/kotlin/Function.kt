@@ -21,12 +21,14 @@ class Function(private val executor: Executor,
         }
 
         return when (body.type) {
-            ExpressionPartType.BOOLEAN, ExpressionPartType.NUMBER, ExpressionPartType.SYMBOL, ExpressionPartType.STRING ->
+            ExpressionPartType.BOOLEAN,
+            ExpressionPartType.NUMBER,
+            ExpressionPartType.SYMBOL,
+            ExpressionPartType.STRING,
+            ExpressionPartType.LIST ->
                 executor.realizePart(body, boundScope)
             ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
                 executor.execute(body.expression!!, boundScope)
-            ExpressionPartType.LIST ->
-                throw RuntimeException("Lists are not supported yet.")
         }
     }
 

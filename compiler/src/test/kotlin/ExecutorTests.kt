@@ -157,9 +157,9 @@ class ExecutorTests {
             val klist = KList(listOf(stringPart("a"), numericPart(1f)))
             defineConstantFunction(listPart(klist), scope)
             val result = callConstantFunction(scope)
-            assertEquals(2, result.listValue!!.items.size)
-            assertEquals("a", result.listValue!!.items[0].innerText)
-            assertEquals(1f, result.listValue!!.items[1].value)
+            assertEquals(2, result.listValue!!.realizedData.size)
+            assertEquals("a", result.listValue!!.realizedData[0].stringValue)
+            assertEquals(1f, result.listValue!!.realizedData[1].numericValue)
         }
 
         private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {

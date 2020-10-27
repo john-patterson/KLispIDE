@@ -340,7 +340,7 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(0, got.items.size)
+                assertEquals(0, got.unrealizedItems.size)
             }, expr.tail.first())
         }
 
@@ -354,8 +354,8 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(1, got.items.size)
-                assertIsNumber(1f, got.items.first())
+                assertEquals(1, got.unrealizedItems.size)
+                assertIsNumber(1f, got.unrealizedItems.first())
             }, expr.tail.first())
         }
 
@@ -369,9 +369,9 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(2, got.items.size)
-                assertIsNumber(1f, got.items.first())
-                assertIsSymbol("b", got.items.last())
+                assertEquals(2, got.unrealizedItems.size)
+                assertIsNumber(1f, got.unrealizedItems.first())
+                assertIsSymbol("b", got.unrealizedItems.last())
             }, expr.tail.first())
         }
     }
