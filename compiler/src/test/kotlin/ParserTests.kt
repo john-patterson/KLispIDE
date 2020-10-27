@@ -257,7 +257,7 @@ class ParserTests {
     inner class FunExpression {
         @Test
         fun `parses identity function`() {
-            val result = getParseTree("(fun id (x) x)")
+            val result = getParseTree("(fun id [x] x)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
             assertIsExpression({expr ->
@@ -279,8 +279,8 @@ class ParserTests {
         @Test
         fun `function with strange amounts of parts not allowed`() {
             assertThrows(ParsingException::class.java) { getParseTree("(fun)") }
-            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3)") }
-            assertThrows(ParsingException::class.java) { getParseTree("(fun id (a) 3 3 3)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id [a] 3 3)") }
+            assertThrows(ParsingException::class.java) { getParseTree("(fun id [a] 3 3 3)") }
         }
 
         @Test
@@ -292,13 +292,22 @@ class ParserTests {
         }
 
         @Test
+        fun `function with empty args section allowed`() {
+            val result = getParseTree("(fun id [] 3)")
+            assertIsKeyword(KeywordType.FUN, result.head)
+            assertIsSymbol("id", result.tail[0])
+            assertIsNumber(3f, result.tail[1])
+            assertIsNumber(3f, result.tail[1])
+        }
+
+        @Test
         fun `function with two arg`() {
-            val result = getParseTree("(fun foo (a b) a)")
+            val result = getParseTree("(fun foo [a b] a)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
-            assertIsExpression({expr ->
-                assertIsSymbol("a", expr.head)
-                assertIsSymbol("b", expr.tail[0])
+            assertIsList({list ->
+                assertIsSymbol("a", list.unrealizedItems[0])
+                assertIsSymbol("b", list.unrealizedItems[1])
             }, result.tail[1])
             assertIsSymbol("a", result.tail[2])
         }
@@ -315,7 +324,7 @@ class ParserTests {
 
         @Test
         fun `allows expression return`() {
-            val result = getParseTree("(fun foo (g) (g 1))")
+            val result = getParseTree("(fun foo [g] (g 1))")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
             assertIsExpression({expr ->

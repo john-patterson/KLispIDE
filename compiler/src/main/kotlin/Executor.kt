@@ -174,11 +174,11 @@ class Executor {
             KeywordType.FUN -> {
                 val funName = expr.tail[0].name!!
                 val f = if (expr.tail.size == 3) {
-                    val params = listOf(expr.tail[1].expression!!.head) + expr.tail[1].expression!!.tail
+                    val params = expr.tail[1].list!!
                     val body = expr.tail[2]
                     Function(this, funName, params, body)
                 } else {
-                    Function(this, funName, emptyList(), expr.tail[1])
+                    Function(this, funName, KList(emptyList()), expr.tail[1])
                 }
 
                 val data = createData(f)

@@ -24,7 +24,7 @@ class IntegrationTests {
     @Test
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
-        val bindingResult = run("(fun foo (a b c) (if a b c))", scope)
+        val bindingResult = run("(fun foo [a b c] (if a b c))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.type)
         assertNotNull(scope.lookup("foo"))
 
@@ -52,8 +52,8 @@ class IntegrationTests {
     @Test
     fun `function equality`() {
         val scope = Scope()
-        run("(fun f (a b) (and a b))", scope)
-        run("(fun g (a b) (and a b))", scope)
+        run("(fun f [a b] (and a b))", scope)
+        run("(fun g [a b] (and a b))", scope)
         val resultSameName = run("(eq f f)", scope)
         val resultOtherName = run("(eq f g)", scope)
         assertEquals(true, resultSameName.truthyValue)
@@ -71,7 +71,7 @@ class IntegrationTests {
     @Test
     fun `recursive function`() {
         val scope = Scope()
-        val bindingResult = run("(fun f (n) (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        val bindingResult = run("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.type)
         val executionResult = run("(f 3)", scope)
         assertEquals(6f, executionResult.numericValue)
@@ -80,14 +80,14 @@ class IntegrationTests {
     @Test
     fun `filter definable`() {
         val scope = Scope()
-        val bindingResult = run("(fun filter (ls nls f) " +
+        val bindingResult = run("(fun filter [ls nls f] " +
                 "(if (eq ls []) " +
                     "nls " +
                     "(if (f (car ls)) " +
                         "(filter (cdr ls) (cons nls (car ls)) f) " +
                         "(filter (cdr ls) nls f))))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.type)
-        val executionResult = run("(filter [1 2 1 3] [] (fun foo (a) (eq 1 a)))", scope)
+        val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope)
         assertEquals(2, executionResult.listValue!!.realizedData.size)
     }
 

@@ -121,10 +121,9 @@ class Parser() {
             } else if (tail.size == 3) { // This has all parts
                 // This is the case without args
                 val nameValid = tail[0].type == ExpressionPartType.SYMBOL
-                val argsValid = tail[1].type == ExpressionPartType.EXPRESSION
-                        && tail[1].expression != null
-                        && tail[1].expression!!.head.type == ExpressionPartType.SYMBOL
-                        && tail[1].expression!!.tail.all { it.type == ExpressionPartType.SYMBOL }
+                val argsValid = tail[1].type == ExpressionPartType.LIST
+                        && tail[1].list != null
+                        && tail[1].list!!.unrealizedItems.all { it.type == ExpressionPartType.SYMBOL }
 
                 if (!nameValid) {
                     throw ParsingException("Encountered function without symbol as name: $tail")
