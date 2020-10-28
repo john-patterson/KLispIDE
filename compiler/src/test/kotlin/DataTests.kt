@@ -119,7 +119,7 @@ class DataTests {
                         listOf(symbolPart("a"), symbolPart("b"))
                     )
                 ))
-            assertEquals("(fun foo (a b) (+ a b))", f.toString())
+            assertEquals("(fun foo [a b] (+ a b))", f.toString())
         }
     }
 }

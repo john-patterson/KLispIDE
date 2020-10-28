@@ -39,6 +39,6 @@ class Function(private val executor: Executor,
     override fun toString(): String {
         val paramString = params.unrealizedItems.joinToString(separator = " ") { it.toString() }
         val bodyString = body.toString()
-        return "(fun $name ($paramString) $bodyString)"
+        return "(fun $name [$paramString] $bodyString)"
     }
 }
