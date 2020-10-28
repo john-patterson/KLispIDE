@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.math.nextUp
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParserTests {
@@ -42,7 +43,6 @@ class ParserTests {
                 identifierToken("fOo", 1),
                 rightParensToken(4)
             ))
-            assertEquals(ExpressionPartType.SYMBOL, result.head.type)
             assertIsSymbol("fOo", result.head)
             assertTrue(result.tail.isEmpty())
         }
@@ -395,11 +395,10 @@ class ParserTests {
             val tokens = getTokenStream("( f 1 2 )")
             val parser = Parser()
             val result = parser.parse(tokens)
-            assertEquals(ExpressionPartType.SYMBOL, result.first().head.type)
-            assertEquals(ExpressionPartType.NUMBER, result.first().tail[0].type)
-            assertEquals(1f, result.first().tail[0].value)
-            assertEquals(ExpressionPartType.NUMBER, result.first().tail[1].type)
-            assertEquals(2f, result.first().tail[1].value)
+            assertTrue(result.first().head is Symbol)
+            assertTrue(result.first().tail[0] is Data)
+            assertEquals(1f, (result.first().tail[0] as Data).numericValue)
+            assertEquals(2f, (result.first().tail[1] as Data).numericValue)
         }
 
         @Test
@@ -407,17 +406,13 @@ class ParserTests {
             val tokens = getTokenStream("  ( f 1 2 )        (g 3)")
             val parser = Parser()
             val result = parser.parse(tokens)
-            assertEquals(ExpressionPartType.SYMBOL, result.first().head.type)
-            assertEquals("f", result.first().head.symbol?.symbolName)
-            assertEquals(ExpressionPartType.NUMBER, result.first().tail[0].type)
-            assertEquals(1f, result.first().tail[0].value)
-            assertEquals(ExpressionPartType.NUMBER, result.first().tail[1].type)
-            assertEquals(2f, result.first().tail[1].value)
 
-            assertEquals(ExpressionPartType.SYMBOL, result[1].head.type)
-            assertEquals("g", result[1].head.symbol?.symbolName)
-            assertEquals(ExpressionPartType.NUMBER, result[1].tail[0].type)
-            assertEquals(3f, result[1].tail[0].value)
+            assertEquals(Symbol("f"), result.first().head)
+            assertEquals(Data(1f), result.first().tail[0])
+            assertEquals(Data(2f), result.first().tail[1])
+
+            assertEquals(Symbol("g"), result[1].head)
+            assertEquals(Data(3f), result[1].tail[0])
         }
 
         @Test
@@ -425,24 +420,22 @@ class ParserTests {
             val tokens = getTokenStream("(fun foo [a b] (+ a b 1))(foo 10 20)")
             val parser = Parser()
             val result = parser.parse(tokens)
-            assertEquals(ExpressionPartType.KEYWORD, result.first().head.type)
-            assertEquals(KeywordType.FUN, result.first().head.keywordType)
-            assertEquals(ExpressionPartType.SYMBOL, result.first().tail[0].type)
-            assertEquals("foo", result.first().tail[0].symbol?.symbolName)
-            assertEquals(ExpressionPartType.LIST, result.first().tail[1].type)
-            assertEquals("a", result.first().tail[1].list!!.unrealizedItems[0].symbol?.symbolName)
-            assertEquals("b", result.first().tail[1].list!!.unrealizedItems[1].symbol?.symbolName)
-            assertEquals(ExpressionPartType.EXPRESSION, result.first().tail[2].type)
-            assertEquals("+", result.first().tail[2].expression!!.head.symbol?.symbolName)
-            assertEquals("a", result.first().tail[2].expression!!.tail[0].symbol?.symbolName)
-            assertEquals("b", result.first().tail[2].expression!!.tail[1].symbol?.symbolName)
-            assertEquals(1f, result.first().tail[2].expression!!.tail[2].value)
+            assertEquals(Keyword(KeywordType.FUN), result.first().head)
+            assertEquals(Symbol("foo"), result.first().tail[0])
 
-            assertEquals(ExpressionPartType.SYMBOL, result[1].head.type)
-            assertEquals("foo", result[1].head.symbol?.symbolName)
-            assertEquals(ExpressionPartType.NUMBER, result[1].tail[0].type)
-            assertEquals(10f, result[1].tail[0].value)
-            assertEquals(20f, result[1].tail[1].value)
+            val paramList = result.first().tail[1] as KList
+            assertEquals(Symbol("a"), paramList.unrealizedItems[0])
+            assertEquals(Symbol("b"), paramList.unrealizedItems[1])
+
+            val functionBody = result.first().tail[2] as Expression
+            assertEquals(Symbol("+"), functionBody.head)
+            assertEquals(Symbol("a"), functionBody.tail[0])
+            assertEquals(Symbol("b"), functionBody.tail[1])
+            assertEquals(Data(1f), functionBody.tail[2])
+
+            assertEquals(Symbol("foo"), result[1].head)
+            assertEquals(Data(10f), result[1].tail[0])
+            assertEquals(Data(20f), result[1].tail[1])
         }
     }
 
@@ -459,86 +452,37 @@ class ParserTests {
     }
 
     fun assertIsExpression(expressionAssertion: (Expression) -> Unit, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.EXPRESSION, actual.type)
-        assertNull(actual.value)
-        assertNull(actual.truth)
-        assertNull(actual.symbol)
-        assertNotNull(actual.expression)
-        expressionAssertion(actual.expression!!) // Value verified by previous line
-        assertNull(actual.keywordType)
-        assertNull(actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Expression)
+        expressionAssertion(actual as Expression)
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.NUMBER, actual.type)
-        assertNotNull(actual.value)
-        assertEquals(expected, actual.value)
-        assertNull(actual.truth)
-        assertNull(actual.symbol)
-        assertNull(actual.expression)
-        assertNull(actual.keywordType)
-        assertNull(actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Data)
+        assertEquals(expected, (actual as Data).numericValue)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.BOOLEAN, actual.type)
-        assertNull(actual.value)
-        assertNotNull(actual.truth)
-        assertEquals(expected, actual.truth)
-        assertNull(actual.symbol)
-        assertNull(actual.expression)
-        assertNull(actual.keywordType)
-        assertNull(actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Data)
+        assertEquals(expected, (actual as Data).truthyValue)
     }
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.SYMBOL, actual.type)
-        assertNull(actual.value)
-        assertNull(actual.truth)
-        assertNotNull(actual.symbol)
-        assertEquals(expected, actual.symbol?.symbolName)
-        assertNull(actual.expression)
-        assertNull(actual.keywordType)
-        assertNull(actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Symbol)
+        assertEquals(expected, (actual as Symbol).symbolName)
     }
 
     fun assertIsKeyword(expected: KeywordType, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.KEYWORD, actual.type)
-        assertNull(actual.value)
-        assertNull(actual.truth)
-        assertNull(actual.symbol)
-        assertNull(actual.expression)
-        assertNotNull(actual.keywordType)
-        assertEquals(expected, actual.keywordType)
-        assertNull(actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Keyword)
+        assertEquals(expected, (actual as Keyword).kwdType)
     }
 
     fun assertIsString(expectedText: String, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.STRING, actual.type)
-        assertNull(actual.value)
-        assertNull(actual.truth)
-        assertNull(actual.symbol)
-        assertNull(actual.expression)
-        assertNull(actual.keywordType)
-        assertNotNull(actual.innerText)
-        assertEquals(expectedText, actual.innerText)
-        assertNull(actual.list)
+        assertTrue(actual is Data)
+        assertEquals(expectedText, (actual as Data).stringValue)
     }
 
     fun assertIsList(listAssertion: (KList) -> Unit, actual: ExpressionPart) {
-        assertEquals(ExpressionPartType.LIST, actual.type)
-        assertNull(actual.value)
-        assertNull(actual.truth)
-        assertNull(actual.symbol)
-        assertNull(actual.expression)
-        assertNull(actual.keywordType)
-        assertNull(actual.innerText)
-        assertNotNull(actual.list)
-        listAssertion(actual.list!!) // Value verified by previous line
+        assert(actual is KList)
+        listAssertion(actual as KList)
     }
 }

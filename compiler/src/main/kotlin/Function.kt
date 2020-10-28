@@ -8,7 +8,7 @@ class Function(private val executor: Executor,
                val name: Symbol,
                private val params: KList,
                private val body: ExpressionPart
-): Expression(ExpressionPart(name), listOf(ExpressionPart(params), body)) {
+): Expression(name, listOf(params, body)) {
     constructor(executor: Executor, name: String, params: List<ExpressionPart>, body: ExpressionPart)
         : this(executor, Symbol(name), KList(params), body)
 
@@ -19,19 +19,15 @@ class Function(private val executor: Executor,
 
         val boundScope = Scope(scope)
         for (i in args.indices) {
-            boundScope.add(params.unrealizedItems[i].symbol!!, args[i])
+            val symbolPart = params.unrealizedItems[i]
+            if (symbolPart is Symbol) {
+                boundScope.add(symbolPart, args[i])
+            } else {
+                throw RuntimeException("Encountered non-symbol in function parameter list $symbolPart.")
+            }
         }
 
-        return when (body.type) {
-            ExpressionPartType.BOOLEAN,
-            ExpressionPartType.NUMBER,
-            ExpressionPartType.SYMBOL,
-            ExpressionPartType.STRING,
-            ExpressionPartType.LIST ->
-                executor.realizePart(body, boundScope)
-            ExpressionPartType.EXPRESSION, ExpressionPartType.KEYWORD ->
-                executor.execute(body.expression!!, boundScope)
-        }
+        return executor.realizePart(body, boundScope)
     }
 
     override fun toString(): String {

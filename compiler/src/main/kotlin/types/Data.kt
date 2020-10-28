@@ -28,37 +28,37 @@ class Data : ExpressionPart {
     var functionValue: Function? = null
     var listValue: KList? = null
 
-    constructor(value: String) : super(value)
+    constructor(value: String) : super()
     {
         this.dataType = DataType.STRING
         this.stringValue = value
     }
 
-    constructor(value: Float) : super(value)
+    constructor(value: Float) : super()
     {
         this.dataType = DataType.NUMBER
         this.numericValue = value
     }
 
-    constructor(value: Boolean) : super(value)
+    constructor(value: Boolean) : super()
     {
         this.dataType = DataType.BOOLEAN
         this.truthyValue = value
     }
 
-    constructor(value: Function) : super(value)
+    constructor(value: Function) : super()
     {
         this.dataType = DataType.FUNCTION
         this.functionValue = value
     }
 
-    constructor(value: KList) : super(value)
+    constructor(value: KList) : super()
     {
         this.dataType = DataType.LIST
         this.listValue = value
     }
 
-    constructor(dataType: DataType) : super(dataTypeToExpressionPartType(dataType))
+    constructor(dataType: DataType) : super()
     {
         this.dataType = dataType
     }

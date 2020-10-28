@@ -6,6 +6,7 @@ import com.statelesscoder.klisp.compiler.expressions.FunctionDefinition
 import com.statelesscoder.klisp.compiler.expressions.IfExpression
 import com.statelesscoder.klisp.compiler.expressions.LetBinding
 import com.statelesscoder.klisp.compiler.types.*
+import java.security.Key
 
 fun runCode(code: String): List<ExecutionResult> {
     val tokenizer = Tokenizer()
@@ -31,9 +32,9 @@ fun runCode(code: String): List<ExecutionResult> {
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): Data {
-        if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.symbol?.symbolName?.toLowerCase())) {
+        if (expr.head is Symbol && builtinFunctions.contains(expr.head.symbolName.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
-        } else if (expr.head.type == ExpressionPartType.KEYWORD) {
+        } else if (expr.head is Keyword) {
             return handleKeyword(expr, env)
         }
 
@@ -58,32 +59,35 @@ class Executor {
         .plusElement("print")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
-        val functionName = expr.head.symbol?.symbolName?.toLowerCase()
+        if (expr.head is Symbol) {
+            val functionName = expr.head.symbolName.toLowerCase()
 
-        if (functionName == "print") {
-            if (!args.all { it.stringValue != null }) {
-                throw RuntimeException("Only strings are printable.")
+            if (functionName == "print") {
+                if (!args.all { it.stringValue != null }) {
+                    throw RuntimeException("Only strings are printable.")
+                }
+
+                val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
+                print(s)
+                return Data(s)
             }
 
-            val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
-            print(s)
-            return Data(s)
+            if (listBuiltins.contains(functionName)) {
+                return handleListBuiltIn(functionName, expr, args, scope)
+            }
+
+            if (logicBuiltins.contains(functionName)) {
+                return handleLogicBuiltIn(functionName, args)
+            }
+
+            if (equalityBuiltins.contains(functionName)) {
+                return handleEqualityBuiltIn(functionName, args)
+            }
+
+            return handleNumericBuiltIn(functionName, args)
+        } else {
+            throw RuntimeException("Expression $expr should start with a symbol.")
         }
-
-        if (listBuiltins.contains(functionName)) {
-            return handleListBuiltIn(functionName!!, expr, args, scope)
-        }
-
-        if (logicBuiltins.contains(functionName)) {
-            return handleLogicBuiltIn(functionName!!, args)
-        }
-
-        if (equalityBuiltins.contains(functionName)) {
-            return handleEqualityBuiltIn(functionName!!, args)
-        }
-
-        return handleNumericBuiltIn(functionName!!, args)
-
     }
 
     private fun handleListBuiltIn(functionName: String, expr: Expression, args: List<Data>, scope: Scope): Data {
@@ -178,18 +182,27 @@ class Executor {
     }
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
-        return when (arg.type) {
-            ExpressionPartType.STRING -> Data(arg.innerText!!)
-            ExpressionPartType.BOOLEAN -> Data(arg.truth!!)
-            ExpressionPartType.NUMBER -> Data(arg.value!!)
-            ExpressionPartType.SYMBOL -> handleSymbol(arg.symbol!!, env)
-            ExpressionPartType.KEYWORD ->
-                throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
-            ExpressionPartType.EXPRESSION -> execute(arg.expression!!, env)
-            ExpressionPartType.LIST -> {
-                arg.list!!.realize(this, env)
-                return Data(arg.list!!)
+        return when (arg) {
+            is Data -> when (arg.dataType) {
+                DataType.STRING -> arg
+                DataType.BOOLEAN -> arg
+                DataType.NUMBER -> arg
+                DataType.LIST -> {
+                    arg.listValue?.realize(this, env)
+                    return arg
+                }
+                DataType.FUNCTION -> {
+                    execute(arg.functionValue!!, env)
+                }
             }
+            is Symbol -> handleSymbol(arg, env)
+            is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
+            is Expression -> execute(arg, env)
+            is KList -> {
+                arg.realize(this, env)
+                Data(arg)
+            }
+            else -> throw RuntimeException("Part $arg not recognized.")
         }
     }
 
