@@ -25,7 +25,6 @@ fun runCode(code: String): List<ExecutionResult> {
     return results
 }
 
-
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): KLValue = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): KLValue {
@@ -40,7 +39,7 @@ class Executor {
         val argsData = RealizedList(argsResults.map { it.second })
 
         if (headResult is Function) {
-            return headResult.run(argsData, env)
+            return headResult.run(this, argsData, env)
         } else {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
         }

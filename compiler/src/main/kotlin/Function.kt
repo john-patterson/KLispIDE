@@ -5,15 +5,14 @@ import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 import com.statelesscoder.klisp.compiler.types.*
 
-class Function(private val executor: Executor,
-               val name: Symbol,
+class Function(val name: Symbol,
                private val params: List<Symbol>,
                private val body: ExpressionPart
 ) : KLValue() {
-    constructor(executor: Executor, name: String, params: List<Symbol>, body: ExpressionPart)
-        : this(executor, Symbol(name), params, body)
+    constructor(name: String, params: List<Symbol>, body: ExpressionPart)
+        : this(Symbol(name), params, body)
 
-    fun run(args: RealizedList, scope: Scope = Scope()): KLValue {
+    fun run(executor: Executor, args: RealizedList, scope: Scope = Scope()): KLValue {
         if (args.items.size != params.size) {
             throw RuntimeException("Function '$name' expects '${params.size}' arguments, but got '${args.items.size}'.")
         }
