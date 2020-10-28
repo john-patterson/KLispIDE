@@ -9,12 +9,59 @@ enum class DataType {
     LIST,
 }
 
-class Data(val dataType: DataType) {
+
+fun dataTypeToExpressionPartType(type: DataType): ExpressionPartType {
+    return when (type) {
+        DataType.BOOLEAN -> ExpressionPartType.BOOLEAN
+        DataType.FUNCTION -> ExpressionPartType.EXPRESSION
+        DataType.LIST -> ExpressionPartType.LIST
+        DataType.NUMBER -> ExpressionPartType.NUMBER
+        DataType.STRING -> ExpressionPartType.STRING
+    }
+}
+
+class Data : ExpressionPart {
+    val dataType: DataType
     var stringValue: String? = null
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
     var listValue: KList? = null
+
+    constructor(value: String) : super(value)
+    {
+        this.dataType = DataType.STRING
+        this.stringValue = value
+    }
+
+    constructor(value: Float) : super(value)
+    {
+        this.dataType = DataType.NUMBER
+        this.numericValue = value
+    }
+
+    constructor(value: Boolean) : super(value)
+    {
+        this.dataType = DataType.BOOLEAN
+        this.truthyValue = value
+    }
+
+    constructor(value: Function) : super(value)
+    {
+        this.dataType = DataType.FUNCTION
+        this.functionValue = value
+    }
+
+    constructor(value: KList) : super(value)
+    {
+        this.dataType = DataType.LIST
+        this.listValue = value
+    }
+
+    constructor(dataType: DataType) : super(dataTypeToExpressionPartType(dataType))
+    {
+        this.dataType = dataType
+    }
 
     override fun equals(other: Any?): Boolean {
         if (other as Data == null || other.dataType != dataType) {
