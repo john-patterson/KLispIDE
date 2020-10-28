@@ -107,7 +107,14 @@ class Parser() {
             ExpressionPartType.KEYWORD -> when (head.keywordType!!) {
                 KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
                 KeywordType.LET -> LetBinding(tail[0].expression!!, tail[1])
-                else -> Expression(head, tail)
+                KeywordType.FUN -> {
+                    val functionName = Symbol(tail[0].name!!)
+                    if (tail.size == 3) {
+                        FunctionDefinition(functionName, tail[1].list!!, tail[2])
+                    } else {
+                        FunctionDefinition(functionName, KList(), tail[1])
+                    }
+                }
             }
             else -> Expression(head, tail)
         }

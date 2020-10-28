@@ -5,6 +5,8 @@ import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 
 data class KList(val unrealizedItems: List<ExpressionPart>) {
+    constructor() : this(emptyList())
+
     var realizedData: List<Data> = emptyList()
         private set
 

@@ -288,7 +288,8 @@ class ParserTests {
             val result = getParseTree("(fun id 3)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsNumber(3f, result.tail[1])
+            assertIsList({ assertTrue(it.unrealizedItems.isEmpty()) }, result.tail[1])
+            assertIsNumber(3f, result.tail[2])
         }
 
         @Test
