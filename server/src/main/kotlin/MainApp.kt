@@ -1,7 +1,7 @@
 package com.statelesscoder.klisp.server
 
 import com.statelesscoder.klisp.compiler.*
-import com.statelesscoder.klisp.compiler.types.Expression
+import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.SimpleResult
 import com.statelesscoder.klisp.compiler.types.Token
 import io.javalin.Javalin
