@@ -1,12 +1,8 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
-import com.statelesscoder.klisp.compiler.expressions.Expression
-import com.statelesscoder.klisp.compiler.expressions.FunctionDefinition
-import com.statelesscoder.klisp.compiler.expressions.IfExpression
-import com.statelesscoder.klisp.compiler.expressions.LetBinding
+import com.statelesscoder.klisp.compiler.expressions.*
 import com.statelesscoder.klisp.compiler.types.*
-import java.security.Key
 
 fun runCode(code: String): List<ExecutionResult> {
     val tokenizer = Tokenizer()

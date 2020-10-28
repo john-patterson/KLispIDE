@@ -1,5 +1,6 @@
 package com.statelesscoder.klisp.compiler.types
 import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
 enum class DataType {
     STRING,

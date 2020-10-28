@@ -3,7 +3,6 @@ package com.statelesscoder.klisp.compiler.expressions
 import com.statelesscoder.klisp.compiler.Executor
 import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.types.Data
-import com.statelesscoder.klisp.compiler.types.ExpressionPart
 
 open class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>)
     : ExpressionPart() {

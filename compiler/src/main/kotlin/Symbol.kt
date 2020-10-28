@@ -1,6 +1,6 @@
 package com.statelesscoder.klisp.compiler
 
-import com.statelesscoder.klisp.compiler.types.ExpressionPart
+import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
 data class Symbol(val symbolName: String) : ExpressionPart() {
 
