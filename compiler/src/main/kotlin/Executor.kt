@@ -96,8 +96,8 @@ class Executor {
             }
 
             val functionArgs = args[0]
-            if (functionArgs.dataType == DataType.LIST && functionArgs.listValue!!.items.isNotEmpty()) {
-                return functionArgs.listValue!!.items[0]
+            if (functionArgs is RealizedList && functionArgs.items.isNotEmpty()) {
+                return functionArgs.items[0]
             } else {
                 throw RuntimeException("CAR does not support these args: $args")
             }
@@ -107,8 +107,8 @@ class Executor {
             }
 
             val functionArgs = args[0]
-            if (functionArgs.dataType == DataType.LIST && functionArgs.listValue!!.items.isNotEmpty()) {
-                return RealizedList(functionArgs.listValue!!.items.drop(1))
+            if (functionArgs is RealizedList && functionArgs.items.isNotEmpty()) {
+                return RealizedList(functionArgs.items.drop(1))
             } else {
                 throw RuntimeException("CAR does not support these args: $args")
             }
@@ -118,8 +118,8 @@ class Executor {
             }
             val list = args[0]
             val value = args[1]
-            if (list.dataType == DataType.LIST) {
-                return RealizedList(list.listValue!!.items + listOf(value))
+            if (list is RealizedList) {
+                return RealizedList(list.items + listOf(value))
             } else {
                 throw RuntimeException("CONS function expects list as first argument.")
             }
@@ -183,13 +183,8 @@ class Executor {
     fun realizePart(arg: ExpressionPart, env: Scope): KLValue {
         return when (arg) {
             is KLLiteralValue -> arg
-            is KLValue -> when (arg.dataType) {
-                DataType.LITERAL -> arg
-                DataType.LIST -> arg
-                DataType.FUNCTION -> {
-                    execute(arg.functionValue!!, env)
-                }
-            }
+            is RealizedList -> arg
+            is Function -> execute(arg, env)
             is Symbol -> handleSymbol(arg, env)
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
             is Expression -> execute(arg, env)

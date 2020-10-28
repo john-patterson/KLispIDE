@@ -1,4 +1,5 @@
 import com.statelesscoder.klisp.compiler.*
+import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -23,8 +24,7 @@ class IntegrationTests {
     @Test
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
-        val bindingResult = run<KLValue>("(fun foo [a b c] (if a b c))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.dataType)
+        run<KLValue>("(fun foo [a b c] (if a b c))", scope)
         assertNotNull(scope.lookup(Symbol("foo")))
 
         val executionResult = run<KLNumber>("(let ((switch false)) (foo switch 50 100))", scope)
@@ -49,8 +49,8 @@ class IntegrationTests {
     @Test
     fun `function equality`() {
         val scope = Scope()
-        run<KLValue>("(fun f [a b] (and a b))", scope)
-        run<KLValue>("(fun g [a b] (and a b))", scope)
+        run<Function>("(fun f [a b] (and a b))", scope)
+        run<Function>("(fun g [a b] (and a b))", scope)
         val resultSameName = run<KLBool>("(eq f f)", scope)
         val resultOtherName = run<KLBool>("(eq f g)", scope)
         assertEquals(true, resultSameName.truth)
@@ -68,8 +68,7 @@ class IntegrationTests {
     @Test
     fun `recursive function`() {
         val scope = Scope()
-        val bindingResult = run<KLValue>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.dataType)
+        run<Function>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
         val executionResult = run<KLNumber>("(f 3)", scope)
         assertEquals(6f, executionResult.value)
     }
@@ -77,13 +76,12 @@ class IntegrationTests {
     @Test
     fun `filter definable`() {
         val scope = Scope()
-        val bindingResult = run<KLValue>("(fun filter [ls nls f] " +
+        run<Function>("(fun filter [ls nls f] " +
                 "(if (eq ls []) " +
                     "nls " +
                     "(if (f (car ls)) " +
                         "(filter (cdr ls) (cons nls (car ls)) f) " +
                         "(filter (cdr ls) nls f))))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.dataType)
         val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope) as RealizedList
         assertEquals(2, executionResult.items.size)
     }

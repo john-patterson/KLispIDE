@@ -9,7 +9,7 @@ class Function(private val executor: Executor,
                val name: Symbol,
                private val params: List<Symbol>,
                private val body: ExpressionPart
-) : KLValue(DataType.FUNCTION) {
+) : KLValue() {
     constructor(executor: Executor, name: String, params: List<Symbol>, body: ExpressionPart)
         : this(executor, Symbol(name), params, body)
 
@@ -30,8 +30,6 @@ class Function(private val executor: Executor,
     override fun equals(other: Any?): Boolean {
         return if (other is Function) {
             this.name == other.name
-        } else if (other is KLValue && other.functionValue != null) {
-            this.name == other.functionValue?.name
         } else {
             false
         }

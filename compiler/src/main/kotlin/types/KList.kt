@@ -5,18 +5,12 @@ import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
 
-data class RealizedList(val items: List<KLValue>) : KLValue(DataType.LIST) {
+data class RealizedList(val items: List<KLValue>) : KLValue() {
     constructor() : this(emptyList())
-
-    init {
-        this.listValue = this
-    }
 
     override fun equals(other: Any?): Boolean {
         return if (other is RealizedList) {
             this.items == other.items
-        } else if (other is KLValue && other.dataType == DataType.LIST) {
-            this.items == other.listValue?.items
         } else {
             false
         }

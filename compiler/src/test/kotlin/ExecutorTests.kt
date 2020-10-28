@@ -45,7 +45,6 @@ class ExecutorTests {
                 Symbol("cdr"),
                 listOf(list))
             val result = e.execute(expr)
-            assertEquals(DataType.LIST, result.dataType)
             assertEquals(2f, ((result as RealizedList).items[0] as KLNumber).value)
         }
 
@@ -72,7 +71,6 @@ class ExecutorTests {
                 Symbol("cons"),
                 listOf(innerExpr, KLNumber(2f)))
             val result = e.execute(expr)
-            assertEquals(DataType.LIST, result.dataType)
             val resultAsList = result as RealizedList
             assertEquals(2, resultAsList.items.size)
             assertEquals(1f, (resultAsList.items[0] as KLNumber).value)
@@ -394,8 +392,7 @@ class ExecutorTests {
                 }
 
                 // This should side-effect the calling scope
-                val definitionResult = executor.execute(expr, scope)
-                assertEquals(DataType.FUNCTION, definitionResult.dataType)
+                executor.execute(expr, scope) is Function
                 assertNotNull(scope.lookup(Symbol("f")))
 
                 // Now the execution should pass
