@@ -8,14 +8,6 @@ import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 data class RealizedList(val items: List<KLValue>) : KLValue() {
     constructor() : this(emptyList())
 
-    override fun equals(other: Any?): Boolean {
-        return if (other is RealizedList) {
-            this.items == other.items
-        } else {
-            false
-        }
-    }
-
     override fun toString(): String {
         val itemString = items.joinToString(separator = " ") { it.toString() }
         return "[$itemString]"
