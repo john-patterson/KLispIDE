@@ -1,16 +1,13 @@
 package com.statelesscoder.klisp.compiler
 
-import com.statelesscoder.klisp.compiler.types.Data
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
-import com.statelesscoder.klisp.compiler.types.ExpressionPart
-import com.statelesscoder.klisp.compiler.types.ExpressionPartType
-import com.statelesscoder.klisp.compiler.types.KList
+import com.statelesscoder.klisp.compiler.types.*
 
 class Function(private val executor: Executor,
                val name: String,
                private val params: KList,
                private val body: ExpressionPart
-) {
+): Expression(symbolPart(name), listOf(listPart(params), body)) {
     constructor(executor: Executor, name: String, params: List<ExpressionPart>, body: ExpressionPart)
         : this(executor, name, KList(params), body)
 
