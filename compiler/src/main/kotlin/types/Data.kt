@@ -9,7 +9,7 @@ enum class DataType {
     LIST,
 }
 
-class Data(val type: DataType) {
+class Data(val dataType: DataType) {
     var stringValue: String? = null
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
@@ -17,10 +17,10 @@ class Data(val type: DataType) {
     var listValue: KList? = null
 
     override fun equals(other: Any?): Boolean {
-        if (other as Data == null || other.type != type) {
+        if (other as Data == null || other.dataType != dataType) {
             return false
         } else {
-            return when(type) {
+            return when(dataType) {
                 DataType.NUMBER -> numericValue == other.numericValue
                 DataType.STRING -> stringValue == other.stringValue
                 DataType.BOOLEAN -> truthyValue == other.truthyValue
@@ -40,7 +40,7 @@ class Data(val type: DataType) {
             }
         }
     }
-    override fun toString(): String = when (type) {
+    override fun toString(): String = when (dataType) {
         DataType.STRING -> "\"$stringValue\""
         DataType.NUMBER -> "$numericValue"
         DataType.BOOLEAN -> "$truthyValue"

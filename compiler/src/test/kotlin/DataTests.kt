@@ -32,7 +32,7 @@ class DataTests {
             val f = Function(e, "f", listOf(symbolPart("a")), numericPart(1f))
             val result = f.run(listOf(createData(10f)))
 
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
         }
 
@@ -47,7 +47,7 @@ class DataTests {
             val f = Function(e, "f", params, numericPart(1f))
             val result = f.run(args)
 
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
         }
 
@@ -59,7 +59,7 @@ class DataTests {
             val f = Function(e, "f", params, symbolPart("x"))
             val result = f.run(args)
 
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(10f, result.numericValue)
         }
 
@@ -74,7 +74,7 @@ class DataTests {
             val f = Function(e, "f", params, symbolPart("x"))
             val result = f.run(args)
 
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(10f, result.numericValue)
         }
 
@@ -98,7 +98,7 @@ class DataTests {
                 createData(2f)
             ), scope)
 
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(2f, result.numericValue)
         }
 

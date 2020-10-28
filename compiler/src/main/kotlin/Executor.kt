@@ -34,7 +34,7 @@ class Executor {
         }
 
         val headResult = realizePart(expr.head, env)
-        if (headResult.type != DataType.FUNCTION) {
+        if (headResult.dataType != DataType.FUNCTION) {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
         }
 
@@ -108,7 +108,7 @@ class Executor {
         } else if (functionName == "cons") {
             if (args.size != 2) {
                 throw RuntimeException("CONS function expects 1 list and 1 data object.")
-            } else if (args[0].type != DataType.LIST) {
+            } else if (args[0].dataType != DataType.LIST) {
                 throw RuntimeException("CONS function expects list as first argument.")
             }
 

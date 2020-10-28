@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import kotlin.math.exp
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExecutorTests {
@@ -21,7 +20,7 @@ class ExecutorTests {
                 symbolPart("car"),
                 listOf(listPart(list)))
             val result = e.execute(expr)
-            assertEquals(DataType.NUMBER, result.type)
+            assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
         }
 
@@ -46,7 +45,7 @@ class ExecutorTests {
                 symbolPart("cdr"),
                 listOf(listPart(list)))
             val result = e.execute(expr)
-            assertEquals(DataType.LIST, result.type)
+            assertEquals(DataType.LIST, result.dataType)
             assertEquals(2f, result.listValue!!.realizedData[0].numericValue)
         }
 
@@ -73,7 +72,7 @@ class ExecutorTests {
                 symbolPart("cons"),
                 listOf(expressionPart(innerExpr), numericPart(2f)))
             val result = e.execute(expr)
-            assertEquals(DataType.LIST, result.type)
+            assertEquals(DataType.LIST, result.dataType)
             assertEquals(2, result.listValue!!.realizedData.size)
             assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
             assertEquals(2f, result.listValue!!.realizedData[1].numericValue)
@@ -168,7 +167,7 @@ class ExecutorTests {
                     listOf(stringPart("hello"), stringPart("world"))
                 )
             )
-            assertEquals(DataType.STRING, result.type)
+            assertEquals(DataType.STRING, result.dataType)
             assertEquals("hello world", result.stringValue)
         }
 
@@ -203,7 +202,7 @@ class ExecutorTests {
                     listOf(stringPart("hello"), stringPart("world"), expressionPart(expr))
                 ), scope
             )
-            assertEquals(DataType.STRING, result.type)
+            assertEquals(DataType.STRING, result.dataType)
             assertEquals("hello world test", result.stringValue)
         }
 
@@ -407,7 +406,7 @@ class ExecutorTests {
 
                 // This should side-effect the calling scope
                 val definitionResult = executor.execute(expr, scope)
-                assertEquals(DataType.FUNCTION, definitionResult.type)
+                assertEquals(DataType.FUNCTION, definitionResult.dataType)
                 assertNotNull(scope.lookup("f"))
 
                 // Now the execution should pass
