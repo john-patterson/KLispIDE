@@ -81,7 +81,7 @@ class KLValueTests {
             val e = Executor()
             // This is: (fun id (x) x) and
             val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
-            scope.add(Symbol("id"), KLValue(id))
+            scope.add(Symbol("id"), id)
 
             // This is: (fun f (a b) (id b))
             val params = listOf(Symbol("a"), Symbol("b"))

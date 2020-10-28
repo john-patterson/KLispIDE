@@ -36,13 +36,14 @@ class Executor {
         }
 
         val headResult = realizePart(expr.head, env)
-        if (headResult.dataType != DataType.FUNCTION) {
-            throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
-        }
-
         val argsResults = expr.tail.map { Pair(it, realizePart(it, env)) }
         val argsData = RealizedList(argsResults.map { it.second })
-        return headResult.functionValue!!.run(argsData, env)
+
+        if (headResult is Function) {
+            return headResult.run(argsData, env)
+        } else {
+            throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
+        }
     }
 
     private val numericBuiltins = setOf("+", "-", "/", "*")
@@ -192,9 +193,7 @@ class Executor {
             is Symbol -> handleSymbol(arg, env)
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
             is Expression -> execute(arg, env)
-            is UnrealizedList -> {
-                KLValue(arg.realize(this, env))
-            }
+            is UnrealizedList -> arg.realize(this, env)
             else -> throw RuntimeException("Part $arg not recognized.")
         }
     }

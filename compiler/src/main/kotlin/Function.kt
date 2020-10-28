@@ -27,6 +27,16 @@ class Function(private val executor: Executor,
         return executor.realizePart(body, boundScope)
     }
 
+    override fun equals(other: Any?): Boolean {
+        return if (other is Function) {
+            this.name == other.name
+        } else if (other is KLValue && other.functionValue != null) {
+            this.name == other.functionValue?.name
+        } else {
+            false
+        }
+    }
+
     override fun toString(): String {
         val paramString = params.joinToString(separator = " ") { it.toString() }
         val bodyString = body.toString()

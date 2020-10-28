@@ -8,7 +8,7 @@ enum class DataType {
     LIST,
 }
 
-open class KLValue : ExpressionPart {
+abstract class KLValue : ExpressionPart {
     val dataType: DataType
     var functionValue: Function? = null
     var listValue: RealizedList? = null

@@ -188,7 +188,7 @@ class ExecutorTests {
             val e = Executor()
             val scope = Scope()
             val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
-            scope.add(Symbol("id"), KLValue(id))
+            scope.add(Symbol("id"), id)
 
             val expr = Expression(
                 Symbol("id"),

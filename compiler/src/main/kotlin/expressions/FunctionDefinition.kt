@@ -11,8 +11,7 @@ class FunctionDefinition(val name: Symbol, private val params: List<Symbol>, pri
 
     override fun execute(executor: Executor, scope: Scope): KLValue {
         val function = Function(executor, name, params, body)
-        val data = KLValue(function)
-        scope.add(name, data)
-        return data
+        scope.add(name, function)
+        return function
     }
 }
