@@ -4,7 +4,7 @@ import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 import com.statelesscoder.klisp.compiler.types.*
 
 data class IfExpression(val predicate: ExpressionPart, val truePart: ExpressionPart, val falsePart: ExpressionPart)
-    : Expression(keywordPart(KeywordType.IF), listOf(predicate, truePart, falsePart)) {
+    : Expression(ExpressionPart(KeywordType.IF), listOf(predicate, truePart, falsePart)) {
     override fun execute(executor: Executor, scope: Scope): Data {
         val realizedPredicate = executor.realizePart(predicate, scope)
         return when (realizedPredicate.truthyValue) {

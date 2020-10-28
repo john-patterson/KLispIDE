@@ -15,10 +15,10 @@ class ExecutorTests {
         @Test
         fun `car returns the head of a list`() {
             val e = Executor()
-            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val list = KList(listOf(ExpressionPart(1f), ExpressionPart(2f)))
             val expr = Expression(
                 symbolPart("car"),
-                listOf(listPart(list)))
+                listOf(ExpressionPart(list)))
             val result = e.execute(expr)
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
@@ -30,7 +30,7 @@ class ExecutorTests {
             val list = KList(emptyList())
             val expr = Expression(
                 symbolPart("car"),
-                listOf(listPart(list)))
+                listOf(ExpressionPart(list)))
 
             assertThrows(RuntimeException::class.java) {
                 e.execute(expr)
@@ -40,10 +40,10 @@ class ExecutorTests {
         @Test
         fun `cdr returns the tail of a list`() {
             val e = Executor()
-            val list = KList(listOf(numericPart(1f), numericPart(2f)))
+            val list = KList(listOf(ExpressionPart(1f), ExpressionPart(2f)))
             val expr = Expression(
                 symbolPart("cdr"),
-                listOf(listPart(list)))
+                listOf(ExpressionPart(list)))
             val result = e.execute(expr)
             assertEquals(DataType.LIST, result.dataType)
             assertEquals(2f, result.listValue!!.realizedData[0].numericValue)
@@ -55,7 +55,7 @@ class ExecutorTests {
             val list = KList(emptyList())
             val expr = Expression(
                 symbolPart("cdr"),
-                listOf(listPart(list)))
+                listOf(ExpressionPart(list)))
 
             assertThrows(RuntimeException::class.java) {
                 e.execute(expr)
@@ -67,10 +67,10 @@ class ExecutorTests {
             val e = Executor()
             val list = KList(emptyList())
             val innerExpr = Expression(symbolPart("cons"),
-                listOf(listPart(list), numericPart(1f)))
+                listOf(ExpressionPart(list), ExpressionPart(1f)))
             val expr = Expression(
                 symbolPart("cons"),
-                listOf(expressionPart(innerExpr), numericPart(2f)))
+                listOf(ExpressionPart(innerExpr), ExpressionPart(2f)))
             val result = e.execute(expr)
             assertEquals(DataType.LIST, result.dataType)
             assertEquals(2, result.listValue!!.realizedData.size)
@@ -82,7 +82,7 @@ class ExecutorTests {
         fun `logic functions work`() {
             fun testLogicFunction(func: String, expected: Boolean, vararg args: Boolean) {
                 val e = Executor()
-                val expr = Expression(symbolPart(func), args.map { booleanPart(it) })
+                val expr = Expression(symbolPart(func), args.map { ExpressionPart(it) })
                 val result = e.execute(expr)
                 assertEquals(expected, result.truthyValue)
             }
@@ -112,18 +112,18 @@ class ExecutorTests {
                 assertNotEquals(areEqual, notEqualResult)
             }
 
-            testEqualityFunction(true, numericPart(1f), numericPart(1f))
-            testEqualityFunction(false, numericPart(1f), stringPart("1"))
-            testEqualityFunction(false, numericPart(1f), numericPart(2f))
-            testEqualityFunction(false, stringPart("1"), stringPart("2"))
-            testEqualityFunction(true, stringPart("1"), stringPart("1"))
-            testEqualityFunction(true, booleanPart(true), booleanPart(true))
-            testEqualityFunction(false, booleanPart(true), booleanPart(false))
+            testEqualityFunction(true, ExpressionPart(1f), ExpressionPart(1f))
+            testEqualityFunction(false, ExpressionPart(1f), ExpressionPart("1"))
+            testEqualityFunction(false, ExpressionPart(1f), ExpressionPart(2f))
+            testEqualityFunction(false, ExpressionPart("1"), ExpressionPart("2"))
+            testEqualityFunction(true, ExpressionPart("1"), ExpressionPart("1"))
+            testEqualityFunction(true, ExpressionPart(true), ExpressionPart(true))
+            testEqualityFunction(false, ExpressionPart(true), ExpressionPart(false))
 
-            val list1 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
-            val list2 = listPart(KList(listOf(numericPart(1f), numericPart(2f), numericPart(3f))))
-            val list3 = listPart(KList(listOf(numericPart(1f))))
-            val emptylist = listPart(KList(emptyList()))
+            val list1 = ExpressionPart(KList(listOf(ExpressionPart(1f), ExpressionPart(2f), ExpressionPart(3f))))
+            val list2 = ExpressionPart(KList(listOf(ExpressionPart(1f), ExpressionPart(2f), ExpressionPart(3f))))
+            val list3 = ExpressionPart(KList(listOf(ExpressionPart(1f))))
+            val emptylist = ExpressionPart(KList(emptyList()))
             testEqualityFunction(true, list1, list1)
             testEqualityFunction(true, list1, list2)
             testEqualityFunction(false, list1, list3)
@@ -144,15 +144,15 @@ class ExecutorTests {
             val e = Executor()
             val expr = Expression(
                 symbolPart("*"), listOf(
-                    expressionPart(
+                    ExpressionPart(
                         Expression(
                             symbolPart("+"), listOf(
-                                numericPart(1f),
-                                numericPart(2f)
+                                ExpressionPart(1f),
+                                ExpressionPart(2f)
                             )
                         )
                     ),
-                    numericPart(10f)
+                    ExpressionPart(10f)
                 )
             )
             assertEquals(30f, e.execute(expr).numericValue)
@@ -164,7 +164,7 @@ class ExecutorTests {
             val result = e.execute(
                 Expression(
                     symbolPart("pRINt"),
-                    listOf(stringPart("hello"), stringPart("world"))
+                    listOf(ExpressionPart("hello"), ExpressionPart("world"))
                 )
             )
             assertEquals(DataType.STRING, result.dataType)
@@ -179,7 +179,7 @@ class ExecutorTests {
                 e.execute(
                     Expression(
                         symbolPart("pRINt"),
-                        listOf(stringPart("hello"), stringPart("world"), numericPart(2f))
+                        listOf(ExpressionPart("hello"), ExpressionPart("world"), ExpressionPart(2f))
                     )
                 )
             }
@@ -194,12 +194,12 @@ class ExecutorTests {
 
             val expr = Expression(
                 symbolPart("id"),
-                listOf(stringPart("test"))
+                listOf(ExpressionPart("test"))
             )
             val result = e.execute(
                 Expression(
                     symbolPart("pRINt"),
-                    listOf(stringPart("hello"), stringPart("world"), expressionPart(expr))
+                    listOf(ExpressionPart("hello"), ExpressionPart("world"), ExpressionPart(expr))
                 ), scope
             )
             assertEquals(DataType.STRING, result.dataType)
@@ -211,9 +211,9 @@ class ExecutorTests {
             val e = Executor()
             val expr = Expression(
                 symbolPart("*"), listOf(
-                    numericPart(1f),
-                    numericPart(2f),
-                    stringPart("test")
+                    ExpressionPart(1f),
+                    ExpressionPart(2f),
+                    ExpressionPart("test")
                 )
             )
 
@@ -226,7 +226,7 @@ class ExecutorTests {
             val e = Executor()
             val expr = Expression(
                 symbolPart(op),
-                args.map { numericPart(it) })
+                args.map { ExpressionPart(it) })
             return e.execute(expr)
         }
 
@@ -239,7 +239,7 @@ class ExecutorTests {
         @Test
         fun `can return number`() {
             val scope = Scope()
-            defineConstantFunction(numericPart(1f), scope)
+            defineConstantFunction(ExpressionPart(1f), scope)
             val result = callConstantFunction(scope)
             assertEquals(1f, result.numericValue)
         }
@@ -247,7 +247,7 @@ class ExecutorTests {
         @Test
         fun `can return string`() {
             val scope = Scope()
-            defineConstantFunction(stringPart("hey"), scope)
+            defineConstantFunction(ExpressionPart("hey"), scope)
             val result = callConstantFunction(scope)
             assertEquals("hey", result.stringValue)
         }
@@ -255,7 +255,7 @@ class ExecutorTests {
         @Test
         fun `can return boolean`() {
             val scope = Scope()
-            defineConstantFunction(booleanPart(true), scope)
+            defineConstantFunction(ExpressionPart(true), scope)
             val result = callConstantFunction(scope)
             assertEquals(true, result.truthyValue)
         }
@@ -263,8 +263,8 @@ class ExecutorTests {
         @Test
         fun `can return list`() {
             val scope = Scope()
-            val klist = KList(listOf(stringPart("a"), numericPart(1f)))
-            defineConstantFunction(listPart(klist), scope)
+            val klist = KList(listOf(ExpressionPart("a"), ExpressionPart(1f)))
+            defineConstantFunction(ExpressionPart(klist), scope)
             val result = callConstantFunction(scope)
             assertEquals(2, result.listValue!!.realizedData.size)
             assertEquals("a", result.listValue!!.realizedData[0].stringValue)
@@ -272,7 +272,7 @@ class ExecutorTests {
         }
 
         private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {
-            val definition = Expression(keywordPart(KeywordType.FUN), listOf(
+            val definition = Expression(ExpressionPart(KeywordType.FUN), listOf(
                 symbolPart("foo"),
                 returnValue
             ))
@@ -350,7 +350,7 @@ class ExecutorTests {
                     symbolPart("*"),
                     listOf(symbolPart("x"), symbolPart("y"))
                 )
-                val expr = makeLetBinding(binding, expressionPart(bodyExpr))
+                val expr = makeLetBinding(binding, ExpressionPart(bodyExpr))
                 assertEquals(1000f, executor.execute(expr).numericValue)
             }
 
@@ -360,10 +360,10 @@ class ExecutorTests {
                         Expression(
                             symbolPart(
                                 entry.key
-                            ), listOf(numericPart(entry.value))
+                            ), listOf(ExpressionPart(entry.value))
                         )
                     }
-                    .map { e -> expressionPart(e) }
+                    .map { e -> ExpressionPart(e) }
                 val bindingExpr = Expression(
                     bindingsAsParts.first(),
                     bindingsAsParts.drop(1)
@@ -379,15 +379,15 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = listPart(
+            private val params = ExpressionPart(
                     KList(
                         listOf(symbolPart("a"), symbolPart("b"), symbolPart("c"))
                     )
                 )
 
-            private val bodyPart = expressionPart(IfExpression(symbolPart("a"), symbolPart("b"), symbolPart("c")))
+            private val bodyPart = ExpressionPart(IfExpression(symbolPart("a"), symbolPart("b"), symbolPart("c")))
             private val expr = Expression(
-                keywordPart(KeywordType.FUN),
+                ExpressionPart(KeywordType.FUN),
                 listOf(symbolPart(functionName), params, bodyPart)
             )
 
@@ -396,7 +396,7 @@ class ExecutorTests {
                 val scope = Scope()
                 val executionExpr = Expression(
                     symbolPart("f"),
-                    listOf(booleanPart(false), numericPart(10f), numericPart(100f))
+                    listOf(ExpressionPart(false), ExpressionPart(10f), ExpressionPart(100f))
                 )
 
                 // Before definition, this should make a symbol lookup error
@@ -418,8 +418,8 @@ class ExecutorTests {
             fun `executes with returned function`() {
                 val scope = Scope()
                 val executionExpr = Expression(
-                    expressionPart(expr),
-                    listOf(booleanPart(false), numericPart(10f), numericPart(100f))
+                    ExpressionPart(expr),
+                    listOf(ExpressionPart(false), ExpressionPart(10f), ExpressionPart(100f))
                 )
                 val result = executor.execute(executionExpr, scope)
 
@@ -430,14 +430,14 @@ class ExecutorTests {
     }
 
     private fun complexIfExpr(switch: Expression, truePart: Expression, falsePart: Expression): IfExpression =
-        IfExpression(expressionPart(switch), expressionPart(truePart), expressionPart(falsePart))
+        IfExpression(ExpressionPart(switch), ExpressionPart(truePart), ExpressionPart(falsePart))
 
     private fun complexIfExpr(switch: Expression, truePart: Float, falsePart: Float): IfExpression =
-        IfExpression(expressionPart(switch), numericPart(truePart), numericPart(falsePart))
+        IfExpression(ExpressionPart(switch), ExpressionPart(truePart), ExpressionPart(falsePart))
 
     private fun simpleIfExpr(switch: Boolean, truePart: Boolean, falsePart: Boolean): IfExpression =
-        IfExpression(booleanPart(switch), booleanPart(truePart), booleanPart(falsePart))
+        IfExpression(ExpressionPart(switch), ExpressionPart(truePart), ExpressionPart(falsePart))
 
     private fun simpleIfExpr(switch: Boolean, truePart: Float, falsePart: Float): IfExpression =
-        IfExpression(booleanPart(switch), numericPart(truePart), numericPart(falsePart))
+        IfExpression(ExpressionPart(switch), ExpressionPart(truePart), ExpressionPart(falsePart))
 }

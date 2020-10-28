@@ -14,13 +14,13 @@ class DataTests {
         @Test
         fun `throws if args do not match param list`() {
             val e = Executor()
-            val f = Function(e, "f", emptyList(), numericPart(1f))
+            val f = Function(e, "f", emptyList(), ExpressionPart(1f))
 
             assertThrows(RuntimeException::class.java) {
                 f.run(listOf(createData("g")))
             }
 
-            val g = Function(e, "g", listOf(symbolPart("a")), numericPart(1f))
+            val g = Function(e, "g", listOf(symbolPart("a")), ExpressionPart(1f))
             assertThrows(RuntimeException::class.java) {
                 g.run(emptyList())
             }
@@ -29,7 +29,7 @@ class DataTests {
         @Test
         fun `function with 1 arg that is not used`() {
             val e = Executor()
-            val f = Function(e, "f", listOf(symbolPart("a")), numericPart(1f))
+            val f = Function(e, "f", listOf(symbolPart("a")), ExpressionPart(1f))
             val result = f.run(listOf(createData(10f)))
 
             assertEquals(DataType.NUMBER, result.dataType)
@@ -44,7 +44,7 @@ class DataTests {
                 createData(10f),
                 createData(20f)
             )
-            val f = Function(e, "f", params, numericPart(1f))
+            val f = Function(e, "f", params, ExpressionPart(1f))
             val result = f.run(args)
 
             assertEquals(DataType.NUMBER, result.dataType)
@@ -92,7 +92,7 @@ class DataTests {
                 symbolPart("id"),
                 listOf(symbolPart("b"))
             )
-            val f = Function(e, "f", params, expressionPart(expr))
+            val f = Function(e, "f", params, ExpressionPart(expr))
             val result = f.run(listOf(
                 createData(1f),
                 createData(2f)
@@ -113,7 +113,7 @@ class DataTests {
         fun `toString function`() {
             val e = Executor()
             val f = Function(e, "foo", listOf(symbolPart("a"), symbolPart("b")),
-                expressionPart(
+                ExpressionPart(
                     Expression(
                         symbolPart("+"),
                         listOf(symbolPart("a"), symbolPart("b"))
