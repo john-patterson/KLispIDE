@@ -181,7 +181,7 @@ class Executor {
 
     fun realizePart(arg: ExpressionPart, env: Scope): KLValue {
         return when (arg) {
-            is LiteralValue -> arg
+            is KLLiteralValue -> arg
             is KLValue -> when (arg.dataType) {
                 DataType.LITERAL -> arg
                 DataType.LIST -> arg

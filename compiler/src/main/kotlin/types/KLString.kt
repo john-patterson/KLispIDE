@@ -1,6 +1,6 @@
 package com.statelesscoder.klisp.compiler.types
 
-class KLString(val text: String) : LiteralValue() {
+class KLString(val text: String) : KLLiteralValue() {
     override fun equals(other: Any?): Boolean {
         return if (other is KLString) {
             this.text == other.text

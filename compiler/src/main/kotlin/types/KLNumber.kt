@@ -1,6 +1,6 @@
 package com.statelesscoder.klisp.compiler.types
 
-class KLNumber(val value: Float) : LiteralValue() {
+class KLNumber(val value: Float) : KLLiteralValue() {
     override fun equals(other: Any?): Boolean {
         return if (other is KLNumber) {
             this.value == other.value

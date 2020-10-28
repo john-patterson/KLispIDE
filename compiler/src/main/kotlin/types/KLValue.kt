@@ -38,7 +38,7 @@ open class KLValue : ExpressionPart {
     override fun equals(other: Any?): Boolean {
         if (other is KLValue) {
             return when(dataType) {
-                DataType.LITERAL -> (this as LiteralValue) == other
+                DataType.LITERAL -> (this as KLLiteralValue) == other
                 DataType.FUNCTION -> functionValue!!.name == other.functionValue!!.name
                 DataType.LIST -> {
                     if (this.listValue!!.items.size != other.listValue!!.items.size) {
@@ -60,6 +60,6 @@ open class KLValue : ExpressionPart {
     override fun toString(): String = when (dataType) {
         DataType.FUNCTION -> functionValue.toString()
         DataType.LIST -> listValue.toString()
-        DataType.LITERAL -> (this as LiteralValue).toString()
+        DataType.LITERAL -> (this as KLLiteralValue).toString()
     }
 }
