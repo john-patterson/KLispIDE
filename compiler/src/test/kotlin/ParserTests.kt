@@ -397,8 +397,8 @@ class ParserTests {
             val result = parser.parse(tokens)
             assertTrue(result.first().head is Symbol)
             assertTrue(result.first().tail[0] is Data)
-            assertEquals(1f, (result.first().tail[0] as Data).numericValue)
-            assertEquals(2f, (result.first().tail[1] as Data).numericValue)
+            assertEquals(1f, (result.first().tail[0] as KLNumber).value)
+            assertEquals(2f, (result.first().tail[1] as KLNumber).value)
         }
 
         @Test
@@ -408,11 +408,11 @@ class ParserTests {
             val result = parser.parse(tokens)
 
             assertEquals(Symbol("f"), result.first().head)
-            assertEquals(Data(1f), result.first().tail[0])
-            assertEquals(Data(2f), result.first().tail[1])
+            assertEquals(KLNumber(1f), result.first().tail[0])
+            assertEquals(KLNumber(2f), result.first().tail[1])
 
             assertEquals(Symbol("g"), result[1].head)
-            assertEquals(Data(3f), result[1].tail[0])
+            assertEquals(KLNumber(3f), result[1].tail[0])
         }
 
         @Test
@@ -431,11 +431,11 @@ class ParserTests {
             assertEquals(Symbol("+"), functionBody.head)
             assertEquals(Symbol("a"), functionBody.tail[0])
             assertEquals(Symbol("b"), functionBody.tail[1])
-            assertEquals(Data(1f), functionBody.tail[2])
+            assertEquals(KLNumber(1f), functionBody.tail[2])
 
             assertEquals(Symbol("foo"), result[1].head)
-            assertEquals(Data(10f), result[1].tail[0])
-            assertEquals(Data(20f), result[1].tail[1])
+            assertEquals(KLNumber(10f), result[1].tail[0])
+            assertEquals(KLNumber(20f), result[1].tail[1])
         }
     }
 
@@ -458,7 +458,7 @@ class ParserTests {
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
         assertTrue(actual is Data)
-        assertEquals(expected, (actual as Data).numericValue)
+        assertEquals(expected, (actual as KLNumber).value)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {

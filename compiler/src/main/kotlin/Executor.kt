@@ -157,11 +157,11 @@ class Executor {
     }
 
     private fun handleNumericBuiltIn(functionName: String, args: List<Data>): Data {
-        if (!args.all { it.numericValue != null }) {
+        if (!args.all { it is KLNumber }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
-        val argsAsNums = args.map { it.numericValue!! }
-        return Data(when (functionName) {
+        val argsAsNums = args.map { (it as KLNumber).value }
+        return KLNumber(when (functionName) {
             "*" -> argsAsNums.reduce { acc, number -> acc * number }
             "+" -> argsAsNums.reduce { acc, number -> acc + number }
             "-" -> argsAsNums.reduce { acc, number -> acc - number }
@@ -181,11 +181,10 @@ class Executor {
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
         return when (arg) {
-            is KLString -> arg
+            is LiteralValue -> arg
             is Data -> when (arg.dataType) {
                 DataType.LITERAL -> arg
                 DataType.BOOLEAN -> arg
-                DataType.NUMBER -> arg
                 DataType.LIST -> arg
                 DataType.FUNCTION -> {
                     execute(arg.functionValue!!, env)
