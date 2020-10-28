@@ -1,5 +1,6 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
+import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested

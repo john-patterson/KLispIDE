@@ -1,6 +1,10 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.expressions.Expression
+import com.statelesscoder.klisp.compiler.expressions.FunctionDefinition
+import com.statelesscoder.klisp.compiler.expressions.IfExpression
+import com.statelesscoder.klisp.compiler.expressions.LetBinding
 import com.statelesscoder.klisp.compiler.types.*
 
 fun runCode(code: String): List<ExecutionResult> {

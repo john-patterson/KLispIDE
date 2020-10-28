@@ -1,6 +1,7 @@
 package com.statelesscoder.klisp.compiler.types
 
 import com.statelesscoder.klisp.compiler.Symbol
+import com.statelesscoder.klisp.compiler.expressions.Expression
 
 open class ExpressionPart {
     val type: ExpressionPartType;

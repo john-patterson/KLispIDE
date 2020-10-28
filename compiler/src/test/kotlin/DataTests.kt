@@ -1,6 +1,7 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -113,9 +114,11 @@ class DataTests {
         fun `toString function`() {
             val e = Executor()
             val params = KList(listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b"))))
-            val body = ExpressionPart(Expression(
+            val body = ExpressionPart(
+                Expression(
                     ExpressionPart(Symbol("+")),
-                    listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")))))
+                    listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b"))))
+            )
             val f = Function(e, "foo", params, body)
             assertEquals("(fun foo [a b] (+ a b))", f.toString())
         }

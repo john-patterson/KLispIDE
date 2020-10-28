@@ -2,6 +2,10 @@ import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.expressions.Expression
+import com.statelesscoder.klisp.compiler.expressions.FunctionDefinition
+import com.statelesscoder.klisp.compiler.expressions.IfExpression
+import com.statelesscoder.klisp.compiler.expressions.LetBinding
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested

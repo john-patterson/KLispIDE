@@ -1,6 +1,7 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.*
 
 class Function(private val executor: Executor,

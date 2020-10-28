@@ -1,5 +1,7 @@
-package com.statelesscoder.klisp.compiler
+package com.statelesscoder.klisp.compiler.expressions
 
+import com.statelesscoder.klisp.compiler.Executor
+import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.types.*
 
 data class LetBinding(val bindings: Expression, val body: ExpressionPart)
