@@ -25,6 +25,7 @@ fun runCode(code: String): List<ExecutionResult> {
     return results
 }
 
+
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): Data {
@@ -180,6 +181,7 @@ class Executor {
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
         return when (arg) {
             is Data -> when (arg.dataType) {
+                DataType.LITERAL -> arg
                 DataType.STRING -> arg
                 DataType.BOOLEAN -> arg
                 DataType.NUMBER -> arg
