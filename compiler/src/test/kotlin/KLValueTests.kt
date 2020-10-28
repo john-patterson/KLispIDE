@@ -9,32 +9,31 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DataTests {
+class KLValueTests {
     @Nested
     inner class FunctionTests {
         @Test
         fun `throws if args do not match param list`() {
             val e = Executor()
-            val f = Function(e, "f", emptyList(), Data(1f))
+            val f = Function(e, "f", emptyList(), KLNumber(1f))
 
             assertThrows(RuntimeException::class.java) {
-                f.run(listOf(Data("g")))
+                f.run(RealizedList(listOf(KLString("g"))))
             }
 
-            val g = Function(e, "g", listOf(Symbol("a")), Data(1f))
+            val g = Function(e, "g", listOf(Symbol("a")), KLNumber(1f))
             assertThrows(RuntimeException::class.java) {
-                g.run(emptyList())
+                g.run(RealizedList())
             }
         }
 
         @Test
         fun `function with 1 arg that is not used`() {
             val e = Executor()
-            val f = Function(e, "f", listOf(Symbol("a")), Data(1f))
-            val result = f.run(listOf(Data(10f)))
+            val f = Function(e, "f", listOf(Symbol("a")), KLNumber(1f))
+            val result = f.run(RealizedList(listOf(KLNumber(10f)))) as KLNumber
 
-            assertEquals(DataType.NUMBER, result.dataType)
-            assertEquals(1f, result.numericValue)
+            assertEquals(1f, result.value)
         }
 
         @Test
@@ -42,26 +41,24 @@ class DataTests {
             val e = Executor()
             val params = listOf(Symbol("a"), Symbol("b"))
             val args = listOf(
-                Data(10f),
-                Data(20f)
+                KLNumber(10f),
+                KLNumber(20f)
             )
-            val f = Function(e, "f", params, Data(1f))
-            val result = f.run(args)
+            val f = Function(e, "f", params, KLNumber(1f))
+            val result = f.run(RealizedList(args)) as KLNumber
 
-            assertEquals(DataType.NUMBER, result.dataType)
-            assertEquals(1f, result.numericValue)
+            assertEquals(1f, result.value)
         }
 
         @Test
         fun `function which takes one parameter and uses it`() {
             val e = Executor()
             val params = listOf(Symbol("x"))
-            val args = listOf(Data(10f))
+            val args = listOf(KLNumber(10f))
             val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(args)
+            val result = f.run(RealizedList(args)) as KLNumber
 
-            assertEquals(DataType.NUMBER, result.dataType)
-            assertEquals(10f, result.numericValue)
+            assertEquals(10f, result.value)
         }
 
         @Test
@@ -69,14 +66,13 @@ class DataTests {
             val e = Executor()
             val params = listOf(Symbol("x"), Symbol("y"))
             val args = listOf(
-                Data(10f),
-                Data(20f)
+                KLNumber(10f),
+                KLNumber(20f)
             )
             val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(args)
+            val result = f.run(RealizedList(args)) as KLNumber
 
-            assertEquals(DataType.NUMBER, result.dataType)
-            assertEquals(10f, result.numericValue)
+            assertEquals(10f, result.value)
         }
 
         @Test
@@ -85,7 +81,7 @@ class DataTests {
             val e = Executor()
             // This is: (fun id (x) x) and
             val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
-            scope.add(Symbol("id"), Data(id))
+            scope.add(Symbol("id"), id)
 
             // This is: (fun f (a b) (id b))
             val params = listOf(Symbol("a"), Symbol("b"))
@@ -94,26 +90,25 @@ class DataTests {
                 listOf(Symbol("b"))
             )
             val f = Function(e, "f", params, expr)
-            val result = f.run(listOf(
-                Data(1f),
-                Data(2f)
-            ), scope)
+            val result = f.run(RealizedList(listOf(
+                KLNumber(1f),
+                KLNumber(2f)
+            )), scope) as KLNumber
 
-            assertEquals(DataType.NUMBER, result.dataType)
-            assertEquals(2f, result.numericValue)
+            assertEquals(2f, result.value)
         }
 
         @Test
         fun `toString simple types`() {
-            assertEquals("1.0", Data(1f).toString())
-            assertEquals("\"foo\"", Data("foo").toString())
-            assertEquals("true", Data(true).toString())
+            assertEquals("1.0", KLNumber(1f).toString())
+            assertEquals("\"foo\"", KLString("foo").toString())
+            assertEquals("true", KLBool(true).toString())
         }
 
         @Test
         fun `toString function`() {
             val e = Executor()
-            val params = KList(listOf(Symbol("a"), Symbol("b")))
+            val params = listOf(Symbol("a"), Symbol("b"))
             val body = Expression(
                     Symbol("+"),
                     listOf(Symbol("a"), Symbol("b")))

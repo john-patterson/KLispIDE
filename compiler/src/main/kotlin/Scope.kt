@@ -1,21 +1,21 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
-import com.statelesscoder.klisp.compiler.types.Data
+import com.statelesscoder.klisp.compiler.types.KLValue
 
 class Scope {
-    private var symbolTable: MutableMap<String, Data> = mutableMapOf()
+    private var symbolTable: MutableMap<String, KLValue> = mutableMapOf()
 
-    fun getBindings(): List<Pair<String, Data>> = symbolTable.entries
+    fun getBindings(): List<Pair<String, KLValue>> = symbolTable.entries
         .map { Pair(it.key, it.value) }
 
-    fun lookup(symbol: Symbol): Data {
+    fun lookup(symbol: Symbol): KLValue {
         return symbolTable.getOrElse(symbol.symbolName) {
             throw ScopeDataException("Failed to find symbol ${symbol.symbolName}.")
         }
     }
 
-    fun add(symbol: Symbol, value: Data) {
+    fun add(symbol: Symbol, value: KLValue) {
         symbolTable[symbol.symbolName] = value
     }
 
@@ -23,7 +23,7 @@ class Scope {
     constructor(otherScope: Scope) {
         this.symbolTable.putAll(otherScope.symbolTable)
     }
-    constructor(data: Map<String, Data>) {
-        this.symbolTable.putAll(data)
+    constructor(klValue: Map<String, KLValue>) {
+        this.symbolTable.putAll(klValue)
     }
 }

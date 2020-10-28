@@ -262,7 +262,7 @@ class ParserTests {
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
             assertIsList({ls ->
-                assertIsSymbol("x", ls.unrealizedItems[0])
+                assertIsSymbol("x", ls.items[0])
             }, result.tail[1])
             assertIsSymbol("x", result.tail[2])
         }
@@ -289,7 +289,7 @@ class ParserTests {
             val result = getParseTree("(fun id 3)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsList({ assertTrue(it.unrealizedItems.isEmpty()) }, result.tail[1])
+            assertIsList({ assertTrue(it.items.isEmpty()) }, result.tail[1])
             assertIsNumber(3f, result.tail[2])
         }
 
@@ -298,7 +298,7 @@ class ParserTests {
             val result = getParseTree("(fun id [] 3)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsList({ assertEquals(emptyList<ExpressionPart>(), it.unrealizedItems) },
+            assertIsList({ assertEquals(emptyList<ExpressionPart>(), it.items) },
                 result.tail[1])
             assertIsNumber(3f, result.tail[2])
         }
@@ -309,8 +309,8 @@ class ParserTests {
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
             assertIsList({list ->
-                assertIsSymbol("a", list.unrealizedItems[0])
-                assertIsSymbol("b", list.unrealizedItems[1])
+                assertIsSymbol("a", list.items[0])
+                assertIsSymbol("b", list.items[1])
             }, result.tail[1])
             assertIsSymbol("a", result.tail[2])
         }
@@ -331,7 +331,7 @@ class ParserTests {
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
             assertIsList({ls ->
-                assertIsSymbol("g", ls.unrealizedItems[0])
+                assertIsSymbol("g", ls.items[0])
             }, result.tail[1])
             assertIsExpression({expr ->
                 assertIsSymbol("g", expr.head)
@@ -352,7 +352,7 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(0, got.unrealizedItems.size)
+                assertEquals(0, got.items.size)
             }, expr.tail.first())
         }
 
@@ -366,8 +366,8 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(1, got.unrealizedItems.size)
-                assertIsNumber(1f, got.unrealizedItems.first())
+                assertEquals(1, got.items.size)
+                assertIsNumber(1f, got.items.first())
             }, expr.tail.first())
         }
 
@@ -381,9 +381,9 @@ class ParserTests {
             assertIsSymbol("f", expr.head)
             assertEquals(1, expr.tail.size)
             assertIsList({got ->
-                assertEquals(2, got.unrealizedItems.size)
-                assertIsNumber(1f, got.unrealizedItems.first())
-                assertIsSymbol("b", got.unrealizedItems.last())
+                assertEquals(2, got.items.size)
+                assertIsNumber(1f, got.items.first())
+                assertIsSymbol("b", got.items.last())
             }, expr.tail.first())
         }
     }
@@ -396,9 +396,9 @@ class ParserTests {
             val parser = Parser()
             val result = parser.parse(tokens)
             assertTrue(result.first().head is Symbol)
-            assertTrue(result.first().tail[0] is Data)
-            assertEquals(1f, (result.first().tail[0] as Data).numericValue)
-            assertEquals(2f, (result.first().tail[1] as Data).numericValue)
+            assertTrue(result.first().tail[0] is KLValue)
+            assertEquals(1f, (result.first().tail[0] as KLNumber).value)
+            assertEquals(2f, (result.first().tail[1] as KLNumber).value)
         }
 
         @Test
@@ -408,11 +408,11 @@ class ParserTests {
             val result = parser.parse(tokens)
 
             assertEquals(Symbol("f"), result.first().head)
-            assertEquals(Data(1f), result.first().tail[0])
-            assertEquals(Data(2f), result.first().tail[1])
+            assertEquals(KLNumber(1f), result.first().tail[0])
+            assertEquals(KLNumber(2f), result.first().tail[1])
 
             assertEquals(Symbol("g"), result[1].head)
-            assertEquals(Data(3f), result[1].tail[0])
+            assertEquals(KLNumber(3f), result[1].tail[0])
         }
 
         @Test
@@ -423,19 +423,19 @@ class ParserTests {
             assertEquals(Keyword(KeywordType.FUN), result.first().head)
             assertEquals(Symbol("foo"), result.first().tail[0])
 
-            val paramList = result.first().tail[1] as KList
-            assertEquals(Symbol("a"), paramList.unrealizedItems[0])
-            assertEquals(Symbol("b"), paramList.unrealizedItems[1])
+            val paramList = result.first().tail[1] as UnrealizedList
+            assertEquals(Symbol("a"), paramList.items[0])
+            assertEquals(Symbol("b"), paramList.items[1])
 
             val functionBody = result.first().tail[2] as Expression
             assertEquals(Symbol("+"), functionBody.head)
             assertEquals(Symbol("a"), functionBody.tail[0])
             assertEquals(Symbol("b"), functionBody.tail[1])
-            assertEquals(Data(1f), functionBody.tail[2])
+            assertEquals(KLNumber(1f), functionBody.tail[2])
 
             assertEquals(Symbol("foo"), result[1].head)
-            assertEquals(Data(10f), result[1].tail[0])
-            assertEquals(Data(20f), result[1].tail[1])
+            assertEquals(KLNumber(10f), result[1].tail[0])
+            assertEquals(KLNumber(20f), result[1].tail[1])
         }
     }
 
@@ -457,13 +457,13 @@ class ParserTests {
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
-        assertTrue(actual is Data)
-        assertEquals(expected, (actual as Data).numericValue)
+        assertTrue(actual is KLValue)
+        assertEquals(expected, (actual as KLNumber).value)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
-        assertTrue(actual is Data)
-        assertEquals(expected, (actual as Data).truthyValue)
+        assertTrue(actual is KLValue)
+        assertEquals(expected, (actual as KLBool).truth)
     }
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {
@@ -477,12 +477,12 @@ class ParserTests {
     }
 
     fun assertIsString(expectedText: String, actual: ExpressionPart) {
-        assertTrue(actual is Data)
-        assertEquals(expectedText, (actual as Data).stringValue)
+        assertTrue(actual is KLValue)
+        assertEquals(expectedText, (actual as KLString).text)
     }
 
-    fun assertIsList(listAssertion: (KList) -> Unit, actual: ExpressionPart) {
-        assert(actual is KList)
-        listAssertion(actual as KList)
+    fun assertIsList(listAssertion: (UnrealizedList) -> Unit, actual: ExpressionPart) {
+        assert(actual is UnrealizedList)
+        listAssertion(actual as UnrealizedList)
     }
 }
