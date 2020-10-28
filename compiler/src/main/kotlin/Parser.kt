@@ -1,36 +1,7 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
-import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 import com.statelesscoder.klisp.compiler.types.*
-
-data class LetBinding(val bindings: Expression, val body: ExpressionPart)
-    : Expression(keywordPart(KeywordType.LET), listOf(expressionPart(bindings), body)) {
-    override fun execute(executor: Executor, scope: Scope): Data {
-        val realizedBindings = (listOf(bindings.head) + bindings.tail)
-            .map { Pair(it.expression!!.head.name!!, it.expression!!.tail[0]) }
-            .map { Pair(it.first, executor.realizePart(it.second, scope)) }
-        val newScope = Scope(scope)
-
-        for (part in realizedBindings) {
-            newScope.add(part.first, part.second)
-        }
-
-        return executor.realizePart(body, newScope)
-    }
-}
-
-data class IfExpression(val predicate: ExpressionPart, val truePart: ExpressionPart, val falsePart: ExpressionPart)
-    : Expression(keywordPart(KeywordType.IF), listOf(predicate, truePart, falsePart)) {
-    override fun execute(executor: Executor, scope: Scope): Data {
-        val realizedPredicate = executor.realizePart(predicate, scope)
-        return when (realizedPredicate.truthyValue) {
-            true -> executor.execute(truePart, scope)
-            false -> executor.execute(falsePart, scope)
-            null -> throw RuntimeException("Expected predicate of the if-expression '$this' to evaluate to a boolean.")
-        }
-    }
-}
 
 class Parser() {
     fun parse(tokens: List<Token>): List<Expression> {
