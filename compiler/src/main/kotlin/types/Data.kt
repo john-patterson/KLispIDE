@@ -11,10 +11,16 @@ enum class DataType {
     LIST,
 }
 
-class KLString(val text: String) : LiteralValue(DataType.STRING)
-class KLNumber(val value: Float) : LiteralValue(DataType.NUMBER)
-class KLBool(val truth: Boolean) : LiteralValue(DataType.BOOLEAN)
-abstract class LiteralValue(dt: DataType) : Data(dt)
+class KLString(val text: String) : LiteralValue(DataType.STRING, text, null, null)
+class KLNumber(val value: Float) : LiteralValue(DataType.NUMBER, null, value, null)
+class KLBool(val truth: Boolean) : LiteralValue(DataType.BOOLEAN, null, null, truth)
+abstract class LiteralValue(dt: DataType, text: String?, value: Float?, truth: Boolean?) : Data(dt) {
+    init {
+        this.stringValue = text
+        this.numericValue = value
+        this.truthyValue = truth
+    }
+}
 
 open class Data : ExpressionPart {
     val dataType: DataType
