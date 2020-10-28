@@ -18,7 +18,7 @@ class DataTests {
             val f = Function(e, "f", emptyList(), Data(1f))
 
             assertThrows(RuntimeException::class.java) {
-                f.run(RealizedList(listOf(Data("g"))))
+                f.run(RealizedList(listOf(KLString("g"))))
             }
 
             val g = Function(e, "g", listOf(Symbol("a")), Data(1f))
@@ -106,7 +106,7 @@ class DataTests {
         @Test
         fun `toString simple types`() {
             assertEquals("1.0", Data(1f).toString())
-            assertEquals("\"foo\"", Data("foo").toString())
+            assertEquals("\"foo\"", KLString("foo").toString())
             assertEquals("true", Data(true).toString())
         }
 

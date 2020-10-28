@@ -3,7 +3,6 @@ import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
 enum class DataType {
-    STRING,
     NUMBER,
     BOOLEAN,
     LITERAL,
@@ -11,21 +10,33 @@ enum class DataType {
     LIST,
 }
 
-class KLString(val text: String) : LiteralValue(DataType.STRING, text, null, null)
-class KLNumber(val value: Float) : LiteralValue(DataType.NUMBER, null, value, null)
-class KLBool(val truth: Boolean) : LiteralValue(DataType.BOOLEAN, null, null, truth)
-abstract class LiteralValue(dt: DataType, text: String?, value: Float?, truth: Boolean?) : Data(dt) {
+class KLString(val text: String) : LiteralValue(DataType.LITERAL, null, null) {
+    override fun equals(other: Any?): Boolean {
+        return if (other is KLString) {
+            this.text == other.text
+        } else if (other is Data && other.dataType == DataType.LITERAL) {
+            this.text == (other.literal as KLString).text
+        } else {
+            false
+        }
+    }
+    override fun toString(): String {
+        return "\"$text\""
+    }
+}
+class KLNumber(val value: Float) : LiteralValue(DataType.NUMBER,value, null)
+class KLBool(val truth: Boolean) : LiteralValue(DataType.BOOLEAN, null, truth)
+abstract class LiteralValue(dt: DataType, value: Float?, truth: Boolean?) : Data(dt) {
     init {
-        this.stringValue = text
         this.numericValue = value
         this.truthyValue = truth
+        this.literal = this
     }
 }
 
 open class Data : ExpressionPart {
     val dataType: DataType
     var literal: LiteralValue? = null
-    var stringValue: String? = null
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
@@ -35,12 +46,6 @@ open class Data : ExpressionPart {
     {
         this.dataType = DataType.LITERAL
         this.literal = literal
-    }
-
-    constructor(value: String) : super()
-    {
-        this.dataType = DataType.STRING
-        this.stringValue = value
     }
 
     constructor(value: Float) : super()
@@ -81,7 +86,6 @@ open class Data : ExpressionPart {
         if (other is Data) {
             return when(dataType) {
                 DataType.NUMBER -> numericValue == other.numericValue
-                DataType.STRING -> stringValue == other.stringValue
                 DataType.BOOLEAN -> truthyValue == other.truthyValue
                 DataType.LITERAL -> literal == other.literal
                 DataType.FUNCTION -> functionValue!!.name == other.functionValue!!.name
@@ -103,7 +107,6 @@ open class Data : ExpressionPart {
         }
     }
     override fun toString(): String = when (dataType) {
-        DataType.STRING -> "\"$stringValue\""
         DataType.NUMBER -> "$numericValue"
         DataType.BOOLEAN -> "$truthyValue"
         DataType.FUNCTION -> functionValue.toString()

@@ -177,7 +177,7 @@ class Parser {
     private fun parseSimplePart(token: Token): ExpressionPart {
         return when (token.type) {
             TokenType.NUMERIC -> Data(token.text.toFloat())
-            TokenType.STRING -> Data(token.text.substring(1, token.text.length - 1))
+            TokenType.STRING -> KLString(token.text.substring(1, token.text.length - 1))
             TokenType.IDENTIFIER -> Symbol(token.text)
             TokenType.BOOLEAN -> Data(token.text.toBoolean())
             TokenType.LET -> Keyword(KeywordType.LET)

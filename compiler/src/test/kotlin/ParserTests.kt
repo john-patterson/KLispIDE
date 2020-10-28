@@ -478,7 +478,7 @@ class ParserTests {
 
     fun assertIsString(expectedText: String, actual: ExpressionPart) {
         assertTrue(actual is Data)
-        assertEquals(expectedText, (actual as Data).stringValue)
+        assertEquals(expectedText, (actual as KLString).text)
     }
 
     fun assertIsList(listAssertion: (UnrealizedList) -> Unit, actual: ExpressionPart) {

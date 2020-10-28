@@ -1,6 +1,7 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.types.Data
 import com.statelesscoder.klisp.compiler.types.DataType
+import com.statelesscoder.klisp.compiler.types.KLString
 import com.statelesscoder.klisp.compiler.types.RealizedList
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ class IntegrationTests {
 
     @Test
     fun `built-in print function`() {
-        assertEquals("hello world", run("(print \"hello\" \"world\")").stringValue)
+        assertEquals("hello world", (run("(print \"hello\" \"world\")").literal as KLString).text)
     }
 
     @Test
@@ -38,7 +39,7 @@ class IntegrationTests {
         val result = run("(cons (cons (cons [] 1f) true) \"okay\")") as RealizedList
         assertEquals(1f, result.items[0].numericValue)
         assertEquals(true, result.items[1].truthyValue)
-        assertEquals("okay", result.items[2].stringValue)
+        assertEquals("okay", (result.items[2] as KLString).text)
         assertEquals("[1.0 true \"okay\"]", result.toString())
     }
 

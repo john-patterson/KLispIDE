@@ -115,10 +115,10 @@ class ExecutorTests {
             }
 
             testEqualityFunction(true, Data(1f), Data(1f))
-            testEqualityFunction(false, Data(1f), Data("1"))
+            testEqualityFunction(false, Data(1f), KLString("1"))
             testEqualityFunction(false, Data(1f), Data(2f))
-            testEqualityFunction(false, Data("1"), Data("2"))
-            testEqualityFunction(true, Data("1"), Data("1"))
+            testEqualityFunction(false, KLString("1"), KLString("2"))
+            testEqualityFunction(true, KLString("1"), KLString("1"))
             testEqualityFunction(true, Data(true), Data(true))
             testEqualityFunction(false, Data(true), Data(false))
 
@@ -164,11 +164,10 @@ class ExecutorTests {
             val result = e.execute(
                 Expression(
                     Symbol("pRINt"),
-                    listOf(Data("hello"), Data("world"))
+                    listOf(KLString("hello"), KLString("world"))
                 )
-            )
-            assertEquals(DataType.STRING, result.dataType)
-            assertEquals("hello world", result.stringValue)
+            ) as KLString
+            assertEquals("hello world", result.text)
         }
 
         @Test
@@ -179,7 +178,7 @@ class ExecutorTests {
                 e.execute(
                     Expression(
                         Symbol("pRINt"),
-                        listOf(Data("hello"), Data("world"), Data(2f))
+                        listOf(KLString("hello"), KLString("world"), Data(2f))
                     )
                 )
             }
@@ -194,16 +193,15 @@ class ExecutorTests {
 
             val expr = Expression(
                 Symbol("id"),
-                listOf(Data("test"))
+                listOf(KLString("test"))
             )
             val result = e.execute(
                 Expression(
                     Symbol("pRINt"),
-                    listOf(Data("hello"), Data("world"), expr)
+                    listOf(KLString("hello"), KLString("world"), expr)
                 ), scope
-            )
-            assertEquals(DataType.STRING, result.dataType)
-            assertEquals("hello world test", result.stringValue)
+            ) as KLString
+            assertEquals("hello world test", result.text)
         }
 
         @Test
@@ -213,7 +211,7 @@ class ExecutorTests {
                 Symbol("*"), listOf(
                     Data(1f),
                     Data(2f),
-                    Data("test")
+                    KLString("test")
                 )
             )
 
@@ -247,9 +245,9 @@ class ExecutorTests {
         @Test
         fun `can return string`() {
             val scope = Scope()
-            defineConstantFunction(Data("hey"), scope)
-            val result = callConstantFunction(scope)
-            assertEquals("hey", result.stringValue)
+            defineConstantFunction(KLString("hey"), scope)
+            val result = callConstantFunction(scope) as KLString
+            assertEquals("hey", result.text)
         }
 
         @Test
@@ -263,12 +261,12 @@ class ExecutorTests {
         @Test
         fun `can return list`() {
             val scope = Scope()
-            val klist = RealizedList(listOf(Data("a"), Data(1f)))
+            val klist = RealizedList(listOf(KLString("a"), Data(1f)))
             defineConstantFunction(klist, scope)
             val result = callConstantFunction(scope)
             val resultAsList = result as RealizedList
             assertEquals(2, resultAsList.items.size)
-            assertEquals("a", resultAsList.items[0].stringValue)
+            assertEquals("a", (resultAsList.items[0] as KLString).text)
             assertEquals(1f, resultAsList.items[1].numericValue)
         }
 

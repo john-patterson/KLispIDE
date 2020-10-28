@@ -60,17 +60,18 @@ class Executor {
             val functionName = expr.head.symbolName.toLowerCase()
 
             if (functionName == "print") {
-                if (!args.all { it.stringValue != null }) {
+                if (!args.all { it is KLString }) {
                     throw RuntimeException("Only strings are printable.")
                 }
 
-                val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
+                val stringArgs = args.map { it as KLString }.map { it.text }
+                val s = stringArgs.reduce() {acc, s -> "$acc $s" }
                 print(s)
-                return Data(s)
+                return KLString(s)
             }
 
             if (listBuiltins.contains(functionName)) {
-                return handleListBuiltIn(functionName, expr, args, scope)
+                return handleListBuiltIn(functionName, args)
             }
 
             if (logicBuiltins.contains(functionName)) {
@@ -87,7 +88,7 @@ class Executor {
         }
     }
 
-    private fun handleListBuiltIn(functionName: String, expr: Expression, args: List<Data>, scope: Scope): Data {
+    private fun handleListBuiltIn(functionName: String, args: List<Data>): Data {
         if (functionName == "car") {
             if (args.size != 1) {
                 throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
@@ -180,9 +181,9 @@ class Executor {
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
         return when (arg) {
+            is KLString -> arg
             is Data -> when (arg.dataType) {
                 DataType.LITERAL -> arg
-                DataType.STRING -> arg
                 DataType.BOOLEAN -> arg
                 DataType.NUMBER -> arg
                 DataType.LIST -> arg
