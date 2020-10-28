@@ -71,6 +71,8 @@ enum class KeywordType {
     FUN
 }
 
+data class Keyword(val kwdType: KeywordType): ExpressionPart(kwdType)
+
 enum class ExpressionPartType {
     SYMBOL,
     NUMBER,
