@@ -167,9 +167,11 @@ class Executor {
     private fun handleKeyword(expr: Expression, scope: Scope): Data {
         return when (expr.head.keywordType!!) {
             KeywordType.LET -> {
-                val bindings = expr.tail[0]
-                val body = expr.tail[1]
-                return handleLet(bindings, body, scope)
+                if (expr is LetBinding) {
+                    expr.execute(this, scope)
+                } else {
+                    throw RuntimeException("Expected expression '$expr' to be a let-binding.")
+                }
             }
             KeywordType.FUN -> {
                 val funName = expr.tail[0].name!!
@@ -186,36 +188,13 @@ class Executor {
                 data
             }
             KeywordType.IF -> {
-                val boolPart = expr.tail[0]
-                val ifTruePart = expr.tail[1]
-                val ifFalsePart = if (expr.tail.size == 3) expr.tail[2] else null
-
-                val boolResult = realizePart(boolPart, scope)
-
-                return if (boolResult.truthyValue == null) {
-                    throw RuntimeException("Boolean conditions in if-statements must be truthy: $boolPart.")
-                } else if (boolResult.truthyValue!!) {
-                    execute(ifTruePart, scope)
-                } else if (!boolResult.truthyValue!! && ifFalsePart != null) {
-                    execute(ifFalsePart, scope)
+                if (expr is IfExpression) {
+                    expr.execute(this, scope)
                 } else {
-                    createData(false)
+                    throw RuntimeException("Expected expression '$expr' to be a let-binding.")
                 }
             }
         }
-    }
-
-    private fun handleLet(bindings: ExpressionPart, body: ExpressionPart, scope: Scope): Data {
-        val newScope = Scope(scope)
-        val unitedBindings = listOf(bindings.expression!!.head) + bindings.expression!!.tail
-        unitedBindings
-            .forEach {
-                val symbol = it.expression!!.head.name!!
-                val value = execute(it.expression!!.tail[0], newScope)
-                newScope.add(symbol, value)
-            }
-
-        return execute(body, newScope)
     }
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {

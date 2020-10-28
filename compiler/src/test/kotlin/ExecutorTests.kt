@@ -369,9 +369,9 @@ class ExecutorTests {
                     bindingsAsParts.first(),
                     bindingsAsParts.drop(1)
                 )
-                return Expression(
-                    keywordPart(KeywordType.LET),
-                    listOf(expressionPart(bindingExpr), body)
+                return LetBinding(
+                    bindingExpr,
+                    body
                 )
             }
         }
@@ -386,7 +386,7 @@ class ExecutorTests {
                     )
                 )
 
-            private val bodyPart = expressionPart(formIfExpr(symbolPart("a"), symbolPart("b"), symbolPart("c")))
+            private val bodyPart = expressionPart(IfExpression(symbolPart("a"), symbolPart("b"), symbolPart("c")))
             private val expr = Expression(
                 keywordPart(KeywordType.FUN),
                 listOf(symbolPart(functionName), params, bodyPart)
@@ -430,25 +430,15 @@ class ExecutorTests {
         }
     }
 
-    private fun complexIfExpr(switch: Expression, truePart: Expression, falsePart: Expression): Expression =
-        formIfExpr(expressionPart(switch), expressionPart(truePart), expressionPart(falsePart))
+    private fun complexIfExpr(switch: Expression, truePart: Expression, falsePart: Expression): IfExpression =
+        IfExpression(expressionPart(switch), expressionPart(truePart), expressionPart(falsePart))
 
-    private fun complexIfExpr(switch: Expression, truePart: Float, falsePart: Float): Expression =
-        formIfExpr(expressionPart(switch), numericPart(truePart), numericPart(falsePart))
+    private fun complexIfExpr(switch: Expression, truePart: Float, falsePart: Float): IfExpression =
+        IfExpression(expressionPart(switch), numericPart(truePart), numericPart(falsePart))
 
-    private fun simpleIfExpr(switch: Boolean, truePart: Boolean, falsePart: Boolean): Expression =
-        formIfExpr(booleanPart(switch), booleanPart(truePart), booleanPart(falsePart))
+    private fun simpleIfExpr(switch: Boolean, truePart: Boolean, falsePart: Boolean): IfExpression =
+        IfExpression(booleanPart(switch), booleanPart(truePart), booleanPart(falsePart))
 
-    private fun simpleIfExpr(switch: Boolean, truePart: Float, falsePart: Float): Expression =
-        formIfExpr(booleanPart(switch), numericPart(truePart), numericPart(falsePart))
-
-    private fun formIfExpr(
-        switchPart: ExpressionPart,
-        truePart: ExpressionPart,
-        falsePart: ExpressionPart
-    ): Expression =
-        Expression(
-            keywordPart(KeywordType.IF),
-            listOf(switchPart, truePart, falsePart)
-        )
+    private fun simpleIfExpr(switch: Boolean, truePart: Float, falsePart: Float): IfExpression =
+        IfExpression(booleanPart(switch), numericPart(truePart), numericPart(falsePart))
 }
