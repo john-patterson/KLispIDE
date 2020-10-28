@@ -3,13 +3,6 @@ package com.statelesscoder.klisp.compiler
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
 import com.statelesscoder.klisp.compiler.types.*
 
-data class Symbol(val symbolName: String)
-    : ExpressionPart(ExpressionPartType.SYMBOL) {
-    init {
-        this.name = symbolName
-    }
-}
-
 class Parser() {
     fun parse(tokens: List<Token>): List<Expression> {
         var start = 0
