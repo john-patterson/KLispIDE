@@ -9,17 +9,6 @@ enum class DataType {
     LIST,
 }
 
-
-fun dataTypeToExpressionPartType(type: DataType): ExpressionPartType {
-    return when (type) {
-        DataType.BOOLEAN -> ExpressionPartType.BOOLEAN
-        DataType.FUNCTION -> ExpressionPartType.EXPRESSION
-        DataType.LIST -> ExpressionPartType.LIST
-        DataType.NUMBER -> ExpressionPartType.NUMBER
-        DataType.STRING -> ExpressionPartType.STRING
-    }
-}
-
 class Data : ExpressionPart {
     val dataType: DataType
     var stringValue: String? = null
@@ -64,9 +53,7 @@ class Data : ExpressionPart {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other as Data == null || other.dataType != dataType) {
-            return false
-        } else {
+        if (other is Data) {
             return when(dataType) {
                 DataType.NUMBER -> numericValue == other.numericValue
                 DataType.STRING -> stringValue == other.stringValue
@@ -85,6 +72,8 @@ class Data : ExpressionPart {
                     }
                 }
             }
+        } else {
+            return false
         }
     }
     override fun toString(): String = when (dataType) {
