@@ -4,24 +4,34 @@ import com.statelesscoder.klisp.compiler.Executor
 import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
-data class KList(val unrealizedItems: List<ExpressionPart>) : ExpressionPart() {
+
+data class RealizedList(val items: List<Data>) : Data(DataType.LIST) {
     constructor() : this(emptyList())
 
-    var realizedData: List<Data> = emptyList()
-        private set
+    init {
+        this.listValue = this
+    }
 
-    fun realize(executor: Executor, scope: Scope) {
-        if (realizedData.isEmpty()) {
-            realizedData = unrealizedItems.map { executor.realizePart(it, scope) }
+    override fun equals(other: Any?): Boolean {
+        return if (other is RealizedList) {
+            this.items == other.items
+        } else if (other is Data && other.dataType == DataType.LIST) {
+            this.items == other.listValue?.items
+        } else {
+            false
         }
     }
 
     override fun toString(): String {
-        val itemString = (if (realizedData.size != unrealizedItems.size) {
-            unrealizedItems
-        } else {
-            realizedData
-        }).joinToString(separator = " ") { it.toString() }
+        val itemString = items.joinToString(separator = " ") { it.toString() }
         return "[$itemString]"
     }
 }
+
+data class UnrealizedList(val items: List<ExpressionPart>) : ExpressionPart() {
+    constructor() : this(emptyList())
+    fun realize(executor: Executor, scope: Scope): RealizedList {
+        return RealizedList(items.map { executor.realizePart(it, scope) })
+    }
+}
+

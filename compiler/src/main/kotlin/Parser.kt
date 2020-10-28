@@ -103,7 +103,6 @@ class Parser {
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
         validateIfExpr(head, tail)
-        validateFunctionDecl(head, tail)
         return enrichExpression(head, tail)
     }
 
@@ -113,11 +112,15 @@ class Parser {
                 KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
                 KeywordType.LET -> LetBinding(tail[0] as Expression, tail[1])
                 KeywordType.FUN -> {
+                    validateFunctionDecl(head, tail)
                     val functionName = tail[0] as Symbol
                     if (tail.size == 3) {
-                        FunctionDefinition(functionName, tail[1] as KList, tail[2])
+                        val params = (tail[1] as UnrealizedList)
+                            .items
+                            .map { it as Symbol } // This is asserted as okay in validateFunctionDecl
+                        FunctionDefinition(functionName, params, tail[2])
                     } else {
-                        FunctionDefinition(functionName, KList(), tail[1])
+                        FunctionDefinition(functionName, emptyList(), tail[1])
                     }
                 }
             }
@@ -143,8 +146,8 @@ class Parser {
             } else if (tail.size == 3) { // This has all parts
                 // This is the case without args
                 val nameValid = tail[0] is Symbol
-                val argsValid = tail[1] is KList
-                        && (tail[1] as KList).unrealizedItems.all { it is Symbol }
+                val argsValid = tail[1] is UnrealizedList
+                        && (tail[1] as UnrealizedList).items.all { it is Symbol }
 
                 if (!nameValid) {
                     throw ParsingException("Encountered function without symbol as name: $tail")
@@ -167,7 +170,7 @@ class Parser {
 
     private fun parseListPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findMatchingEnd(tokens, start, TokenType.LEFT_BRACKET, TokenType.RIGHT_BRACKET)
-        val list = KList(parseSingleList(tokens.subList(start, end + 1)))
+        val list = UnrealizedList(parseSingleList(tokens.subList(start, end + 1)))
         return Pair(end, list)
     }
 

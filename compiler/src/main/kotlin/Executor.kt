@@ -41,7 +41,7 @@ class Executor {
         }
 
         val argsResults = expr.tail.map { Pair(it, realizePart(it, env)) }
-        val argsData = argsResults.map { it.second }
+        val argsData = RealizedList(argsResults.map { it.second })
         return headResult.functionValue!!.run(argsData, env)
     }
 
@@ -93,34 +93,34 @@ class Executor {
                 throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
             }
 
-            args[0].listValue!!.realize(this, scope)
-            if (args[0].listValue!!.realizedData.isEmpty()) {
-                throw RuntimeException("CAR cannot be used on the empty list.")
+            val functionArgs = args[0]
+            if (functionArgs.dataType == DataType.LIST && functionArgs.listValue!!.items.isNotEmpty()) {
+                return functionArgs.listValue!!.items[0]
+            } else {
+                throw RuntimeException("CAR does not support these args: $args")
             }
-            return args[0].listValue!!.realizedData[0]
         } else if (functionName == "cdr") {
             if (args.size != 1) {
                 throw RuntimeException("CDR function expects 1 and only 1 list to be passed.")
             }
 
-            if (args[0].listValue!!.unrealizedItems.isEmpty()) {
-                throw RuntimeException("CDR cannot be used on the empty list.")
+            val functionArgs = args[0]
+            if (functionArgs.dataType == DataType.LIST && functionArgs.listValue!!.items.isNotEmpty()) {
+                return RealizedList(functionArgs.listValue!!.items.drop(1))
+            } else {
+                throw RuntimeException("CAR does not support these args: $args")
             }
-
-            val newList = KList(args[0].listValue!!.unrealizedItems.drop(1))
-            newList.realize(this, scope)
-            return Data(newList)
         } else if (functionName == "cons") {
             if (args.size != 2) {
                 throw RuntimeException("CONS function expects 1 list and 1 data object.")
-            } else if (args[0].dataType != DataType.LIST) {
+            }
+            val list = args[0]
+            val value = args[1]
+            if (list.dataType == DataType.LIST) {
+                return RealizedList(list.listValue!!.items + listOf(value))
+            } else {
                 throw RuntimeException("CONS function expects list as first argument.")
             }
-
-            val newListUnrealized = args[0].listValue!!.unrealizedItems + listOf(expr.tail[1])
-            val newList = KList(newListUnrealized)
-            newList.realize(this, scope) // TODO: This is double-work with line 1 of this function
-            return Data(newList)
         }
 
         throw RuntimeException("Operation $functionName not recognized.")
@@ -185,10 +185,7 @@ class Executor {
                 DataType.STRING -> arg
                 DataType.BOOLEAN -> arg
                 DataType.NUMBER -> arg
-                DataType.LIST -> {
-                    arg.listValue?.realize(this, env)
-                    return arg
-                }
+                DataType.LIST -> arg
                 DataType.FUNCTION -> {
                     execute(arg.functionValue!!, env)
                 }
@@ -196,9 +193,8 @@ class Executor {
             is Symbol -> handleSymbol(arg, env)
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
             is Expression -> execute(arg, env)
-            is KList -> {
-                arg.realize(this, env)
-                Data(arg)
+            is UnrealizedList -> {
+                Data(arg.realize(this, env))
             }
             else -> throw RuntimeException("Part $arg not recognized.")
         }

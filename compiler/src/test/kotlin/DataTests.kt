@@ -18,12 +18,12 @@ class DataTests {
             val f = Function(e, "f", emptyList(), Data(1f))
 
             assertThrows(RuntimeException::class.java) {
-                f.run(listOf(Data("g")))
+                f.run(RealizedList(listOf(Data("g"))))
             }
 
             val g = Function(e, "g", listOf(Symbol("a")), Data(1f))
             assertThrows(RuntimeException::class.java) {
-                g.run(emptyList())
+                g.run(RealizedList())
             }
         }
 
@@ -31,7 +31,7 @@ class DataTests {
         fun `function with 1 arg that is not used`() {
             val e = Executor()
             val f = Function(e, "f", listOf(Symbol("a")), Data(1f))
-            val result = f.run(listOf(Data(10f)))
+            val result = f.run(RealizedList(listOf(Data(10f))))
 
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
@@ -46,7 +46,7 @@ class DataTests {
                 Data(20f)
             )
             val f = Function(e, "f", params, Data(1f))
-            val result = f.run(args)
+            val result = f.run(RealizedList(args))
 
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(1f, result.numericValue)
@@ -58,7 +58,7 @@ class DataTests {
             val params = listOf(Symbol("x"))
             val args = listOf(Data(10f))
             val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(args)
+            val result = f.run(RealizedList(args))
 
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(10f, result.numericValue)
@@ -73,7 +73,7 @@ class DataTests {
                 Data(20f)
             )
             val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(args)
+            val result = f.run(RealizedList(args))
 
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(10f, result.numericValue)
@@ -94,10 +94,10 @@ class DataTests {
                 listOf(Symbol("b"))
             )
             val f = Function(e, "f", params, expr)
-            val result = f.run(listOf(
+            val result = f.run(RealizedList(listOf(
                 Data(1f),
                 Data(2f)
-            ), scope)
+            )), scope)
 
             assertEquals(DataType.NUMBER, result.dataType)
             assertEquals(2f, result.numericValue)
@@ -113,7 +113,7 @@ class DataTests {
         @Test
         fun `toString function`() {
             val e = Executor()
-            val params = KList(listOf(Symbol("a"), Symbol("b")))
+            val params = listOf(Symbol("a"), Symbol("b"))
             val body = Expression(
                     Symbol("+"),
                     listOf(Symbol("a"), Symbol("b")))

@@ -1,6 +1,7 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.types.Data
 import com.statelesscoder.klisp.compiler.types.DataType
+import com.statelesscoder.klisp.compiler.types.RealizedList
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -34,12 +35,11 @@ class IntegrationTests {
 
     @Test
     fun `cons builds up a list`() {
-        val result = run("(cons (cons (cons [] 1f) true) \"okay\")")
-        assertEquals(DataType.LIST, result.dataType)
-        assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
-        assertEquals(true, result.listValue!!.realizedData[1].truthyValue)
-        assertEquals("okay", result.listValue!!.realizedData[2].stringValue)
-        assertEquals("[1.0 true \"okay\"]", result.listValue.toString())
+        val result = run("(cons (cons (cons [] 1f) true) \"okay\")") as RealizedList
+        assertEquals(1f, result.items[0].numericValue)
+        assertEquals(true, result.items[1].truthyValue)
+        assertEquals("okay", result.items[2].stringValue)
+        assertEquals("[1.0 true \"okay\"]", result.toString())
     }
 
     @Test
@@ -87,8 +87,8 @@ class IntegrationTests {
                         "(filter (cdr ls) (cons nls (car ls)) f) " +
                         "(filter (cdr ls) nls f))))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.dataType)
-        val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope)
-        assertEquals(2, executionResult.listValue!!.realizedData.size)
+        val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope) as RealizedList
+        assertEquals(2, executionResult.items.size)
     }
 
     @Test

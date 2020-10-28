@@ -16,7 +16,7 @@ class ExecutorTests {
         @Test
         fun `car returns the head of a list`() {
             val e = Executor()
-            val list = KList(listOf(Data(1f), Data(2f)))
+            val list = RealizedList(listOf(Data(1f), Data(2f)))
             val expr = Expression(
                 Symbol("car"),
                 listOf(list))
@@ -28,7 +28,7 @@ class ExecutorTests {
         @Test
         fun `car on an empty list fails`() {
             val e = Executor()
-            val list = KList(emptyList())
+            val list = RealizedList()
             val expr = Expression(
                 Symbol("car"),
                 listOf(list))
@@ -41,19 +41,19 @@ class ExecutorTests {
         @Test
         fun `cdr returns the tail of a list`() {
             val e = Executor()
-            val list = KList(listOf(Data(1f), Data(2f)))
+            val list = RealizedList(listOf(Data(1f), Data(2f)))
             val expr = Expression(
                 Symbol("cdr"),
                 listOf(list))
             val result = e.execute(expr)
             assertEquals(DataType.LIST, result.dataType)
-            assertEquals(2f, result.listValue!!.realizedData[0].numericValue)
+            assertEquals(2f, (result as RealizedList).items[0].numericValue)
         }
 
         @Test
         fun `cdr on an empty list fails`() {
             val e = Executor()
-            val list = KList(emptyList())
+            val list = RealizedList()
             val expr = Expression(
                 Symbol("cdr"),
                 listOf(list))
@@ -66,7 +66,7 @@ class ExecutorTests {
         @Test
         fun `cons adds items to list`() {
             val e = Executor()
-            val list = KList(emptyList())
+            val list = RealizedList()
             val innerExpr = Expression(Symbol("cons"),
                 listOf(list, Data(1f)))
             val expr = Expression(
@@ -74,9 +74,10 @@ class ExecutorTests {
                 listOf(innerExpr, Data(2f)))
             val result = e.execute(expr)
             assertEquals(DataType.LIST, result.dataType)
-            assertEquals(2, result.listValue!!.realizedData.size)
-            assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
-            assertEquals(2f, result.listValue!!.realizedData[1].numericValue)
+            val resultAsList = result as RealizedList
+            assertEquals(2, resultAsList.items.size)
+            assertEquals(1f, resultAsList.items[0].numericValue)
+            assertEquals(2f, resultAsList.items[1].numericValue)
         }
 
         @Test
@@ -121,10 +122,10 @@ class ExecutorTests {
             testEqualityFunction(true, Data(true), Data(true))
             testEqualityFunction(false, Data(true), Data(false))
 
-            val list1 = KList(listOf(Data(1f), Data(2f), Data(3f)))
-            val list2 = KList(listOf(Data(1f), Data(2f), Data(3f)))
-            val list3 = KList(listOf(Data(1f)))
-            val emptylist = KList()
+            val list1 = RealizedList(listOf(Data(1f), Data(2f), Data(3f)))
+            val list2 = RealizedList(listOf(Data(1f), Data(2f), Data(3f)))
+            val list3 = RealizedList(listOf(Data(1f)))
+            val emptylist = RealizedList()
             testEqualityFunction(true, list1, list1)
             testEqualityFunction(true, list1, list2)
             testEqualityFunction(false, list1, list3)
@@ -262,16 +263,17 @@ class ExecutorTests {
         @Test
         fun `can return list`() {
             val scope = Scope()
-            val klist = KList(listOf(Data("a"), Data(1f)))
+            val klist = RealizedList(listOf(Data("a"), Data(1f)))
             defineConstantFunction(klist, scope)
             val result = callConstantFunction(scope)
-            assertEquals(2, result.listValue!!.realizedData.size)
-            assertEquals("a", result.listValue!!.realizedData[0].stringValue)
-            assertEquals(1f, result.listValue!!.realizedData[1].numericValue)
+            val resultAsList = result as RealizedList
+            assertEquals(2, resultAsList.items.size)
+            assertEquals("a", resultAsList.items[0].stringValue)
+            assertEquals(1f, resultAsList.items[1].numericValue)
         }
 
         private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {
-            val definition = FunctionDefinition(Symbol("foo"), KList(), returnValue)
+            val definition = FunctionDefinition(Symbol("foo"), emptyList(), returnValue)
             definition.execute(e, scope)
         }
 
@@ -374,9 +376,9 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = KList(listOf(Symbol("a"),
+            private val params = listOf(Symbol("a"),
                             Symbol("b"),
-                            Symbol("c")))
+                            Symbol("c"))
 
             private val bodyPart = IfExpression(Symbol("a"), Symbol("b"), Symbol("c"))
             private val expr = FunctionDefinition(Symbol(functionName), params, bodyPart)

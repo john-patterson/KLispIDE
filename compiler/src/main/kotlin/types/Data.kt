@@ -23,7 +23,7 @@ open class Data : ExpressionPart {
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
-    var listValue: KList? = null
+    var listValue: RealizedList? = null
 
     constructor(literal: LiteralValue) : super()
     {
@@ -55,7 +55,7 @@ open class Data : ExpressionPart {
         this.functionValue = value
     }
 
-    constructor(value: KList) : super()
+    constructor(value: RealizedList) : super()
     {
         this.dataType = DataType.LIST
         this.listValue = value
@@ -64,6 +64,11 @@ open class Data : ExpressionPart {
     constructor(dataType: DataType) : super()
     {
         this.dataType = dataType
+    }
+
+    constructor(items: List<Data>) {
+        this.dataType = DataType.LIST
+        this.listValue = RealizedList(items)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -75,11 +80,11 @@ open class Data : ExpressionPart {
                 DataType.LITERAL -> literal == other.literal
                 DataType.FUNCTION -> functionValue!!.name == other.functionValue!!.name
                 DataType.LIST -> {
-                    if (this.listValue!!.realizedData.size != other.listValue!!.realizedData.size) {
+                    if (this.listValue!!.items.size != other.listValue!!.items.size) {
                         return false
                     } else {
-                        for (i in this.listValue!!.realizedData.indices) {
-                            if (this.listValue!!.realizedData[i] != other.listValue!!.realizedData[i]) {
+                        for (i in this.listValue!!.items.indices) {
+                            if (this.listValue!!.items[i] != other.listValue!!.items[i]) {
                                 return false
                             }
                         }
