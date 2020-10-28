@@ -9,7 +9,7 @@ class Function(private val executor: Executor,
                val name: Symbol,
                private val params: List<Symbol>,
                private val body: ExpressionPart
-): Expression(name, listOf(UnrealizedList(params), body)) {
+) : KLValue(DataType.FUNCTION) {
     constructor(executor: Executor, name: String, params: List<Symbol>, body: ExpressionPart)
         : this(executor, Symbol(name), params, body)
 
