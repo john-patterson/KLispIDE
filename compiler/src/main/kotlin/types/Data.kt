@@ -8,44 +8,6 @@ enum class DataType {
     LIST,
 }
 
-class KLString(val text: String) : LiteralValue(DataType.LITERAL) {
-    override fun equals(other: Any?): Boolean {
-        return if (other is KLString) {
-            this.text == other.text
-        } else {
-            false
-        }
-    }
-    override fun toString(): String {
-        return "\"$text\""
-    }
-}
-class KLNumber(val value: Float) : LiteralValue(DataType.LITERAL) {
-    override fun equals(other: Any?): Boolean {
-        return if (other is KLNumber) {
-            this.value == other.value
-        } else {
-            false
-        }
-    }
-    override fun toString(): String {
-        return value.toString()
-    }
-}
-class KLBool(val truth: Boolean) : LiteralValue(DataType.LITERAL) {
-    override fun equals(other: Any?): Boolean {
-        return if (other is KLBool) {
-            this.truth == other.truth
-        } else {
-            false
-        }
-    }
-    override fun toString(): String {
-        return truth.toString()
-    }
-}
-abstract class LiteralValue(dt: DataType) : Data(dt)
-
 open class Data : ExpressionPart {
     val dataType: DataType
     var functionValue: Function? = null
