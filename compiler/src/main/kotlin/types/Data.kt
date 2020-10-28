@@ -1,5 +1,6 @@
 package com.statelesscoder.klisp.compiler.types
 import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 
 enum class DataType {
     STRING,
@@ -9,18 +10,52 @@ enum class DataType {
     LIST,
 }
 
-class Data(val type: DataType) {
+class Data : ExpressionPart {
+    val dataType: DataType
     var stringValue: String? = null
     var numericValue: Float? = null
     var truthyValue: Boolean? = null
     var functionValue: Function? = null
     var listValue: KList? = null
 
+    constructor(value: String) : super()
+    {
+        this.dataType = DataType.STRING
+        this.stringValue = value
+    }
+
+    constructor(value: Float) : super()
+    {
+        this.dataType = DataType.NUMBER
+        this.numericValue = value
+    }
+
+    constructor(value: Boolean) : super()
+    {
+        this.dataType = DataType.BOOLEAN
+        this.truthyValue = value
+    }
+
+    constructor(value: Function) : super()
+    {
+        this.dataType = DataType.FUNCTION
+        this.functionValue = value
+    }
+
+    constructor(value: KList) : super()
+    {
+        this.dataType = DataType.LIST
+        this.listValue = value
+    }
+
+    constructor(dataType: DataType) : super()
+    {
+        this.dataType = dataType
+    }
+
     override fun equals(other: Any?): Boolean {
-        if (other as Data == null || other.type != type) {
-            return false
-        } else {
-            return when(type) {
+        if (other is Data) {
+            return when(dataType) {
                 DataType.NUMBER -> numericValue == other.numericValue
                 DataType.STRING -> stringValue == other.stringValue
                 DataType.BOOLEAN -> truthyValue == other.truthyValue
@@ -38,48 +73,15 @@ class Data(val type: DataType) {
                     }
                 }
             }
+        } else {
+            return false
         }
     }
-    override fun toString(): String = when (type) {
+    override fun toString(): String = when (dataType) {
         DataType.STRING -> "\"$stringValue\""
         DataType.NUMBER -> "$numericValue"
         DataType.BOOLEAN -> "$truthyValue"
         DataType.FUNCTION -> functionValue.toString()
         DataType.LIST -> listValue.toString()
     }
-}
-
-fun createData(s: String): Data {
-    val d =
-        Data(DataType.STRING)
-    d.stringValue = s
-    return d
-}
-
-fun createData(n: Float): Data {
-    val d =
-        Data(DataType.NUMBER)
-    d.numericValue = n
-    return d
-}
-
-fun createData(b: Boolean): Data {
-    val d =
-        Data(DataType.BOOLEAN)
-    d.truthyValue = b
-    return d
-}
-
-fun createData(f: Function): Data {
-    val d =
-        Data(DataType.FUNCTION)
-    d.functionValue = f
-    return d
-}
-
-fun createData(l: KList): Data {
-    val d =
-        Data(DataType.LIST)
-    d.listValue = l
-    return d
 }

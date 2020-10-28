@@ -1,6 +1,7 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
+import com.statelesscoder.klisp.compiler.expressions.*
 import com.statelesscoder.klisp.compiler.types.*
 
 fun runCode(code: String): List<ExecutionResult> {
@@ -27,14 +28,14 @@ fun runCode(code: String): List<ExecutionResult> {
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): Data {
-        if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.name?.toLowerCase())) {
+        if (expr.head is Symbol && builtinFunctions.contains(expr.head.symbolName.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
-        } else if (expr.head.type == ExpressionPartType.KEYWORD) {
+        } else if (expr.head is Keyword) {
             return handleKeyword(expr, env)
         }
 
         val headResult = realizePart(expr.head, env)
-        if (headResult.type != DataType.FUNCTION) {
+        if (headResult.dataType != DataType.FUNCTION) {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
         }
 
@@ -54,32 +55,35 @@ class Executor {
         .plusElement("print")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
-        val functionName = expr.head.name?.toLowerCase()
+        if (expr.head is Symbol) {
+            val functionName = expr.head.symbolName.toLowerCase()
 
-        if (functionName == "print") {
-            if (!args.all { it.stringValue != null }) {
-                throw RuntimeException("Only strings are printable.")
+            if (functionName == "print") {
+                if (!args.all { it.stringValue != null }) {
+                    throw RuntimeException("Only strings are printable.")
+                }
+
+                val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
+                print(s)
+                return Data(s)
             }
 
-            val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
-            print(s)
-            return createData(s)
+            if (listBuiltins.contains(functionName)) {
+                return handleListBuiltIn(functionName, expr, args, scope)
+            }
+
+            if (logicBuiltins.contains(functionName)) {
+                return handleLogicBuiltIn(functionName, args)
+            }
+
+            if (equalityBuiltins.contains(functionName)) {
+                return handleEqualityBuiltIn(functionName, args)
+            }
+
+            return handleNumericBuiltIn(functionName, args)
+        } else {
+            throw RuntimeException("Expression $expr should start with a symbol.")
         }
-
-        if (listBuiltins.contains(functionName)) {
-            return handleListBuiltIn(functionName!!, expr, args, scope)
-        }
-
-        if (logicBuiltins.contains(functionName)) {
-            return handleLogicBuiltIn(functionName!!, args)
-        }
-
-        if (equalityBuiltins.contains(functionName)) {
-            return handleEqualityBuiltIn(functionName!!, args)
-        }
-
-        return handleNumericBuiltIn(functionName!!, args)
-
     }
 
     private fun handleListBuiltIn(functionName: String, expr: Expression, args: List<Data>, scope: Scope): Data {
@@ -104,18 +108,18 @@ class Executor {
 
             val newList = KList(args[0].listValue!!.unrealizedItems.drop(1))
             newList.realize(this, scope)
-            return createData(newList)
+            return Data(newList)
         } else if (functionName == "cons") {
             if (args.size != 2) {
                 throw RuntimeException("CONS function expects 1 list and 1 data object.")
-            } else if (args[0].type != DataType.LIST) {
+            } else if (args[0].dataType != DataType.LIST) {
                 throw RuntimeException("CONS function expects list as first argument.")
             }
 
             val newListUnrealized = args[0].listValue!!.unrealizedItems + listOf(expr.tail[1])
             val newList = KList(newListUnrealized)
             newList.realize(this, scope) // TODO: This is double-work with line 1 of this function
-            return createData(newList)
+            return Data(newList)
         }
 
         throw RuntimeException("Operation $functionName not recognized.")
@@ -126,7 +130,7 @@ class Executor {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
         val argsAsBools = args.map { it.truthyValue!! }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "and" -> argsAsBools.reduce { acc, part -> acc && part }
             "or" -> argsAsBools.reduce { acc, part -> acc || part }
             "not" -> {
@@ -143,7 +147,7 @@ class Executor {
         if (args.size != 2) {
             throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
         }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "eq" -> args[0] == args[1]
             "neq" -> args[0] != args[1]
             else -> throw RuntimeException("$functionName is not a built-in function.")
@@ -155,7 +159,7 @@ class Executor {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
         val argsAsNums = args.map { it.numericValue!! }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "*" -> argsAsNums.reduce { acc, number -> acc * number }
             "+" -> argsAsNums.reduce { acc, number -> acc + number }
             "-" -> argsAsNums.reduce { acc, number -> acc - number }
@@ -165,76 +169,40 @@ class Executor {
     }
 
     private fun handleKeyword(expr: Expression, scope: Scope): Data {
-        return when (expr.head.keywordType!!) {
-            KeywordType.LET -> {
-                val bindings = expr.tail[0]
-                val body = expr.tail[1]
-                return handleLet(bindings, body, scope)
-            }
-            KeywordType.FUN -> {
-                val funName = expr.tail[0].name!!
-                val f = if (expr.tail.size == 3) {
-                    val params = expr.tail[1].list!!
-                    val body = expr.tail[2]
-                    Function(this, funName, params, body)
-                } else {
-                    Function(this, funName, KList(emptyList()), expr.tail[1])
-                }
-
-                val data = createData(f)
-                scope.add(funName, data)
-                data
-            }
-            KeywordType.IF -> {
-                val boolPart = expr.tail[0]
-                val ifTruePart = expr.tail[1]
-                val ifFalsePart = if (expr.tail.size == 3) expr.tail[2] else null
-
-                val boolResult = realizePart(boolPart, scope)
-
-                return if (boolResult.truthyValue == null) {
-                    throw RuntimeException("Boolean conditions in if-statements must be truthy: $boolPart.")
-                } else if (boolResult.truthyValue!!) {
-                    execute(ifTruePart, scope)
-                } else if (!boolResult.truthyValue!! && ifFalsePart != null) {
-                    execute(ifFalsePart, scope)
-                } else {
-                    createData(false)
-                }
-            }
+        return when (expr) {
+            is FunctionDefinition -> expr.execute(this, scope)
+            is IfExpression -> expr.execute(this, scope)
+            is LetBinding -> expr.execute(this, scope)
+            else -> throw RuntimeException("Expected expression '$expr' to be a special contruct.")
         }
-    }
-
-    private fun handleLet(bindings: ExpressionPart, body: ExpressionPart, scope: Scope): Data {
-        val newScope = Scope(scope)
-        val unitedBindings = listOf(bindings.expression!!.head) + bindings.expression!!.tail
-        unitedBindings
-            .forEach {
-                val symbol = it.expression!!.head.name!!
-                val value = execute(it.expression!!.tail[0], newScope)
-                newScope.add(symbol, value)
-            }
-
-        return execute(body, newScope)
     }
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
-        return when (arg.type) {
-            ExpressionPartType.STRING -> createData(arg.innerText!!)
-            ExpressionPartType.BOOLEAN -> createData(arg.truth!!)
-            ExpressionPartType.NUMBER -> createData(arg.value!!)
-            ExpressionPartType.SYMBOL -> handleSymbol(arg.name!!, env)
-            ExpressionPartType.KEYWORD ->
-                throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
-            ExpressionPartType.EXPRESSION -> execute(arg.expression!!, env)
-            ExpressionPartType.LIST -> {
-                arg.list!!.realize(this, env)
-                return createData(arg.list!!)
+        return when (arg) {
+            is Data -> when (arg.dataType) {
+                DataType.STRING -> arg
+                DataType.BOOLEAN -> arg
+                DataType.NUMBER -> arg
+                DataType.LIST -> {
+                    arg.listValue?.realize(this, env)
+                    return arg
+                }
+                DataType.FUNCTION -> {
+                    execute(arg.functionValue!!, env)
+                }
             }
+            is Symbol -> handleSymbol(arg, env)
+            is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
+            is Expression -> execute(arg, env)
+            is KList -> {
+                arg.realize(this, env)
+                Data(arg)
+            }
+            else -> throw RuntimeException("Part $arg not recognized.")
         }
     }
 
-    private fun handleSymbol(symbol: String, env: Scope): Data {
+    private fun handleSymbol(symbol: Symbol, env: Scope): Data {
         return env.lookup(symbol)
     }
 }

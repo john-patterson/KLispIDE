@@ -25,8 +25,8 @@ class IntegrationTests {
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
         val bindingResult = run("(fun foo [a b c] (if a b c))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.type)
-        assertNotNull(scope.lookup("foo"))
+        assertEquals(DataType.FUNCTION, bindingResult.dataType)
+        assertNotNull(scope.lookup(Symbol("foo")))
 
         val executionResult = run("(let ((switch false)) (foo switch 50 100))", scope)
         assertEquals(100f, executionResult.numericValue)
@@ -35,7 +35,7 @@ class IntegrationTests {
     @Test
     fun `cons builds up a list`() {
         val result = run("(cons (cons (cons [] 1f) true) \"okay\")")
-        assertEquals(DataType.LIST, result.type)
+        assertEquals(DataType.LIST, result.dataType)
         assertEquals(1f, result.listValue!!.realizedData[0].numericValue)
         assertEquals(true, result.listValue!!.realizedData[1].truthyValue)
         assertEquals("okay", result.listValue!!.realizedData[2].stringValue)
@@ -45,7 +45,7 @@ class IntegrationTests {
     @Test
     fun `can get third item of a list`() {
         val result = run("(car (cdr (cdr [1f 2f 3f 4f])))")
-        assertEquals(DataType.NUMBER, result.type)
+        assertEquals(DataType.NUMBER, result.dataType)
         assertEquals(3f, result.numericValue)
     }
 
@@ -72,7 +72,7 @@ class IntegrationTests {
     fun `recursive function`() {
         val scope = Scope()
         val bindingResult = run("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.type)
+        assertEquals(DataType.FUNCTION, bindingResult.dataType)
         val executionResult = run("(f 3)", scope)
         assertEquals(6f, executionResult.numericValue)
     }
@@ -86,7 +86,7 @@ class IntegrationTests {
                     "(if (f (car ls)) " +
                         "(filter (cdr ls) (cons nls (car ls)) f) " +
                         "(filter (cdr ls) nls f))))", scope)
-        assertEquals(DataType.FUNCTION, bindingResult.type)
+        assertEquals(DataType.FUNCTION, bindingResult.dataType)
         val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope)
         assertEquals(2, executionResult.listValue!!.realizedData.size)
     }

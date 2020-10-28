@@ -1,13 +1,13 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
+import com.statelesscoder.klisp.compiler.expressions.*
 import com.statelesscoder.klisp.compiler.types.*
 
-
-class Parser() {
+class Parser {
     fun parse(tokens: List<Token>): List<Expression> {
         var start = 0
-        var end = 0
+        var end: Int
         var balance = 0
 
         val collection = mutableListOf<Expression>()
@@ -60,7 +60,7 @@ class Parser() {
             throw ParsingException("Expected start of expression, but got nothing.")
         }
 
-        var tail = mutableListOf<ExpressionPart>()
+        val tail = mutableListOf<ExpressionPart>()
         assertTokenTypeIsOneOf(tokens[0], TokenType.LEFT_PARENS)
         var i = 2
         val head = if(tokens[1].type == TokenType.LEFT_PARENS) {
@@ -78,52 +78,73 @@ class Parser() {
         }
 
         while (i < (tokens.size - 1)) {
-            if (tokens[i].type == TokenType.LEFT_PARENS) {
-                val (end, expr) = parseExprPart(tokens, i)
-                tail.add(expr)
-                i = end + 1
-            } else if (tokens[i].type == TokenType.LEFT_BRACKET) {
-                val (end, expr) = parseListPart(tokens, i)
-                tail.add(expr)
-                i = end + 1
-            } else {
-                assertTokenTypeIsOneOf(tokens[i],
-                    TokenType.IDENTIFIER,
-                    TokenType.NUMERIC,
-                    TokenType.BOOLEAN,
-                    TokenType.STRING)
-                tail.add(parseSimplePart(tokens[i]))
-                i +=1
+            when (tokens[i].type) {
+                TokenType.LEFT_PARENS -> {
+                    val (end, expr) = parseExprPart(tokens, i)
+                    tail.add(expr)
+                    i = end + 1
+                }
+                TokenType.LEFT_BRACKET -> {
+                    val (end, expr) = parseListPart(tokens, i)
+                    tail.add(expr)
+                    i = end + 1
+                }
+                else -> {
+                    assertTokenTypeIsOneOf(tokens[i],
+                        TokenType.IDENTIFIER,
+                        TokenType.NUMERIC,
+                        TokenType.BOOLEAN,
+                        TokenType.STRING)
+                    tail.add(parseSimplePart(tokens[i]))
+                    i +=1
+                }
             }
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
 
         validateIfExpr(head, tail)
         validateFunctionDecl(head, tail)
-        return Expression(head, tail)
+        return enrichExpression(head, tail)
+    }
+
+    private fun enrichExpression(head: ExpressionPart, tail: List<ExpressionPart>): Expression {
+        return when (head) {
+            is Keyword -> when (head.kwdType) {
+                KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
+                KeywordType.LET -> LetBinding(tail[0] as Expression, tail[1])
+                KeywordType.FUN -> {
+                    val functionName = tail[0] as Symbol
+                    if (tail.size == 3) {
+                        FunctionDefinition(functionName, tail[1] as KList, tail[2])
+                    } else {
+                        FunctionDefinition(functionName, KList(), tail[1])
+                    }
+                }
+            }
+            else -> Expression(head, tail)
+        }
     }
 
     private fun validateIfExpr(head: ExpressionPart, tail: List<ExpressionPart>) {
-        if (head.type == ExpressionPartType.KEYWORD
-            && head.keywordType == KeywordType.IF
+        if (head is Keyword
+            && head.kwdType == KeywordType.IF
             && tail.size != 3) {
             throw ParsingException("Encountered IF with less than 3 parts: $tail.")
         }
     }
 
     private fun validateFunctionDecl(head: ExpressionPart, tail: List<ExpressionPart>) {
-        if (head.type == ExpressionPartType.KEYWORD
-            && head.keywordType == KeywordType.FUN) {
+        if (head is Keyword
+            && head.kwdType == KeywordType.FUN) {
 
-            if (tail.size == 2 && tail[0].type != ExpressionPartType.SYMBOL) {
+            if (tail.size == 2 && tail[0] !is Symbol) {
                 // This is the case without args
                 throw ParsingException("Encountered function without symbol as name: $tail")
             } else if (tail.size == 3) { // This has all parts
                 // This is the case without args
-                val nameValid = tail[0].type == ExpressionPartType.SYMBOL
-                val argsValid = tail[1].type == ExpressionPartType.LIST
-                        && tail[1].list != null
-                        && tail[1].list!!.unrealizedItems.all { it.type == ExpressionPartType.SYMBOL }
+                val nameValid = tail[0] is Symbol
+                val argsValid = tail[1] is KList
+                        && (tail[1] as KList).unrealizedItems.all { it is Symbol }
 
                 if (!nameValid) {
                     throw ParsingException("Encountered function without symbol as name: $tail")
@@ -140,63 +161,29 @@ class Parser() {
 
     private fun parseExprPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findMatchingEnd(tokens, start, TokenType.LEFT_PARENS, TokenType.RIGHT_PARENS)
-        val expr = ExpressionPart(ExpressionPartType.EXPRESSION)
-        expr.expression = parseSingleExpression(tokens.subList(start, end + 1))
+        val expr = parseSingleExpression(tokens.subList(start, end + 1))
         return Pair(end, expr)
     }
 
     private fun parseListPart(tokens: List<Token>, start: Int): Pair<Int, ExpressionPart> {
         val end = findMatchingEnd(tokens, start, TokenType.LEFT_BRACKET, TokenType.RIGHT_BRACKET)
-        val list = ExpressionPart(ExpressionPartType.LIST)
-        list.list = KList(parseSingleList(tokens.subList(start, end + 1)))
+        val list = KList(parseSingleList(tokens.subList(start, end + 1)))
         return Pair(end, list)
     }
 
     private fun parseSimplePart(token: Token): ExpressionPart {
         return when (token.type) {
-            TokenType.NUMERIC -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.NUMBER)
-                part.value = token.text.toFloat()
-                part
-            }
-            TokenType.STRING -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.STRING)
-                part.innerText = token.text.substring(1, token.text.length - 1)
-                part
-            }
-            TokenType.IDENTIFIER -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.SYMBOL)
-                part.name = token.text
-                part
-            }
-            TokenType.BOOLEAN -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.BOOLEAN)
-                part.truth = token.text.toBoolean()
-                part
-            }
-            TokenType.LET -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.KEYWORD)
-                part.keywordType = KeywordType.LET
-                part
-            }
-            TokenType.IF -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.KEYWORD)
-                part.keywordType = KeywordType.IF
-                part
-            }
-            TokenType.FUN -> {
-                val part =
-                    ExpressionPart(ExpressionPartType.KEYWORD)
-                part.keywordType = KeywordType.FUN
-                part
-            }
-            else -> throw ParsingException("Unexpected token '${token.text}' of type ${token.type}.")
+            TokenType.NUMERIC -> Data(token.text.toFloat())
+            TokenType.STRING -> Data(token.text.substring(1, token.text.length - 1))
+            TokenType.IDENTIFIER -> Symbol(token.text)
+            TokenType.BOOLEAN -> Data(token.text.toBoolean())
+            TokenType.LET -> Keyword(KeywordType.LET)
+            TokenType.IF -> Keyword(KeywordType.IF)
+            TokenType.FUN -> Keyword(KeywordType.FUN)
+            TokenType.RIGHT_BRACKET -> throw ParsingException("Unexpected ).")
+            TokenType.LEFT_BRACKET -> throw ParsingException("Unexpected (.")
+            TokenType.RIGHT_PARENS -> throw ParsingException("Unexpected ].")
+            TokenType.LEFT_PARENS -> throw ParsingException("Unexpected (.")
         }
     }
 
