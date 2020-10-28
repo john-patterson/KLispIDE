@@ -35,7 +35,7 @@ class IntegrationTests {
     fun `cons builds up a list`() {
         val result = run<RealizedList>("(cons (cons (cons [] 1f) true) \"okay\")")
         assertEquals(1f, (result.items[0] as KLNumber).value)
-        assertEquals(true, result.items[1].truthyValue)
+        assertEquals(true, (result.items[1] as KLBool).truth)
         assertEquals("okay", (result.items[2] as KLString).text)
         assertEquals("[1.0 true \"okay\"]", result.toString())
     }
@@ -51,18 +51,18 @@ class IntegrationTests {
         val scope = Scope()
         run<Data>("(fun f [a b] (and a b))", scope)
         run<Data>("(fun g [a b] (and a b))", scope)
-        val resultSameName = run<Data>("(eq f f)", scope)
-        val resultOtherName = run<Data>("(eq f g)", scope)
-        assertEquals(true, resultSameName.truthyValue)
-        assertEquals(false, resultOtherName.truthyValue)
+        val resultSameName = run<KLBool>("(eq f f)", scope)
+        val resultOtherName = run<KLBool>("(eq f g)", scope)
+        assertEquals(true, resultSameName.truth)
+        assertEquals(false, resultOtherName.truth)
     }
 
     @Test
     fun `symbolic equality`() {
-        val resultSame = run<Data>("(let ((a 1) (b 1)) (eq a b))")
-        val resultDifferent = run<Data>("(let ((a 1) (b 4)) (eq a b))")
-        assertEquals(true, resultSame.truthyValue)
-        assertEquals(false, resultDifferent.truthyValue)
+        val resultSame = run<KLBool>("(let ((a 1) (b 1)) (eq a b))")
+        val resultDifferent = run<KLBool>("(let ((a 1) (b 4)) (eq a b))")
+        assertEquals(true, resultSame.truth)
+        assertEquals(false, resultDifferent.truth)
     }
 
     @Test

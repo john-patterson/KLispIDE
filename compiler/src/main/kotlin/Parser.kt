@@ -179,7 +179,7 @@ class Parser {
             TokenType.NUMERIC -> KLNumber(token.text.toFloat())
             TokenType.STRING -> KLString(token.text.substring(1, token.text.length - 1))
             TokenType.IDENTIFIER -> Symbol(token.text)
-            TokenType.BOOLEAN -> Data(token.text.toBoolean())
+            TokenType.BOOLEAN -> KLBool(token.text.toBoolean())
             TokenType.LET -> Keyword(KeywordType.LET)
             TokenType.IF -> Keyword(KeywordType.IF)
             TokenType.FUN -> Keyword(KeywordType.FUN)

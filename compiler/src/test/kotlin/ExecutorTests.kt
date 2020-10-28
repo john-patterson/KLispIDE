@@ -84,9 +84,9 @@ class ExecutorTests {
         fun `logic functions work`() {
             fun testLogicFunction(func: String, expected: Boolean, vararg args: Boolean) {
                 val e = Executor()
-                val expr = Expression(Symbol(func), args.map { Data(it) })
-                val result = e.execute(expr)
-                assertEquals(expected, result.truthyValue)
+                val expr = Expression(Symbol(func), args.map { KLBool(it) })
+                val result = e.execute(expr) as KLBool
+                assertEquals(expected, result.truth)
             }
 
             testLogicFunction("and", true, true, true, true)
@@ -107,9 +107,9 @@ class ExecutorTests {
                 val e = Executor()
 
                 val equalExpr = Expression(Symbol("eq"), parts.asList())
-                val equalResult = e.execute(equalExpr).truthyValue
+                val equalResult = (e.execute(equalExpr) as KLBool).truth
                 val notEqualExpr = Expression(Symbol("neq"), parts.asList())
-                val notEqualResult = e.execute(notEqualExpr).truthyValue
+                val notEqualResult = (e.execute(notEqualExpr) as KLBool).truth
                 assertEquals(areEqual, equalResult)
                 assertNotEquals(areEqual, notEqualResult)
             }
@@ -119,8 +119,8 @@ class ExecutorTests {
             testEqualityFunction(false, KLNumber(1f), KLNumber(2f))
             testEqualityFunction(false, KLString("1"), KLString("2"))
             testEqualityFunction(true, KLString("1"), KLString("1"))
-            testEqualityFunction(true, Data(true), Data(true))
-            testEqualityFunction(false, Data(true), Data(false))
+            testEqualityFunction(true, KLBool(true), KLBool(true))
+            testEqualityFunction(false, KLBool(true), KLBool(false))
 
             val list1 = RealizedList(listOf(KLNumber(1f), KLNumber(2f), KLNumber(3f)))
             val list2 = RealizedList(listOf(KLNumber(1f), KLNumber(2f), KLNumber(3f)))
@@ -253,9 +253,9 @@ class ExecutorTests {
         @Test
         fun `can return boolean`() {
             val scope = Scope()
-            defineConstantFunction(Data(true), scope)
-            val result = callConstantFunction(scope)
-            assertEquals(true, result.truthyValue)
+            defineConstantFunction(KLBool(true), scope)
+            val result = callConstantFunction(scope) as KLBool
+            assertEquals(true, result.truth)
         }
 
         @Test
@@ -386,7 +386,7 @@ class ExecutorTests {
                 val scope = Scope()
                 val executionExpr = Expression(
                     Symbol("f"),
-                    listOf(Data(false), KLNumber(10f), KLNumber(100f))
+                    listOf(KLBool(false), KLNumber(10f), KLNumber(100f))
                 )
 
                 // Before definition, this should make a symbol lookup error
@@ -409,7 +409,7 @@ class ExecutorTests {
                 val scope = Scope()
                 val executionExpr = Expression(
                     expr,
-                    listOf(Data(false), KLNumber(10f), KLNumber(100f))
+                    listOf(KLBool(false), KLNumber(10f), KLNumber(100f))
                 )
                 val result = executor.execute(executionExpr, scope) as KLNumber
 
@@ -426,8 +426,8 @@ class ExecutorTests {
         IfExpression(switch, KLNumber(truePart), KLNumber(falsePart))
 
     private fun simpleIfExpr(switch: Boolean, truePart: Boolean, falsePart: Boolean): IfExpression =
-        IfExpression(Data(switch), Data(truePart), Data(falsePart))
+        IfExpression(KLBool(switch), KLBool(truePart), KLBool(falsePart))
 
     private fun simpleIfExpr(switch: Boolean, truePart: Float, falsePart: Float): IfExpression =
-        IfExpression(Data(switch), KLNumber(truePart), KLNumber(falsePart))
+        IfExpression(KLBool(switch), KLNumber(truePart), KLNumber(falsePart))
 }

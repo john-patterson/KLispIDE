@@ -463,7 +463,7 @@ class ParserTests {
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
         assertTrue(actual is Data)
-        assertEquals(expected, (actual as Data).truthyValue)
+        assertEquals(expected, (actual as KLBool).truth)
     }
 
     fun assertIsSymbol(expected: String, actual: ExpressionPart) {

@@ -102,7 +102,7 @@ class DataTests {
         fun `toString simple types`() {
             assertEquals("1.0", KLNumber(1f).toString())
             assertEquals("\"foo\"", KLString("foo").toString())
-            assertEquals("true", Data(true).toString())
+            assertEquals("true", KLBool(true).toString())
         }
 
         @Test

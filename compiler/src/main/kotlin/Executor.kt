@@ -127,29 +127,29 @@ class Executor {
         throw RuntimeException("Operation $functionName not recognized.")
     }
 
-    private fun handleLogicBuiltIn(functionName: String, args: List<Data>): Data {
-        if (!args.all { it.truthyValue != null }) {
+    private fun handleLogicBuiltIn(functionName: String, args: List<Data>): KLBool {
+        if (!args.all { it is KLBool }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
-        val argsAsBools = args.map { it.truthyValue!! }
-        return Data(when (functionName) {
+        val argsAsBools = args.map { (it as KLBool).truth }
+        return KLBool(when (functionName) {
             "and" -> argsAsBools.reduce { acc, part -> acc && part }
             "or" -> argsAsBools.reduce { acc, part -> acc || part }
             "not" -> {
                 if (args.size != 1) {
                     throw RuntimeException("NOT only accepts one argument.")
                 }
-                !args[0].truthyValue!!
+                !argsAsBools[0]
             }
             else -> throw RuntimeException("$functionName is not a built-in function.")
         })
     }
 
-    private fun handleEqualityBuiltIn(functionName: String, args: List<Data>): Data {
+    private fun handleEqualityBuiltIn(functionName: String, args: List<Data>): KLBool {
         if (args.size != 2) {
             throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
         }
-        return Data(when (functionName) {
+        return KLBool(when (functionName) {
             "eq" -> args[0] == args[1]
             "neq" -> args[0] != args[1]
             else -> throw RuntimeException("$functionName is not a built-in function.")
@@ -184,7 +184,6 @@ class Executor {
             is LiteralValue -> arg
             is Data -> when (arg.dataType) {
                 DataType.LITERAL -> arg
-                DataType.BOOLEAN -> arg
                 DataType.LIST -> arg
                 DataType.FUNCTION -> {
                     execute(arg.functionValue!!, env)
