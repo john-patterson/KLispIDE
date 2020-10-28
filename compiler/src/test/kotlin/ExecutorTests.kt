@@ -190,7 +190,7 @@ class ExecutorTests {
             val e = Executor()
             val scope = Scope()
             val id = Function(e, "id", listOf(ExpressionPart(Symbol("x"))), ExpressionPart(Symbol("x")))
-            scope.add("id", createData(id))
+            scope.add("id", Data(id))
 
             val expr = Expression(
                 ExpressionPart(Symbol("id")),

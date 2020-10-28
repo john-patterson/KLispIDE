@@ -63,7 +63,7 @@ class Executor {
 
             val s = args.map { it.stringValue!! }.reduce {acc, s -> "$acc $s" }
             print(s)
-            return createData(s)
+            return Data(s)
         }
 
         if (listBuiltins.contains(functionName)) {
@@ -104,7 +104,7 @@ class Executor {
 
             val newList = KList(args[0].listValue!!.unrealizedItems.drop(1))
             newList.realize(this, scope)
-            return createData(newList)
+            return Data(newList)
         } else if (functionName == "cons") {
             if (args.size != 2) {
                 throw RuntimeException("CONS function expects 1 list and 1 data object.")
@@ -115,7 +115,7 @@ class Executor {
             val newListUnrealized = args[0].listValue!!.unrealizedItems + listOf(expr.tail[1])
             val newList = KList(newListUnrealized)
             newList.realize(this, scope) // TODO: This is double-work with line 1 of this function
-            return createData(newList)
+            return Data(newList)
         }
 
         throw RuntimeException("Operation $functionName not recognized.")
@@ -126,7 +126,7 @@ class Executor {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
         val argsAsBools = args.map { it.truthyValue!! }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "and" -> argsAsBools.reduce { acc, part -> acc && part }
             "or" -> argsAsBools.reduce { acc, part -> acc || part }
             "not" -> {
@@ -143,7 +143,7 @@ class Executor {
         if (args.size != 2) {
             throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
         }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "eq" -> args[0] == args[1]
             "neq" -> args[0] != args[1]
             else -> throw RuntimeException("$functionName is not a built-in function.")
@@ -155,7 +155,7 @@ class Executor {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
         val argsAsNums = args.map { it.numericValue!! }
-        return createData(when (functionName) {
+        return Data(when (functionName) {
             "*" -> argsAsNums.reduce { acc, number -> acc * number }
             "+" -> argsAsNums.reduce { acc, number -> acc + number }
             "-" -> argsAsNums.reduce { acc, number -> acc - number }
@@ -183,7 +183,7 @@ class Executor {
                     Function(this, funName, KList(emptyList()), expr.tail[1])
                 }
 
-                val data = createData(f)
+                val data = Data(f)
                 scope.add(funName, data)
                 data
             }
@@ -199,16 +199,16 @@ class Executor {
 
     fun realizePart(arg: ExpressionPart, env: Scope): Data {
         return when (arg.type) {
-            ExpressionPartType.STRING -> createData(arg.innerText!!)
-            ExpressionPartType.BOOLEAN -> createData(arg.truth!!)
-            ExpressionPartType.NUMBER -> createData(arg.value!!)
+            ExpressionPartType.STRING -> Data(arg.innerText!!)
+            ExpressionPartType.BOOLEAN -> Data(arg.truth!!)
+            ExpressionPartType.NUMBER -> Data(arg.value!!)
             ExpressionPartType.SYMBOL -> handleSymbol(arg.name!!, env)
             ExpressionPartType.KEYWORD ->
                 throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
             ExpressionPartType.EXPRESSION -> execute(arg.expression!!, env)
             ExpressionPartType.LIST -> {
                 arg.list!!.realize(this, env)
-                return createData(arg.list!!)
+                return Data(arg.list!!)
             }
         }
     }
