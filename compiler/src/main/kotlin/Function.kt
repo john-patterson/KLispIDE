@@ -7,7 +7,7 @@ class Function(private val executor: Executor,
                val name: String,
                private val params: KList,
                private val body: ExpressionPart
-): Expression(symbolPart(name), listOf(ExpressionPart(params), body)) {
+): Expression(ExpressionPart(Symbol(name)), listOf(ExpressionPart(params), body)) {
     constructor(executor: Executor, name: String, params: List<ExpressionPart>, body: ExpressionPart)
         : this(executor, name, KList(params), body)
 

@@ -79,9 +79,3 @@ enum class ExpressionPartType {
     KEYWORD,
     LIST,
 }
-
-fun symbolPart(name: String): ExpressionPart {
-    val p = ExpressionPart(ExpressionPartType.SYMBOL)
-    p.name = name
-    return p
-}

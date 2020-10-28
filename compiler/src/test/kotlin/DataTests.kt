@@ -20,7 +20,7 @@ class DataTests {
                 f.run(listOf(createData("g")))
             }
 
-            val g = Function(e, "g", listOf(symbolPart("a")), ExpressionPart(1f))
+            val g = Function(e, "g", listOf(ExpressionPart(Symbol("a"))), ExpressionPart(1f))
             assertThrows(RuntimeException::class.java) {
                 g.run(emptyList())
             }
@@ -29,7 +29,7 @@ class DataTests {
         @Test
         fun `function with 1 arg that is not used`() {
             val e = Executor()
-            val f = Function(e, "f", listOf(symbolPart("a")), ExpressionPart(1f))
+            val f = Function(e, "f", listOf(ExpressionPart(Symbol("a"))), ExpressionPart(1f))
             val result = f.run(listOf(createData(10f)))
 
             assertEquals(DataType.NUMBER, result.dataType)
@@ -39,7 +39,7 @@ class DataTests {
         @Test
         fun `function with 2 arg that are not used`() {
             val e = Executor()
-            val params = listOf(symbolPart("a"), symbolPart("b"))
+            val params = listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")))
             val args = listOf(
                 createData(10f),
                 createData(20f)
@@ -54,9 +54,9 @@ class DataTests {
         @Test
         fun `function which takes one parameter and uses it`() {
             val e = Executor()
-            val params = listOf(symbolPart("x"))
+            val params = listOf(ExpressionPart(Symbol("x")))
             val args = listOf(createData(10f))
-            val f = Function(e, "f", params, symbolPart("x"))
+            val f = Function(e, "f", params, ExpressionPart(Symbol("x")))
             val result = f.run(args)
 
             assertEquals(DataType.NUMBER, result.dataType)
@@ -66,12 +66,12 @@ class DataTests {
         @Test
         fun `function which takes two parameters and uses one`() {
             val e = Executor()
-            val params = listOf(symbolPart("x"), symbolPart("y"))
+            val params = listOf(ExpressionPart(Symbol("x")), ExpressionPart(Symbol("y")))
             val args = listOf(
                 createData(10f),
                 createData(20f)
             )
-            val f = Function(e, "f", params, symbolPart("x"))
+            val f = Function(e, "f", params, ExpressionPart(Symbol("x")))
             val result = f.run(args)
 
             assertEquals(DataType.NUMBER, result.dataType)
@@ -83,14 +83,14 @@ class DataTests {
             val scope = Scope()
             val e = Executor()
             // This is: (fun id (x) x) and
-            val id = Function(e, "id", listOf(symbolPart("x")), symbolPart("x"))
+            val id = Function(e, "id", listOf(ExpressionPart(Symbol("x"))), ExpressionPart(Symbol("x")))
             scope.add("id", createData(id))
 
             // This is: (fun f (a b) (id b))
-            val params = listOf(symbolPart("a"), symbolPart("b"))
+            val params = listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")))
             val expr = Expression(
-                symbolPart("id"),
-                listOf(symbolPart("b"))
+                ExpressionPart(Symbol("id")),
+                listOf(ExpressionPart(Symbol("b")))
             )
             val f = Function(e, "f", params, ExpressionPart(expr))
             val result = f.run(listOf(
@@ -112,13 +112,11 @@ class DataTests {
         @Test
         fun `toString function`() {
             val e = Executor()
-            val f = Function(e, "foo", listOf(symbolPart("a"), symbolPart("b")),
-                ExpressionPart(
-                    Expression(
-                        symbolPart("+"),
-                        listOf(symbolPart("a"), symbolPart("b"))
-                    )
-                ))
+            val params = KList(listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b"))))
+            val body = ExpressionPart(Expression(
+                    ExpressionPart(Symbol("+")),
+                    listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")))))
+            val f = Function(e, "foo", params, body)
             assertEquals("(fun foo [a b] (+ a b))", f.toString())
         }
     }
