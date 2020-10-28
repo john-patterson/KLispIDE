@@ -8,4 +8,8 @@ data class Symbol(val symbolName: String)
     init {
         this.symbol = this
     }
+
+    override fun toString(): String {
+        return this.symbolName
+    }
 }

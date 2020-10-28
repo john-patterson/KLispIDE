@@ -4,7 +4,7 @@ import com.statelesscoder.klisp.compiler.Symbol
 import com.statelesscoder.klisp.compiler.expressions.Expression
 
 open class ExpressionPart {
-    val type: ExpressionPartType;
+    val type: ExpressionPartType
     var value: Float? = null
     var truth: Boolean? = null
     var symbol: Symbol? = null

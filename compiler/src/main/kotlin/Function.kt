@@ -5,12 +5,12 @@ import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.*
 
 class Function(private val executor: Executor,
-               val name: String,
+               val name: Symbol,
                private val params: KList,
                private val body: ExpressionPart
-): Expression(ExpressionPart(Symbol(name)), listOf(ExpressionPart(params), body)) {
+): Expression(ExpressionPart(name), listOf(ExpressionPart(params), body)) {
     constructor(executor: Executor, name: String, params: List<ExpressionPart>, body: ExpressionPart)
-        : this(executor, name, KList(params), body)
+        : this(executor, Symbol(name), KList(params), body)
 
     fun run(args: List<Data>, scope: Scope = Scope()): Data {
         if (args.size != params.unrealizedItems.size) {

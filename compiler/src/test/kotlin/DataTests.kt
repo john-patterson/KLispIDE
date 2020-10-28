@@ -119,7 +119,7 @@ class DataTests {
                     ExpressionPart(Symbol("+")),
                     listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b"))))
             )
-            val f = Function(e, "foo", params, body)
+            val f = Function(e, Symbol("foo"), params, body)
             assertEquals("(fun foo [a b] (+ a b))", f.toString())
         }
     }

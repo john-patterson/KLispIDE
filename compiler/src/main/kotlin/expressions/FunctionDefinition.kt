@@ -10,7 +10,7 @@ class FunctionDefinition(val name: Symbol, private val params: KList, private va
     : Expression(ExpressionPart(KeywordType.FUN), listOf(ExpressionPart(name), ExpressionPart(params), body)) {
 
     override fun execute(executor: Executor, scope: Scope): Data {
-        val function = Function(executor, name.symbolName, params, body)
+        val function = Function(executor, name, params, body)
         val data = Data(function)
         scope.add(name, data)
         return data
