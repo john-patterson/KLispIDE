@@ -12,8 +12,6 @@ class KLString(val text: String) : LiteralValue(DataType.LITERAL) {
     override fun equals(other: Any?): Boolean {
         return if (other is KLString) {
             this.text == other.text
-        } else if (other is Data && other.dataType == DataType.LITERAL) {
-            this.text == (other.literal as KLString).text
         } else {
             false
         }
@@ -26,8 +24,6 @@ class KLNumber(val value: Float) : LiteralValue(DataType.LITERAL) {
     override fun equals(other: Any?): Boolean {
         return if (other is KLNumber) {
             this.value == other.value
-        } else if (other is Data && other.dataType == DataType.LITERAL && other.literal is KLNumber) {
-            this.value == (other.literal as KLNumber).value
         } else {
             false
         }
@@ -40,8 +36,6 @@ class KLBool(val truth: Boolean) : LiteralValue(DataType.LITERAL) {
     override fun equals(other: Any?): Boolean {
         return if (other is KLBool) {
             this.truth == other.truth
-        } else if (other is Data && other.dataType == DataType.LITERAL && other.literal is KLBool) {
-            this.truth == (other.literal as KLBool).truth
         } else {
             false
         }
@@ -50,23 +44,12 @@ class KLBool(val truth: Boolean) : LiteralValue(DataType.LITERAL) {
         return truth.toString()
     }
 }
-abstract class LiteralValue(dt: DataType) : Data(dt) {
-    init {
-        this.literal = this
-    }
-}
+abstract class LiteralValue(dt: DataType) : Data(dt)
 
 open class Data : ExpressionPart {
     val dataType: DataType
-    var literal: LiteralValue? = null
     var functionValue: Function? = null
     var listValue: RealizedList? = null
-
-    constructor(literal: LiteralValue) : super()
-    {
-        this.dataType = DataType.LITERAL
-        this.literal = literal
-    }
 
     constructor(value: Function) : super()
     {
@@ -93,7 +76,7 @@ open class Data : ExpressionPart {
     override fun equals(other: Any?): Boolean {
         if (other is Data) {
             return when(dataType) {
-                DataType.LITERAL -> literal == other.literal
+                DataType.LITERAL -> (this as LiteralValue) == other
                 DataType.FUNCTION -> functionValue!!.name == other.functionValue!!.name
                 DataType.LIST -> {
                     if (this.listValue!!.items.size != other.listValue!!.items.size) {
@@ -115,6 +98,6 @@ open class Data : ExpressionPart {
     override fun toString(): String = when (dataType) {
         DataType.FUNCTION -> functionValue.toString()
         DataType.LIST -> listValue.toString()
-        DataType.LITERAL -> literal.toString()
+        DataType.LITERAL -> (this as LiteralValue).toString()
     }
 }
