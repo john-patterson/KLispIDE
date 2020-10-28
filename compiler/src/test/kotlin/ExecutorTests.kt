@@ -329,7 +329,7 @@ class ExecutorTests {
         inner class LetExpressionTests {
             @Test
             fun `let binding with one binding and simple body`() {
-                val executor: Executor = Executor()
+                val executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f))
                 val expr = makeLetBinding(binding, symbolPart("x"))
                 assertEquals(10f, executor.execute(expr).numericValue)
@@ -337,7 +337,7 @@ class ExecutorTests {
 
             @Test
             fun `let binding with two bindings and simple body`() {
-                val executor: Executor = Executor()
+                val executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f), Pair("y", 100f))
                 val expr = makeLetBinding(binding, symbolPart("y"))
                 assertEquals(100f, executor.execute(expr).numericValue)
@@ -345,7 +345,7 @@ class ExecutorTests {
 
             @Test
             fun `let binding with complex body`() {
-                val executor: Executor = Executor()
+                val executor = Executor()
                 val binding: Map<String, Float> = mapOf(Pair("x", 10f), Pair("y", 100f))
                 val bodyExpr = Expression(
                     symbolPart("*"),
