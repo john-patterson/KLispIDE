@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DataTests {
+class KLValueTests {
     @Nested
     inner class FunctionTests {
         @Test
@@ -81,7 +81,7 @@ class DataTests {
             val e = Executor()
             // This is: (fun id (x) x) and
             val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
-            scope.add(Symbol("id"), Data(id))
+            scope.add(Symbol("id"), KLValue(id))
 
             // This is: (fun f (a b) (id b))
             val params = listOf(Symbol("a"), Symbol("b"))

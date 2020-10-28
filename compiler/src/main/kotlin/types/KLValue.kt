@@ -8,7 +8,7 @@ enum class DataType {
     LIST,
 }
 
-open class Data : ExpressionPart {
+open class KLValue : ExpressionPart {
     val dataType: DataType
     var functionValue: Function? = null
     var listValue: RealizedList? = null
@@ -30,13 +30,13 @@ open class Data : ExpressionPart {
         this.dataType = dataType
     }
 
-    constructor(items: List<Data>) {
+    constructor(items: List<KLValue>) {
         this.dataType = DataType.LIST
         this.listValue = RealizedList(items)
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is Data) {
+        if (other is KLValue) {
             return when(dataType) {
                 DataType.LITERAL -> (this as LiteralValue) == other
                 DataType.FUNCTION -> functionValue!!.name == other.functionValue!!.name

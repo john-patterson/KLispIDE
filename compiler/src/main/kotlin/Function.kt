@@ -13,7 +13,7 @@ class Function(private val executor: Executor,
     constructor(executor: Executor, name: String, params: List<Symbol>, body: ExpressionPart)
         : this(executor, Symbol(name), params, body)
 
-    fun run(args: RealizedList, scope: Scope = Scope()): Data {
+    fun run(args: RealizedList, scope: Scope = Scope()): KLValue {
         if (args.items.size != params.size) {
             throw RuntimeException("Function '$name' expects '${params.size}' arguments, but got '${args.items.size}'.")
         }

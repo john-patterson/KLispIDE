@@ -7,7 +7,7 @@ import com.statelesscoder.klisp.compiler.types.*
 
 data class IfExpression(val predicate: ExpressionPart, val truePart: ExpressionPart, val falsePart: ExpressionPart)
     : Expression(Keyword(KeywordType.IF), listOf(predicate, truePart, falsePart)) {
-    override fun execute(executor: Executor, scope: Scope): Data {
+    override fun execute(executor: Executor, scope: Scope): KLValue {
         return when (val realizedPredicate = executor.realizePart(predicate, scope)) {
             is KLBool -> when (realizedPredicate.truth) {
                 true -> executor.execute(truePart, scope)

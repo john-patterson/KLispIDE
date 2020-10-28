@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.util.spi.LocaleNameProvider
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExecutorTests {
@@ -189,7 +188,7 @@ class ExecutorTests {
             val e = Executor()
             val scope = Scope()
             val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
-            scope.add(Symbol("id"), Data(id))
+            scope.add(Symbol("id"), KLValue(id))
 
             val expr = Expression(
                 Symbol("id"),
@@ -231,7 +230,7 @@ class ExecutorTests {
     }
 
     @Nested
-    inner class SimpleDataTests {
+    inner class SimpleKLValueTests {
         private val e = Executor()
 
         @Test
@@ -275,7 +274,7 @@ class ExecutorTests {
             definition.execute(e, scope)
         }
 
-        private fun callConstantFunction(scope: Scope): Data {
+        private fun callConstantFunction(scope: Scope): KLValue {
             val functionCall = Expression(Symbol("foo"), emptyList())
             return e.execute(functionCall, scope)
         }

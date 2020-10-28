@@ -2,11 +2,11 @@ package com.statelesscoder.klisp.compiler.expressions
 
 import com.statelesscoder.klisp.compiler.Executor
 import com.statelesscoder.klisp.compiler.Scope
-import com.statelesscoder.klisp.compiler.types.Data
+import com.statelesscoder.klisp.compiler.types.KLValue
 
 open class Expression(val head: ExpressionPart, val tail: List<ExpressionPart>)
     : ExpressionPart() {
-    open fun execute(executor: Executor, scope: Scope): Data {
+    open fun execute(executor: Executor, scope: Scope): KLValue {
         return executor.execute(this, scope)
     }
 

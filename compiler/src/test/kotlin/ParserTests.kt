@@ -396,7 +396,7 @@ class ParserTests {
             val parser = Parser()
             val result = parser.parse(tokens)
             assertTrue(result.first().head is Symbol)
-            assertTrue(result.first().tail[0] is Data)
+            assertTrue(result.first().tail[0] is KLValue)
             assertEquals(1f, (result.first().tail[0] as KLNumber).value)
             assertEquals(2f, (result.first().tail[1] as KLNumber).value)
         }
@@ -457,12 +457,12 @@ class ParserTests {
     }
 
     fun assertIsNumber(expected: Float, actual: ExpressionPart) {
-        assertTrue(actual is Data)
+        assertTrue(actual is KLValue)
         assertEquals(expected, (actual as KLNumber).value)
     }
 
     fun assertIsBoolean(expected: Boolean, actual: ExpressionPart) {
-        assertTrue(actual is Data)
+        assertTrue(actual is KLValue)
         assertEquals(expected, (actual as KLBool).truth)
     }
 
@@ -477,7 +477,7 @@ class ParserTests {
     }
 
     fun assertIsString(expectedText: String, actual: ExpressionPart) {
-        assertTrue(actual is Data)
+        assertTrue(actual is KLValue)
         assertEquals(expectedText, (actual as KLString).text)
     }
 

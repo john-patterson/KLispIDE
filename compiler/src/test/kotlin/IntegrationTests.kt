@@ -23,7 +23,7 @@ class IntegrationTests {
     @Test
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
-        val bindingResult = run<Data>("(fun foo [a b c] (if a b c))", scope)
+        val bindingResult = run<KLValue>("(fun foo [a b c] (if a b c))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.dataType)
         assertNotNull(scope.lookup(Symbol("foo")))
 
@@ -49,8 +49,8 @@ class IntegrationTests {
     @Test
     fun `function equality`() {
         val scope = Scope()
-        run<Data>("(fun f [a b] (and a b))", scope)
-        run<Data>("(fun g [a b] (and a b))", scope)
+        run<KLValue>("(fun f [a b] (and a b))", scope)
+        run<KLValue>("(fun g [a b] (and a b))", scope)
         val resultSameName = run<KLBool>("(eq f f)", scope)
         val resultOtherName = run<KLBool>("(eq f g)", scope)
         assertEquals(true, resultSameName.truth)
@@ -68,7 +68,7 @@ class IntegrationTests {
     @Test
     fun `recursive function`() {
         val scope = Scope()
-        val bindingResult = run<Data>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        val bindingResult = run<KLValue>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.dataType)
         val executionResult = run<KLNumber>("(f 3)", scope)
         assertEquals(6f, executionResult.value)
@@ -77,7 +77,7 @@ class IntegrationTests {
     @Test
     fun `filter definable`() {
         val scope = Scope()
-        val bindingResult = run<Data>("(fun filter [ls nls f] " +
+        val bindingResult = run<KLValue>("(fun filter [ls nls f] " +
                 "(if (eq ls []) " +
                     "nls " +
                     "(if (f (car ls)) " +
@@ -97,7 +97,7 @@ class IntegrationTests {
         assertEquals(5f, result.value)
     }
 
-    private fun <T : Data> run(text: String, env: Scope = Scope()): T {
+    private fun <T : KLValue> run(text: String, env: Scope = Scope()): T {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)
         return Executor().execute(ast, env) as T

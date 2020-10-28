@@ -27,8 +27,8 @@ fun runCode(code: String): List<ExecutionResult> {
 
 
 class Executor {
-    fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
-    fun execute(expr: Expression, env: Scope = Scope()): Data {
+    fun execute(part: ExpressionPart, env: Scope = Scope()): KLValue = realizePart(part, env)
+    fun execute(expr: Expression, env: Scope = Scope()): KLValue {
         if (expr.head is Symbol && builtinFunctions.contains(expr.head.symbolName.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
         } else if (expr.head is Keyword) {
@@ -54,7 +54,7 @@ class Executor {
         .plus(equalityBuiltins)
         .plus(logicBuiltins)
         .plusElement("print")
-    private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
+    private fun handleBuiltinFunction(expr: Expression, scope: Scope): KLValue {
         val args = expr.tail.map { execute(it, scope) }
         if (expr.head is Symbol) {
             val functionName = expr.head.symbolName.toLowerCase()
@@ -88,7 +88,7 @@ class Executor {
         }
     }
 
-    private fun handleListBuiltIn(functionName: String, args: List<Data>): Data {
+    private fun handleListBuiltIn(functionName: String, args: List<KLValue>): KLValue {
         if (functionName == "car") {
             if (args.size != 1) {
                 throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
@@ -127,7 +127,7 @@ class Executor {
         throw RuntimeException("Operation $functionName not recognized.")
     }
 
-    private fun handleLogicBuiltIn(functionName: String, args: List<Data>): KLBool {
+    private fun handleLogicBuiltIn(functionName: String, args: List<KLValue>): KLBool {
         if (!args.all { it is KLBool }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
@@ -145,7 +145,7 @@ class Executor {
         })
     }
 
-    private fun handleEqualityBuiltIn(functionName: String, args: List<Data>): KLBool {
+    private fun handleEqualityBuiltIn(functionName: String, args: List<KLValue>): KLBool {
         if (args.size != 2) {
             throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
         }
@@ -156,7 +156,7 @@ class Executor {
         })
     }
 
-    private fun handleNumericBuiltIn(functionName: String, args: List<Data>): Data {
+    private fun handleNumericBuiltIn(functionName: String, args: List<KLValue>): KLValue {
         if (!args.all { it is KLNumber }) {
             throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
         }
@@ -170,7 +170,7 @@ class Executor {
         })
     }
 
-    private fun handleKeyword(expr: Expression, scope: Scope): Data {
+    private fun handleKeyword(expr: Expression, scope: Scope): KLValue {
         return when (expr) {
             is FunctionDefinition -> expr.execute(this, scope)
             is IfExpression -> expr.execute(this, scope)
@@ -179,10 +179,10 @@ class Executor {
         }
     }
 
-    fun realizePart(arg: ExpressionPart, env: Scope): Data {
+    fun realizePart(arg: ExpressionPart, env: Scope): KLValue {
         return when (arg) {
             is LiteralValue -> arg
-            is Data -> when (arg.dataType) {
+            is KLValue -> when (arg.dataType) {
                 DataType.LITERAL -> arg
                 DataType.LIST -> arg
                 DataType.FUNCTION -> {
@@ -193,13 +193,13 @@ class Executor {
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
             is Expression -> execute(arg, env)
             is UnrealizedList -> {
-                Data(arg.realize(this, env))
+                KLValue(arg.realize(this, env))
             }
             else -> throw RuntimeException("Part $arg not recognized.")
         }
     }
 
-    private fun handleSymbol(symbol: Symbol, env: Scope): Data {
+    private fun handleSymbol(symbol: Symbol, env: Scope): KLValue {
         return env.lookup(symbol)
     }
 }
