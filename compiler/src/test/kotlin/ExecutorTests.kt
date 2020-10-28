@@ -1,5 +1,5 @@
 import com.statelesscoder.klisp.compiler.*
-import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 import com.statelesscoder.klisp.compiler.expressions.*
@@ -185,7 +185,7 @@ class ExecutorTests {
         fun `builtin print function succeeds on complex objects which evaluate to strings`() {
             val e = Executor()
             val scope = Scope()
-            val id = Function("id", listOf(Symbol("x")), Symbol("x"))
+            val id = UserDefinedFunction("id", listOf(Symbol("x")), Symbol("x"))
             scope.add(Symbol("id"), id)
 
             val expr = Expression(
@@ -392,7 +392,7 @@ class ExecutorTests {
                 }
 
                 // This should side-effect the calling scope
-                executor.execute(expr, scope) is Function
+                executor.execute(expr, scope) is UserDefinedFunction
                 assertNotNull(scope.lookup(Symbol("f")))
 
                 // Now the execution should pass

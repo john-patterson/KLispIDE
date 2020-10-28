@@ -38,7 +38,7 @@ class Executor {
         val argsResults = expr.tail.map { Pair(it, realizePart(it, env)) }
         val argsData = RealizedList(argsResults.map { it.second })
 
-        if (headResult is Function) {
+        if (headResult is UserDefinedFunction) {
             return headResult.run(this, argsData, env)
         } else {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
@@ -183,7 +183,7 @@ class Executor {
         return when (arg) {
             is KLLiteralValue -> arg
             is RealizedList -> arg
-            is Function -> execute(arg, env)
+            is UserDefinedFunction -> execute(arg, env)
             is Symbol -> handleSymbol(arg, env)
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
             is Expression -> execute(arg, env)

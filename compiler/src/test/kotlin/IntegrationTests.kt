@@ -1,5 +1,5 @@
 import com.statelesscoder.klisp.compiler.*
-import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -49,8 +49,8 @@ class IntegrationTests {
     @Test
     fun `function equality`() {
         val scope = Scope()
-        run<Function>("(fun f [a b] (and a b))", scope)
-        run<Function>("(fun g [a b] (and a b))", scope)
+        run<UserDefinedFunction>("(fun f [a b] (and a b))", scope)
+        run<UserDefinedFunction>("(fun g [a b] (and a b))", scope)
         val resultSameName = run<KLBool>("(eq f f)", scope)
         val resultOtherName = run<KLBool>("(eq f g)", scope)
         assertEquals(true, resultSameName.truth)
@@ -68,7 +68,7 @@ class IntegrationTests {
     @Test
     fun `recursive function`() {
         val scope = Scope()
-        run<Function>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        run<UserDefinedFunction>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
         val executionResult = run<KLNumber>("(f 3)", scope)
         assertEquals(6f, executionResult.value)
     }
@@ -76,7 +76,7 @@ class IntegrationTests {
     @Test
     fun `filter definable`() {
         val scope = Scope()
-        run<Function>("(fun filter [ls nls f] " +
+        run<UserDefinedFunction>("(fun filter [ls nls f] " +
                 "(if (eq ls []) " +
                     "nls " +
                     "(if (f (car ls)) " +

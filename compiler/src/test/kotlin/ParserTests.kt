@@ -11,7 +11,7 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParserTests {
     @Nested
-    inner class FunctionInvocation {
+    inner class UserDefinedFunctionInvocation {
         @Test
         fun `throws when expression isn't started by (`() {
             assertThrows(ParsingException::class.java) {

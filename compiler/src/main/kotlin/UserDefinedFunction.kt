@@ -1,13 +1,12 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
-import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 import com.statelesscoder.klisp.compiler.types.*
 
-class Function(val name: Symbol,
-               private val params: List<Symbol>,
-               private val body: ExpressionPart
+class UserDefinedFunction(val name: Symbol,
+                          private val params: List<Symbol>,
+                          private val body: ExpressionPart
 ) : KLValue() {
     constructor(name: String, params: List<Symbol>, body: ExpressionPart)
         : this(Symbol(name), params, body)
@@ -27,7 +26,7 @@ class Function(val name: Symbol,
     }
 
     override fun equals(other: Any?): Boolean {
-        return if (other is Function) {
+        return if (other is UserDefinedFunction) {
             this.name == other.name
         } else {
             false
