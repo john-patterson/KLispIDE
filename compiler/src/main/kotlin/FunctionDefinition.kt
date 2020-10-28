@@ -7,6 +7,8 @@ class FunctionDefinition(val name: Symbol, private val params: KList, private va
 
     override fun execute(executor: Executor, scope: Scope): Data {
         val function = Function(executor, name.symbolName, params, body)
-        return Data(function)
+        val data = Data(function)
+        scope.add(name.symbolName, data)
+        return data
     }
 }

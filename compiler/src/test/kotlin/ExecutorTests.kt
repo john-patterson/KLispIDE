@@ -272,11 +272,8 @@ class ExecutorTests {
         }
 
         private fun defineConstantFunction(returnValue: ExpressionPart, scope: Scope) {
-            val definition = Expression(ExpressionPart(KeywordType.FUN), listOf(
-                ExpressionPart(Symbol("foo")),
-                returnValue
-            ))
-            e.execute(definition, scope)
+            val definition = FunctionDefinition(Symbol("foo"), KList(), returnValue)
+            definition.execute(e, scope)
         }
 
         private fun callConstantFunction(scope: Scope): Data {
@@ -379,17 +376,12 @@ class ExecutorTests {
         inner class FunExpressionsTests {
             private val executor = Executor()
             private val functionName = "f"
-            private val params = ExpressionPart(
-                    KList(
-                        listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")), ExpressionPart(Symbol("c")))
-                    )
-                )
+            private val params = KList(listOf(ExpressionPart(Symbol("a")),
+                            ExpressionPart(Symbol("b")),
+                            ExpressionPart(Symbol("c"))))
 
             private val bodyPart = ExpressionPart(IfExpression(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")), ExpressionPart(Symbol("c"))))
-            private val expr = Expression(
-                ExpressionPart(KeywordType.FUN),
-                listOf(ExpressionPart(Symbol(functionName)), params, bodyPart)
-            )
+            private val expr = FunctionDefinition(Symbol(functionName), params, bodyPart)
 
             @Test
             fun `executes complex function and sets in scope`() {

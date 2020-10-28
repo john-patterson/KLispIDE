@@ -165,35 +165,11 @@ class Executor {
     }
 
     private fun handleKeyword(expr: Expression, scope: Scope): Data {
-        return when (expr.head.keywordType!!) {
-            KeywordType.LET -> {
-                if (expr is LetBinding) {
-                    expr.execute(this, scope)
-                } else {
-                    throw RuntimeException("Expected expression '$expr' to be a let-binding.")
-                }
-            }
-            KeywordType.FUN -> {
-                val funName = expr.tail[0].name!!
-                val f = if (expr.tail.size == 3) {
-                    val params = expr.tail[1].list!!
-                    val body = expr.tail[2]
-                    Function(this, funName, params, body)
-                } else {
-                    Function(this, funName, KList(emptyList()), expr.tail[1])
-                }
-
-                val data = Data(f)
-                scope.add(funName, data)
-                data
-            }
-            KeywordType.IF -> {
-                if (expr is IfExpression) {
-                    expr.execute(this, scope)
-                } else {
-                    throw RuntimeException("Expected expression '$expr' to be a let-binding.")
-                }
-            }
+        return when (expr) {
+            is FunctionDefinition -> expr.execute(this, scope)
+            is IfExpression -> expr.execute(this, scope)
+            is LetBinding -> expr.execute(this, scope)
+            else -> throw RuntimeException("Expected expression '$expr' to be a special contruct.")
         }
     }
 
