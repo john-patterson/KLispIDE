@@ -7,7 +7,7 @@ import com.statelesscoder.klisp.compiler.expressions.IfExpression
 import com.statelesscoder.klisp.compiler.expressions.LetBinding
 import com.statelesscoder.klisp.compiler.types.*
 
-class Parser() {
+class Parser {
     fun parse(tokens: List<Token>): List<Expression> {
         var start = 0
         var end: Int
@@ -81,22 +81,26 @@ class Parser() {
         }
 
         while (i < (tokens.size - 1)) {
-            if (tokens[i].type == TokenType.LEFT_PARENS) {
-                val (end, expr) = parseExprPart(tokens, i)
-                tail.add(expr)
-                i = end + 1
-            } else if (tokens[i].type == TokenType.LEFT_BRACKET) {
-                val (end, expr) = parseListPart(tokens, i)
-                tail.add(expr)
-                i = end + 1
-            } else {
-                assertTokenTypeIsOneOf(tokens[i],
-                    TokenType.IDENTIFIER,
-                    TokenType.NUMERIC,
-                    TokenType.BOOLEAN,
-                    TokenType.STRING)
-                tail.add(parseSimplePart(tokens[i]))
-                i +=1
+            when (tokens[i].type) {
+                TokenType.LEFT_PARENS -> {
+                    val (end, expr) = parseExprPart(tokens, i)
+                    tail.add(expr)
+                    i = end + 1
+                }
+                TokenType.LEFT_BRACKET -> {
+                    val (end, expr) = parseListPart(tokens, i)
+                    tail.add(expr)
+                    i = end + 1
+                }
+                else -> {
+                    assertTokenTypeIsOneOf(tokens[i],
+                        TokenType.IDENTIFIER,
+                        TokenType.NUMERIC,
+                        TokenType.BOOLEAN,
+                        TokenType.STRING)
+                    tail.add(parseSimplePart(tokens[i]))
+                    i +=1
+                }
             }
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
