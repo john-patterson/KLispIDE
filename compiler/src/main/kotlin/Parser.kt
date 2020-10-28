@@ -35,7 +35,7 @@ data class IfExpression(val predicate: ExpressionPart, val truePart: ExpressionP
 class Parser() {
     fun parse(tokens: List<Token>): List<Expression> {
         var start = 0
-        var end = 0
+        var end: Int
         var balance = 0
 
         val collection = mutableListOf<Expression>()
@@ -88,7 +88,7 @@ class Parser() {
             throw ParsingException("Expected start of expression, but got nothing.")
         }
 
-        var tail = mutableListOf<ExpressionPart>()
+        val tail = mutableListOf<ExpressionPart>()
         assertTokenTypeIsOneOf(tokens[0], TokenType.LEFT_PARENS)
         var i = 2
         val head = if(tokens[1].type == TokenType.LEFT_PARENS) {
@@ -128,7 +128,18 @@ class Parser() {
 
         validateIfExpr(head, tail)
         validateFunctionDecl(head, tail)
-        return Expression(head, tail)
+        return enrichExpression(head, tail)
+    }
+
+    private fun enrichExpression(head: ExpressionPart, tail: List<ExpressionPart>): Expression {
+        return when (head.type) {
+            ExpressionPartType.KEYWORD -> when (head.keywordType!!) {
+                KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
+                KeywordType.LET -> LetBinding(tail[0].expression!!, tail[1])
+                else -> Expression(head, tail)
+            }
+            else -> Expression(head, tail)
+        }
     }
 
     private fun validateIfExpr(head: ExpressionPart, tail: List<ExpressionPart>) {
