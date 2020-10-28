@@ -31,7 +31,7 @@ fun runCode(code: String): List<ExecutionResult> {
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): Data = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): Data {
-        if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.name?.toLowerCase())) {
+        if (expr.head.type == ExpressionPartType.SYMBOL && builtinFunctions.contains(expr.head.symbol?.symbolName?.toLowerCase())) {
             return handleBuiltinFunction(expr, env)
         } else if (expr.head.type == ExpressionPartType.KEYWORD) {
             return handleKeyword(expr, env)
@@ -58,7 +58,7 @@ class Executor {
         .plusElement("print")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): Data {
         val args = expr.tail.map { execute(it, scope) }
-        val functionName = expr.head.name?.toLowerCase()
+        val functionName = expr.head.symbol?.symbolName?.toLowerCase()
 
         if (functionName == "print") {
             if (!args.all { it.stringValue != null }) {
@@ -182,7 +182,7 @@ class Executor {
             ExpressionPartType.STRING -> Data(arg.innerText!!)
             ExpressionPartType.BOOLEAN -> Data(arg.truth!!)
             ExpressionPartType.NUMBER -> Data(arg.value!!)
-            ExpressionPartType.SYMBOL -> handleSymbol(arg.name!!, env)
+            ExpressionPartType.SYMBOL -> handleSymbol(arg.symbol!!, env)
             ExpressionPartType.KEYWORD ->
                 throw RuntimeException("Encountered free keyword ${arg.keywordType} in the body of an expression")
             ExpressionPartType.EXPRESSION -> execute(arg.expression!!, env)
@@ -193,7 +193,7 @@ class Executor {
         }
     }
 
-    private fun handleSymbol(symbol: String, env: Scope): Data {
+    private fun handleSymbol(symbol: Symbol, env: Scope): Data {
         return env.lookup(symbol)
     }
 }

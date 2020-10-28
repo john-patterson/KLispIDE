@@ -19,7 +19,7 @@ class Function(private val executor: Executor,
 
         val boundScope = Scope(scope)
         for (i in args.indices) {
-            boundScope.add(params.unrealizedItems[i].name!!, args[i])
+            boundScope.add(params.unrealizedItems[i].symbol!!, args[i])
         }
 
         return when (body.type) {

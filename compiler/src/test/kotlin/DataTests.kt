@@ -85,7 +85,7 @@ class DataTests {
             val e = Executor()
             // This is: (fun id (x) x) and
             val id = Function(e, "id", listOf(ExpressionPart(Symbol("x"))), ExpressionPart(Symbol("x")))
-            scope.add("id", Data(id))
+            scope.add(Symbol("id"), Data(id))
 
             // This is: (fun f (a b) (id b))
             val params = listOf(ExpressionPart(Symbol("a")), ExpressionPart(Symbol("b")))

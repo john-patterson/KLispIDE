@@ -7,7 +7,7 @@ open class ExpressionPart {
     val type: ExpressionPartType;
     var value: Float? = null
     var truth: Boolean? = null
-    var name: String? = null
+    var symbol: Symbol? = null
     var innerText: String? = null
     var keywordType: KeywordType? = null
     var expression: Expression? = null
@@ -45,7 +45,7 @@ open class ExpressionPart {
 
     constructor(value: Symbol)
             : this(ExpressionPartType.SYMBOL) {
-        this.name = value.symbolName
+        this.symbol = value
     }
 
     constructor(type: ExpressionPartType)
@@ -55,7 +55,7 @@ open class ExpressionPart {
 
     override fun toString(): String = when(type) {
         ExpressionPartType.NUMBER -> value.toString()
-        ExpressionPartType.SYMBOL -> name.toString()
+        ExpressionPartType.SYMBOL -> symbol!!.symbolName.toString()
         ExpressionPartType.BOOLEAN -> if (truth!!) "true" else "false"
         ExpressionPartType.KEYWORD -> keywordType.toString()
         ExpressionPartType.STRING -> "\"$innerText\""

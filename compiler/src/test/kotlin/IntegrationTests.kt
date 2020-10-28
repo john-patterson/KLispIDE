@@ -26,7 +26,7 @@ class IntegrationTests {
         val scope = Scope()
         val bindingResult = run("(fun foo [a b c] (if a b c))", scope)
         assertEquals(DataType.FUNCTION, bindingResult.dataType)
-        assertNotNull(scope.lookup("foo"))
+        assertNotNull(scope.lookup(Symbol("foo")))
 
         val executionResult = run("(let ((switch false)) (foo switch 50 100))", scope)
         assertEquals(100f, executionResult.numericValue)

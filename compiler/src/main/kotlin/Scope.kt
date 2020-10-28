@@ -9,14 +9,14 @@ class Scope {
     fun getBindings(): List<Pair<String, Data>> = symbolTable.entries
         .map { Pair(it.key, it.value) }
 
-    fun lookup(symbolName: String): Data {
-        return symbolTable.getOrElse(symbolName) {
-            throw ScopeDataException("Failed to find symbol $symbolName.")
+    fun lookup(symbol: Symbol): Data {
+        return symbolTable.getOrElse(symbol.symbolName) {
+            throw ScopeDataException("Failed to find symbol ${symbol.symbolName}.")
         }
     }
 
-    fun add(symbolName: String, value: Data) {
-        symbolTable[symbolName] = value
+    fun add(symbol: Symbol, value: Data) {
+        symbolTable[symbol.symbolName] = value
     }
 
     constructor() {}

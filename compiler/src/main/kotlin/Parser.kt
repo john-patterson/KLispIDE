@@ -116,7 +116,7 @@ class Parser {
                 KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
                 KeywordType.LET -> LetBinding(tail[0].expression!!, tail[1])
                 KeywordType.FUN -> {
-                    val functionName = Symbol(tail[0].name!!)
+                    val functionName = tail[0].symbol!!
                     if (tail.size == 3) {
                         FunctionDefinition(functionName, tail[1].list!!, tail[2])
                     } else {

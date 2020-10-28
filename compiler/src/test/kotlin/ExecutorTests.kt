@@ -194,7 +194,7 @@ class ExecutorTests {
             val e = Executor()
             val scope = Scope()
             val id = Function(e, "id", listOf(ExpressionPart(Symbol("x"))), ExpressionPart(Symbol("x")))
-            scope.add("id", Data(id))
+            scope.add(Symbol("id"), Data(id))
 
             val expr = Expression(
                 ExpressionPart(Symbol("id")),
@@ -403,7 +403,7 @@ class ExecutorTests {
                 // This should side-effect the calling scope
                 val definitionResult = executor.execute(expr, scope)
                 assertEquals(DataType.FUNCTION, definitionResult.dataType)
-                assertNotNull(scope.lookup("f"))
+                assertNotNull(scope.lookup(Symbol("f")))
 
                 // Now the execution should pass
                 val executionResult = executor.execute(executionExpr, scope)
@@ -419,7 +419,7 @@ class ExecutorTests {
                 )
                 val result = executor.execute(executionExpr, scope)
 
-                assertNotNull(scope.lookup(functionName))
+                assertNotNull(scope.lookup(Symbol(functionName)))
                 assertEquals(100f, result.numericValue)
             }
         }
