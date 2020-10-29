@@ -90,24 +90,6 @@ I learned this `@Nested` class trick from the slide deck. It cleaned up my test-
 enjoyed the back-tick syntax for identifiers in Kotlin. One of my favorite languages, F#, has a similar feature that I use for my
 test suites. It really is much more readable than the standard C#/Java-ism of `Method_Conditions_Results` test names.
 
-### UI is a whole thing and is not cross-plat due to JavaFX
-At home, I develop on both a Windows desktop and a Mac laptop. Practically, it means I have one of the worst experiences
-of everything that I try. Things that I can get just working on one, break down on the other. For this project, the main
-stumbling block as the UI component.
-
-In the beginning&mdash;as the project name suggests&mdash;I wanted to create a simple
-IDE for this language as well. A quick search found TornadoFX as the go-to framework for Kotlin. After my struggle with
-Gradle dependencies described above, I got a simple little Hello World UI popping up. You can see this in 
-[my initial commit](https://github.com/john-patterson/KLispIDE/commit/6ee29f19540138d2fd4374fe8cdc9ef7358e6c7a).
-
-Not only did this quickly fall out of scope as I'd given myself a million things to learn, but when I pulled the code on 
-my Mac, everything broke. From what I can gather, my Mac was using a version of the JDK which did not have JavaFX, 
-the core Java UI framework on which TornadoFX was written, bundled with it.
-
-There were ways out of this, but I wasn't sure if fixing the problem on my Mac side would break the Windows side.
-Given that it seems the UI layer is quite a bit to learn if you are not used to it, the JDK incompatibilities between my 
-environments, and all the other issues I was learning about, I decided to tackle learning UI as a stretch-goal.
-
 ### Multi-projects in Gradle and IDEA
 For my project I knew I had at least three, maybe four, compiled artifacts I wanted to produce: a library with my
 compiler code, a server for the language service, a desktop-app IDE, and perhaps a test runner service.
