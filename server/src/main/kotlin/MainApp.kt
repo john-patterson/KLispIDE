@@ -9,12 +9,12 @@ import io.javalin.Javalin
 fun main(args: Array<String>) {
     val app = Javalin.create().start(7340)
     val router = Routes()
-    app.post("/tokenize") {
-        ctx -> ctx.json(router.tokenize(ctx.body()))
+    app.post("/tokenize") {ctx ->
+        ctx.json(router.tokenize(ctx.body()))
     }
 
-    app.post("/parse") {
-            ctx -> ctx.json(router.parse(ctx.body()).toString())
+    app.post("/parse") {ctx ->
+        ctx.json(router.parse(ctx.body()).toString())
     }
 
     app.post("/execute") { ctx ->
