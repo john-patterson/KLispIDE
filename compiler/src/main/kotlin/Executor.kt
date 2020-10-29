@@ -55,119 +55,73 @@ class Executor {
         .plus(logicBuiltins)
         .plusElement("print")
     private fun handleBuiltinFunction(expr: Expression, scope: Scope): KLValue {
-        val args = expr.tail.map { execute(it, scope) }
+        val args = RealizedList(expr.tail.map { execute(it, scope) })
         if (expr.head is Symbol) {
             val functionName = expr.head.symbolName.toLowerCase()
 
             if (functionName == "print") {
-                if (!args.all { it is KLString }) {
-                    throw RuntimeException("Only strings are printable.")
-                }
-
-                val stringArgs = args.map { it as KLString }.map { it.text }
-                val s = stringArgs.reduce() {acc, s -> "$acc $s" }
-                print(s)
-                return KLString(s)
+                val printFn = PrintFunction()
+                return printFn.run(this, args, scope)
             }
 
             if (listBuiltins.contains(functionName)) {
-                return handleListBuiltIn(functionName, args)
+                return handleListBuiltIn(functionName, args, scope)
             }
 
             if (logicBuiltins.contains(functionName)) {
-                return handleLogicBuiltIn(functionName, args)
+                return handleLogicBuiltIn(functionName, args, scope)
             }
 
             if (equalityBuiltins.contains(functionName)) {
-                return handleEqualityBuiltIn(functionName, args)
+                return handleEqualityBuiltIn(functionName, args, scope)
             }
 
-            return handleNumericBuiltIn(functionName, args)
+            return handleNumericBuiltIn(functionName, args, scope)
         } else {
             throw RuntimeException("Expression $expr should start with a symbol.")
         }
     }
 
-    private fun handleListBuiltIn(functionName: String, args: List<KLValue>): KLValue {
+    private fun handleListBuiltIn(functionName: String, args: RealizedList, scope: Scope): KLValue {
         if (functionName == "car") {
-            if (args.size != 1) {
-                throw RuntimeException("CAR function expects 1 and only 1 list to be passed.")
-            }
-
-            val functionArgs = args[0]
-            if (functionArgs is RealizedList && functionArgs.items.isNotEmpty()) {
-                return functionArgs.items[0]
-            } else {
-                throw RuntimeException("CAR does not support these args: $args")
-            }
+            val carFn = CarFunction()
+            return carFn.run(this, args, scope)
         } else if (functionName == "cdr") {
-            if (args.size != 1) {
-                throw RuntimeException("CDR function expects 1 and only 1 list to be passed.")
-            }
-
-            val functionArgs = args[0]
-            if (functionArgs is RealizedList && functionArgs.items.isNotEmpty()) {
-                return RealizedList(functionArgs.items.drop(1))
-            } else {
-                throw RuntimeException("CAR does not support these args: $args")
-            }
+            val cdrFn = CdrFunction()
+            return cdrFn.run(this, args, scope)
         } else if (functionName == "cons") {
-            if (args.size != 2) {
-                throw RuntimeException("CONS function expects 1 list and 1 data object.")
-            }
-            val list = args[0]
-            val value = args[1]
-            if (list is RealizedList) {
-                return RealizedList(list.items + listOf(value))
-            } else {
-                throw RuntimeException("CONS function expects list as first argument.")
-            }
+            val consFn = ConsFunction()
+            return consFn.run(this, args, scope)
         }
 
         throw RuntimeException("Operation $functionName not recognized.")
     }
 
-    private fun handleLogicBuiltIn(functionName: String, args: List<KLValue>): KLBool {
-        if (!args.all { it is KLBool }) {
-            throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
-        }
-        val argsAsBools = args.map { (it as KLBool).truth }
-        return KLBool(when (functionName) {
-            "and" -> argsAsBools.reduce { acc, part -> acc && part }
-            "or" -> argsAsBools.reduce { acc, part -> acc || part }
-            "not" -> {
-                if (args.size != 1) {
-                    throw RuntimeException("NOT only accepts one argument.")
-                }
-                !argsAsBools[0]
-            }
+    private fun handleLogicBuiltIn(functionName: String, args: RealizedList, scope: Scope): KLBool {
+        return when (functionName) {
+            "and" -> AndFunction().run(this, args, scope)
+            "or" -> OrFunction().run(this, args, scope)
+            "not" -> NotFunction().run(this, args, scope)
             else -> throw RuntimeException("$functionName is not a built-in function.")
-        })
+        }
     }
 
-    private fun handleEqualityBuiltIn(functionName: String, args: List<KLValue>): KLBool {
-        if (args.size != 2) {
-            throw RuntimeException("EQ & NEQ only accept 2 arguments of the same type.")
-        }
-        return KLBool(when (functionName) {
-            "eq" -> args[0] == args[1]
-            "neq" -> args[0] != args[1]
+    private fun handleEqualityBuiltIn(functionName: String, args: RealizedList, scope: Scope): KLBool {
+        return when (functionName) {
+            "eq" -> EqFunction().run(this, args, scope)
+            "neq" -> NeqFunction().run(this, args, scope)
             else -> throw RuntimeException("$functionName is not a built-in function.")
-        })
+        }
     }
 
-    private fun handleNumericBuiltIn(functionName: String, args: List<KLValue>): KLValue {
-        if (!args.all { it is KLNumber }) {
-            throw RuntimeException("Only numeric types are compatible with *, +, /, and -.")
-        }
-        val argsAsNums = args.map { (it as KLNumber).value }
-        return KLNumber(when (functionName) {
-            "*" -> argsAsNums.reduce { acc, number -> acc * number }
-            "+" -> argsAsNums.reduce { acc, number -> acc + number }
-            "-" -> argsAsNums.reduce { acc, number -> acc - number }
-            "/" -> argsAsNums.reduce { acc, number -> acc / number }
+    private fun handleNumericBuiltIn(functionName: String, args: RealizedList, scope: Scope): KLValue {
+        return when (functionName) {
+            "*" -> MulFunctions().run(this, args, scope)
+            "+" -> AddFunctions().run(this, args, scope)
+            "-" -> SubFunctions().run(this, args, scope)
+            "/" -> DivFunctions().run(this, args, scope)
             else -> throw RuntimeException("$functionName is not a built-in function.")
-        })
+        }
     }
 
     private fun handleKeyword(expr: Expression, scope: Scope): KLValue {

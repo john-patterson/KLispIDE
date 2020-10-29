@@ -2,11 +2,8 @@ package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
-import com.statelesscoder.klisp.compiler.types.*
-
-abstract class Function : KLValue() {
-    abstract fun run(executor: Executor, args: RealizedList, scope: Scope = Scope()): KLValue
-}
+import com.statelesscoder.klisp.compiler.types.KLValue
+import com.statelesscoder.klisp.compiler.types.RealizedList
 
 class UserDefinedFunction(val name: Symbol,
                           private val params: List<Symbol>,
