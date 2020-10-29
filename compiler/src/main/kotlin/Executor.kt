@@ -47,7 +47,7 @@ class Executor {
             is FunctionDefinition -> expr.execute(this, scope)
             is IfExpression -> expr.execute(this, scope)
             is LetBinding -> expr.execute(this, scope)
-            else -> throw RuntimeException("Expected expression '$expr' to be a special contruct.")
+            else -> throw RuntimeException("Expected expression '$expr' to be a special construct.")
         }
     }
 
