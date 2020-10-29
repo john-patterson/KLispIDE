@@ -33,11 +33,10 @@ class Executor {
         }
 
         val headResult = realizePart(expr.head, env)
-        val argsResults = expr.tail.map { Pair(it, realizePart(it, env)) }
-        val argsData = RealizedList(argsResults.map { it.second })
+        val realizedArgs = RealizedList(expr.tail.map { realizePart(it, env) })
 
         if (headResult is Function) {
-            return headResult.run(this, argsData, env)
+            return headResult.run(this, realizedArgs, env)
         } else {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
         }
