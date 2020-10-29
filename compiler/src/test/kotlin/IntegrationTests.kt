@@ -1,5 +1,6 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -24,7 +25,7 @@ class IntegrationTests {
     @Test
     fun `let bindings, if expressions, and function declaration`() {
         val scope = Scope()
-        run<KLValue>("(fun foo [a b c] (if a b c))", scope)
+        run<KLValue>("(fun! foo [a b c] (if a b c))", scope)
         assertNotNull(scope.lookup(Symbol("foo")))
 
         val executionResult = run<KLNumber>("(let ((switch false)) (foo switch 50 100))", scope)
@@ -49,8 +50,8 @@ class IntegrationTests {
     @Test
     fun `function equality`() {
         val scope = Scope()
-        run<Function>("(fun f [a b] (and a b))", scope)
-        run<Function>("(fun g [a b] (and a b))", scope)
+        run<UserDefinedFunction>("(fun! f [a b] (and a b))", scope)
+        run<UserDefinedFunction>("(fun! g [a b] (and a b))", scope)
         val resultSameName = run<KLBool>("(eq f f)", scope)
         val resultOtherName = run<KLBool>("(eq f g)", scope)
         assertEquals(true, resultSameName.truth)
@@ -68,7 +69,7 @@ class IntegrationTests {
     @Test
     fun `recursive function`() {
         val scope = Scope()
-        run<Function>("(fun f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
+        run<UserDefinedFunction>("(fun! f [n] (if (eq n 0) 0 (+ n (f (- n 1)))))", scope)
         val executionResult = run<KLNumber>("(f 3)", scope)
         assertEquals(6f, executionResult.value)
     }
@@ -76,21 +77,29 @@ class IntegrationTests {
     @Test
     fun `filter definable`() {
         val scope = Scope()
-        run<Function>("(fun filter [ls nls f] " +
+        run<UserDefinedFunction>("(fun! filter [ls nls f] " +
                 "(if (eq ls []) " +
                     "nls " +
                     "(if (f (car ls)) " +
                         "(filter (cdr ls) (cons nls (car ls)) f) " +
                         "(filter (cdr ls) nls f))))", scope)
-        val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope) as RealizedList
+        val executionResult = run("(filter [1 2 1 3] [] (fun! foo [a] (eq 1 a)))", scope) as RealizedList
         assertEquals(2, executionResult.items.size)
+    }
+
+    @Test
+    fun `built-ins are first-class citizens`() {
+        val scope = Scope()
+        run<Function>("(fun! foo [f] (f 2 5))", scope)
+        val result = run<KLNumber>("(foo +)", scope)
+        assertEquals(7f, result.value)
     }
 
     @Test
     fun `constant functions`() {
         val scope = Scope()
-        run<KLNumber>("(fun f1 2)", scope)
-        run<KLNumber>("(fun f2 [] 3)", scope)
+        run<KLNumber>("(fun! f1 2)", scope)
+        run<KLNumber>("(fun! f2 [] 3)", scope)
         val result = run<KLNumber>("(+ (f1) (f2))", scope)
         assertEquals(5f, result.value)
     }

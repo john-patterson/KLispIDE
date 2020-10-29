@@ -6,17 +6,22 @@ import com.statelesscoder.klisp.compiler.types.KLValue
 class Scope {
     private var symbolTable: MutableMap<String, KLValue> = mutableMapOf()
 
+    init {
+        BuiltInFunction.getAllBuiltInFunctions()
+            .forEach { add(it.name, it) }
+    }
+
     fun getBindings(): List<Pair<String, KLValue>> = symbolTable.entries
         .map { Pair(it.key, it.value) }
 
     fun lookup(symbol: Symbol): KLValue {
-        return symbolTable.getOrElse(symbol.symbolName) {
+        return symbolTable.getOrElse(symbol.symbolName.toLowerCase()) {
             throw ScopeDataException("Failed to find symbol ${symbol.symbolName}.")
         }
     }
 
     fun add(symbol: Symbol, value: KLValue) {
-        symbolTable[symbol.symbolName] = value
+        symbolTable[symbol.symbolName.toLowerCase()] = value
     }
 
     constructor() {}

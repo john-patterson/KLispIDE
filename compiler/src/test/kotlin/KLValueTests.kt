@@ -1,5 +1,5 @@
 import com.statelesscoder.klisp.compiler.*
-import com.statelesscoder.klisp.compiler.Function
+import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
 import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.types.*
@@ -11,27 +11,27 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KLValueTests {
     @Nested
-    inner class FunctionTests {
+    inner class UserDefinedFunctionTests {
         @Test
         fun `throws if args do not match param list`() {
             val e = Executor()
-            val f = Function(e, "f", emptyList(), KLNumber(1f))
+            val f = UserDefinedFunction("f", emptyList(), KLNumber(1f))
 
             assertThrows(RuntimeException::class.java) {
-                f.run(RealizedList(listOf(KLString("g"))))
+                f.run(e, RealizedList(listOf(KLString("g"))))
             }
 
-            val g = Function(e, "g", listOf(Symbol("a")), KLNumber(1f))
+            val g = UserDefinedFunction("g", listOf(Symbol("a")), KLNumber(1f))
             assertThrows(RuntimeException::class.java) {
-                g.run(RealizedList())
+                g.run(e, RealizedList())
             }
         }
 
         @Test
         fun `function with 1 arg that is not used`() {
             val e = Executor()
-            val f = Function(e, "f", listOf(Symbol("a")), KLNumber(1f))
-            val result = f.run(RealizedList(listOf(KLNumber(10f)))) as KLNumber
+            val f = UserDefinedFunction("f", listOf(Symbol("a")), KLNumber(1f))
+            val result = f.run(e, RealizedList(listOf(KLNumber(10f)))) as KLNumber
 
             assertEquals(1f, result.value)
         }
@@ -44,8 +44,8 @@ class KLValueTests {
                 KLNumber(10f),
                 KLNumber(20f)
             )
-            val f = Function(e, "f", params, KLNumber(1f))
-            val result = f.run(RealizedList(args)) as KLNumber
+            val f = UserDefinedFunction("f", params, KLNumber(1f))
+            val result = f.run(e, RealizedList(args)) as KLNumber
 
             assertEquals(1f, result.value)
         }
@@ -55,8 +55,8 @@ class KLValueTests {
             val e = Executor()
             val params = listOf(Symbol("x"))
             val args = listOf(KLNumber(10f))
-            val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(RealizedList(args)) as KLNumber
+            val f = UserDefinedFunction("f", params, Symbol("x"))
+            val result = f.run(e, RealizedList(args)) as KLNumber
 
             assertEquals(10f, result.value)
         }
@@ -69,8 +69,8 @@ class KLValueTests {
                 KLNumber(10f),
                 KLNumber(20f)
             )
-            val f = Function(e, "f", params, Symbol("x"))
-            val result = f.run(RealizedList(args)) as KLNumber
+            val f = UserDefinedFunction("f", params, Symbol("x"))
+            val result = f.run(e, RealizedList(args)) as KLNumber
 
             assertEquals(10f, result.value)
         }
@@ -80,7 +80,7 @@ class KLValueTests {
             val scope = Scope()
             val e = Executor()
             // This is: (fun id (x) x) and
-            val id = Function(e, "id", listOf(Symbol("x")), Symbol("x"))
+            val id = UserDefinedFunction("id", listOf(Symbol("x")), Symbol("x"))
             scope.add(Symbol("id"), id)
 
             // This is: (fun f (a b) (id b))
@@ -89,8 +89,8 @@ class KLValueTests {
                 Symbol("id"),
                 listOf(Symbol("b"))
             )
-            val f = Function(e, "f", params, expr)
-            val result = f.run(RealizedList(listOf(
+            val f = UserDefinedFunction("f", params, expr)
+            val result = f.run(e, RealizedList(listOf(
                 KLNumber(1f),
                 KLNumber(2f)
             )), scope) as KLNumber
@@ -107,12 +107,11 @@ class KLValueTests {
 
         @Test
         fun `toString function`() {
-            val e = Executor()
             val params = listOf(Symbol("a"), Symbol("b"))
             val body = Expression(
                     Symbol("+"),
                     listOf(Symbol("a"), Symbol("b")))
-            val f = Function(e, Symbol("foo"), params, body)
+            val f = UserDefinedFunction(Symbol("foo"), params, body)
             assertEquals("(fun foo [a b] (+ a b))", f.toString())
         }
     }

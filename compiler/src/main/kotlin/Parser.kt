@@ -72,7 +72,7 @@ class Parser {
                 TokenType.IDENTIFIER,
                 TokenType.LET,
                 TokenType.IF,
-                TokenType.FUN
+                TokenType.FUN_SIDE_EFFECT
             )
             parseSimplePart(tokens[1])
         }
@@ -111,7 +111,7 @@ class Parser {
             is Keyword -> when (head.kwdType) {
                 KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
                 KeywordType.LET -> LetBinding(tail[0] as Expression, tail[1])
-                KeywordType.FUN -> {
+                KeywordType.FUN_SIDE_EFFECT -> {
                     validateFunctionDecl(head, tail)
                     val functionName = tail[0] as Symbol
                     if (tail.size == 3) {
@@ -138,7 +138,7 @@ class Parser {
 
     private fun validateFunctionDecl(head: ExpressionPart, tail: List<ExpressionPart>) {
         if (head is Keyword
-            && head.kwdType == KeywordType.FUN) {
+            && head.kwdType == KeywordType.FUN_SIDE_EFFECT) {
 
             if (tail.size == 2 && tail[0] !is Symbol) {
                 // This is the case without args
@@ -182,7 +182,7 @@ class Parser {
             TokenType.BOOLEAN -> KLBool(token.text.toBoolean())
             TokenType.LET -> Keyword(KeywordType.LET)
             TokenType.IF -> Keyword(KeywordType.IF)
-            TokenType.FUN -> Keyword(KeywordType.FUN)
+            TokenType.FUN_SIDE_EFFECT -> Keyword(KeywordType.FUN_SIDE_EFFECT)
             TokenType.RIGHT_BRACKET -> throw ParsingException("Unexpected ).")
             TokenType.LEFT_BRACKET -> throw ParsingException("Unexpected (.")
             TokenType.RIGHT_PARENS -> throw ParsingException("Unexpected ].")
