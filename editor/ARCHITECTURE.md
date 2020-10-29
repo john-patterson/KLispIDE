@@ -33,6 +33,7 @@ This is the main window which the [CodeAreaView](#CodeAreaView), [ScopeInspector
 ## ErrorFragment
 The error fragment is a pop-up model box launched anytime there is an error. Unfortunately, the UI when there is an
 error is quite bad and needs investment. You can see that an error occurred, but that is the limit of useful information.
+[Issue 8](https://github.com/john-patterson/KLispIDE/issues/8) covers resolving this.
 
 ## ResultsView
 The results view shows the value of each line of code that was executed. Both this and the
