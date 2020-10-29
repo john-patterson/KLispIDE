@@ -1,4 +1,5 @@
 import com.statelesscoder.klisp.compiler.*
+import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
@@ -84,6 +85,14 @@ class IntegrationTests {
                         "(filter (cdr ls) nls f))))", scope)
         val executionResult = run("(filter [1 2 1 3] [] (fun foo [a] (eq 1 a)))", scope) as RealizedList
         assertEquals(2, executionResult.items.size)
+    }
+
+    @Test
+    fun `built-ins are first-class citizens`() {
+        val scope = Scope()
+        run<Function>("(fun foo [f] (f 2 5))", scope)
+        val result = run<KLNumber>("(foo +)", scope)
+        assertEquals(7f, result.value)
     }
 
     @Test
