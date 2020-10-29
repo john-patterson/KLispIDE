@@ -85,10 +85,10 @@ class Tokenizer {
                     TokenType.LET,
                     pos
                 )
-            "fun".equals(text, true) ->
+            "fun!".equals(text, true) ->
                 Token(
                     text,
-                    TokenType.FUN,
+                    TokenType.FUN_SIDE_EFFECT,
                     pos
                 )
             "true".equals(text, true) ->

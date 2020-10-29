@@ -168,19 +168,19 @@ class TokenizerTests {
 
         @Test
         fun `classifies fun`() {
-            val result = Tokenizer().scan("fun fUn")
+            val result = Tokenizer().scan("fun! fUn!")
             assertEquals(2, result.size)
             assertEquals(
                 Token(
-                    "fun",
-                    TokenType.FUN,
+                    "fun!",
+                    TokenType.FUN_SIDE_EFFECT,
                     0
                 ), result[0])
             assertEquals(
                 Token(
-                    "fUn",
-                    TokenType.FUN,
-                    4
+                    "fUn!",
+                    TokenType.FUN_SIDE_EFFECT,
+                    5
                 ), result[1])
         }
 

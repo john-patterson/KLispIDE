@@ -6,6 +6,6 @@ import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 enum class KeywordType {
     LET,
     IF,
-    FUN
+    FUN_SIDE_EFFECT,
 }
 data class Keyword(val kwdType: KeywordType) : ExpressionPart()
