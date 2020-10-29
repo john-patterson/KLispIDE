@@ -1,11 +1,34 @@
 package com.statelesscoder.klisp.compiler
 
 import com.statelesscoder.klisp.compiler.exceptions.RuntimeException
-import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
 import com.statelesscoder.klisp.compiler.types.*
+import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.primaryConstructor
 
-abstract class BuiltInFunction : Function() {
+sealed class BuiltInFunction : Function() {
     abstract val name: Symbol
+
+    companion object {
+        @JvmStatic
+        fun getAllBuiltInFunctions(): List<BuiltInFunction> {
+            // No program is complete without a *little* magic.
+            // This will be used for registering all built-ins in new scopes.
+            // This makes it easy to add new built-ins, as it is simply inheriting
+            // from the BuiltInFunction object and then it will be reflected in all scopes.
+            return getAllSealedSubclasses(BuiltInFunction::class)
+                .filter { it.isFinal }
+                .map { it.createInstance() }
+                .map { it as BuiltInFunction }
+        }
+
+        @JvmStatic
+        private fun getAllSealedSubclasses(clazz: KClass<*>): List<KClass<*>> {
+            val subclasses = clazz.sealedSubclasses
+            val restOfTheTree = subclasses.flatMap { getAllSealedSubclasses(it) }
+            return subclasses + restOfTheTree
+        }
+    }
 }
 
 class CdrFunction : BuiltInFunction() {
@@ -70,7 +93,7 @@ class ConsFunction : BuiltInFunction() {
     }
 }
 
-abstract class ArithmeticFunctions : BuiltInFunction() {
+sealed class ArithmeticFunctions : BuiltInFunction() {
     internal abstract fun runOperation(nArgs: List<Float>): Float
     override fun run(executor: Executor, args: RealizedList, scope: Scope): KLValue {
         if (!args.items.all { it is KLNumber }) {
@@ -109,7 +132,7 @@ class DivFunctions() : ArithmeticFunctions() {
     }
 }
 
-abstract class BooleanFunction : BuiltInFunction() {
+sealed class BooleanFunction : BuiltInFunction() {
     internal abstract fun runOperation(nArgs: List<Boolean>): Boolean
     override fun run(executor: Executor, args: RealizedList, scope: Scope): KLBool {
         if (!args.items.all { it is KLBool }) {
@@ -144,7 +167,7 @@ class NotFunction() : BooleanFunction() {
     }
 }
 
-abstract class EqualityFunction : BuiltInFunction() {
+sealed class EqualityFunction : BuiltInFunction() {
     internal abstract fun runOperation(a: KLValue, b: KLValue): Boolean
     override fun run(executor: Executor, args: RealizedList, scope: Scope): KLBool {
         if (args.items.size != 2) {
