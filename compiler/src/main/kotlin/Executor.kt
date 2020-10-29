@@ -28,8 +28,8 @@ fun runCode(code: String): List<ExecutionResult> {
 class Executor {
     fun execute(part: ExpressionPart, env: Scope = Scope()): KLValue = realizePart(part, env)
     fun execute(expr: Expression, env: Scope = Scope()): KLValue {
-        if (expr.head is Keyword) {
-            return handleKeyword(expr, env)
+        if (expr is KeywordExpression) {
+            return expr.execute(this, env)
         }
 
         val headResult = realizePart(expr.head, env)
@@ -39,15 +39,6 @@ class Executor {
             return headResult.run(this, realizedArgs, env)
         } else {
             throw RuntimeException("Attempted to invoke a non-function: ${expr.head}.")
-        }
-    }
-
-    private fun handleKeyword(expr: Expression, scope: Scope): KLValue {
-        return when (expr) {
-            is FunctionDefinition -> expr.execute(this, scope)
-            is IfExpression -> expr.execute(this, scope)
-            is LetBinding -> expr.execute(this, scope)
-            else -> throw RuntimeException("Expected expression '$expr' to be a special construct.")
         }
     }
 
