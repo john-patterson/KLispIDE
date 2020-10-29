@@ -13,7 +13,7 @@ enum class TokenType {
     STRING,
     LET,
     IF,
-    FUN_SIDE_EFFECT,
+    FUN,
 }
 
 fun identifierToken(text: String, pos: Int) =

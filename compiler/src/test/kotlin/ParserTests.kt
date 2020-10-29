@@ -259,7 +259,7 @@ class ParserTests {
         @Test
         fun `parses identity function`() {
             val result = getParseTree("(fun! id [x] x)")
-            assertIsKeyword(KeywordType.FUN_SIDE_EFFECT, result.head)
+            assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
             assertIsList({ls ->
                 assertIsSymbol("x", ls.items[0])
@@ -287,7 +287,7 @@ class ParserTests {
         @Test
         fun `function with no args section allowed`() {
             val result = getParseTree("(fun! id 3)")
-            assertIsKeyword(KeywordType.FUN_SIDE_EFFECT, result.head)
+            assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
             assertIsList({ assertTrue(it.items.isEmpty()) }, result.tail[1])
             assertIsNumber(3f, result.tail[2])
@@ -296,7 +296,7 @@ class ParserTests {
         @Test
         fun `function with empty args section allowed`() {
             val result = getParseTree("(fun! id [] 3)")
-            assertIsKeyword(KeywordType.FUN_SIDE_EFFECT, result.head)
+            assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
             assertIsList({ assertEquals(emptyList<ExpressionPart>(), it.items) },
                 result.tail[1])
@@ -306,7 +306,7 @@ class ParserTests {
         @Test
         fun `function with two arg`() {
             val result = getParseTree("(fun! foo [a b] a)")
-            assertIsKeyword(KeywordType.FUN_SIDE_EFFECT, result.head)
+            assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
             assertIsList({list ->
                 assertIsSymbol("a", list.items[0])
@@ -328,7 +328,7 @@ class ParserTests {
         @Test
         fun `allows expression return`() {
             val result = getParseTree("(fun! foo [g] (g 1))")
-            assertIsKeyword(KeywordType.FUN_SIDE_EFFECT, result.head)
+            assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("foo", result.tail[0])
             assertIsList({ls ->
                 assertIsSymbol("g", ls.items[0])
@@ -420,7 +420,7 @@ class ParserTests {
             val tokens = getTokenStream("(fun! foo [a b] (+ a b 1))(foo 10 20)")
             val parser = Parser()
             val result = parser.parse(tokens)
-            assertEquals(Keyword(KeywordType.FUN_SIDE_EFFECT), result.first().head)
+            assertEquals(Keyword(KeywordType.FUN), result.first().head)
             assertEquals(Symbol("foo"), result.first().tail[0])
 
             val paramList = result.first().tail[1] as UnrealizedList

@@ -173,13 +173,13 @@ class TokenizerTests {
             assertEquals(
                 Token(
                     "fun!",
-                    TokenType.FUN_SIDE_EFFECT,
+                    TokenType.FUN,
                     0
                 ), result[0])
             assertEquals(
                 Token(
                     "fUn!",
-                    TokenType.FUN_SIDE_EFFECT,
+                    TokenType.FUN,
                     5
                 ), result[1])
         }
