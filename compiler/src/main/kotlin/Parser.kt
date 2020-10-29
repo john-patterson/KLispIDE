@@ -101,64 +101,17 @@ class Parser {
             }
         }
         assertTokenTypeIsOneOf(tokens[tokens.size - 1], TokenType.RIGHT_PARENS)
-
-        validateIfExpr(head, tail)
         return enrichExpression(head, tail)
     }
 
     private fun enrichExpression(head: ExpressionPart, tail: List<ExpressionPart>): Expression {
         return when (head) {
             is Keyword -> when (head.kwdType) {
-                KeywordType.IF -> IfExpression(tail[0], tail[1], tail[2])
-                KeywordType.LET -> LetBinding(tail[0] as Expression, tail[1])
-                KeywordType.FUN -> {
-                    validateFunctionDecl(head, tail)
-                    val functionName = tail[0] as Symbol
-                    if (tail.size == 3) {
-                        val params = (tail[1] as UnrealizedList)
-                            .items
-                            .map { it as Symbol } // This is asserted as okay in validateFunctionDecl
-                        FunctionDefinition(functionName, params, tail[2])
-                    } else {
-                        FunctionDefinition(functionName, emptyList(), tail[1])
-                    }
-                }
+                KeywordType.IF -> IfExpression(head, tail)
+                KeywordType.LET -> LetBinding(head, tail)
+                KeywordType.FUN -> FunctionDefinition(head, tail)
             }
             else -> Expression(head, tail)
-        }
-    }
-
-    private fun validateIfExpr(head: ExpressionPart, tail: List<ExpressionPart>) {
-        if (head is Keyword
-            && head.kwdType == KeywordType.IF
-            && tail.size != 3) {
-            throw ParsingException("Encountered IF with less than 3 parts: $tail.")
-        }
-    }
-
-    private fun validateFunctionDecl(head: ExpressionPart, tail: List<ExpressionPart>) {
-        if (head is Keyword
-            && head.kwdType == KeywordType.FUN) {
-
-            if (tail.size == 2 && tail[0] !is Symbol) {
-                // This is the case without args
-                throw ParsingException("Encountered function without symbol as name: $tail")
-            } else if (tail.size == 3) { // This has all parts
-                // This is the case without args
-                val nameValid = tail[0] is Symbol
-                val argsValid = tail[1] is UnrealizedList
-                        && (tail[1] as UnrealizedList).items.all { it is Symbol }
-
-                if (!nameValid) {
-                    throw ParsingException("Encountered function without symbol as name: $tail")
-                } else if (!argsValid) {
-                    throw ParsingException("Encountered function with invalid item in arg list: $tail")
-                }
-            } else if (tail.size < 2) {
-                throw ParsingException("Encountered function with too few parts: $tail")
-            } else if (tail.size > 3) {
-                throw ParsingException("Encountered function with too many parts: $tail")
-            }
         }
     }
 

@@ -50,15 +50,15 @@ body is passed as arguments to that function at interpretation time.
 
 * __let__: Let-binding is used to bind values to symbols within the scope of the body.
   - Example: `(let ((a 1) (b 2)) (+ a b))`
-* __fun__: This creates a named function, defines it in the current scope, and returns the function itself. There are
+* __fun!__: This creates a named function, defines it in the current scope, and returns the function itself. There are
 Three parts to a function: the name, the parameter list, and the body.
-  - Example: `(fun foo [a b] (+ a b))`
+  - Example: `(fun! foo [a b] (+ a b))`
   
   Functions which take no parameter are expressed by either omitting the parameter list, for instance:
-  - Example: `(fun bar true)`
+  - Example: `(fun! bar true)`
   
   Or by using the empty list as the parameter list:
-  - Example: `(fun bar [] true)`
+  - Example: `(fun! bar [] true)`
   
 * __if__: If expected 3 values: (1) a boolean expression, (2) a value to return if (1) is true,
 and (3) a value to return if (1) is false.

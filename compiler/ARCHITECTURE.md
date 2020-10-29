@@ -36,14 +36,18 @@ talk about here is the Expression parsing (`parseSingleExpression`) which forms 
 language.
 
 First, the head is identified. It must be either an identifier or a keyword. All expressions in KLisp are function
-invocation of the form `(<FunctionIdentifier> [...args])`. For special forms, such as `if`, `let`, and `fun`, the 
-structure of the expression is validated here.
+invocation of the form `(<FunctionIdentifier> [...args])`.
 
-In the future, each of these special forms should be moved into classes that know how to validate and execute themselves.
-This is tracked in [issue #7](https://github.com/john-patterson/KLispIDE/issues/7).
+For special forms, such as `if`, `let`, and `fun`, the logic of how to validate their structure, how to form their
+classes, how to execute their logic is in their respective classes, [IfExpression](#IfExpression),
+[LetBinding](#LetBinding), [FunctionDefinition](#FunctionDefinition). Each of these is a child of `KeywordExpression`.
 
-At the end of `parse`, `enrichExpression` is where a lot of the magic happens. This is where the special forms
-[IfExpression](#IfExpression), [LetBinding](#LetBinding), [FunctionDefinition](#FunctionDefinition).
+You can see the creation of these classes at the end of `parse`, `enrichExpression`.
+
+Each `KeywordExpression` provides a `constructor` and `validate` method that are used during parsing, as well as an
+`execute` method which is used during execution. In the constructor of `KeywordExpression`, the child's implementation
+of validate is called on the raw expression form to ensure that the shape of the expression is correct for the special
+form's usage.
 
 ## ExpressionPart
 ExpressionParts are the constituent members of an Expression.

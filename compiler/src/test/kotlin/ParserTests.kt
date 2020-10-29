@@ -2,6 +2,7 @@ import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
 import com.statelesscoder.klisp.compiler.expressions.Expression
 import com.statelesscoder.klisp.compiler.expressions.ExpressionPart
+import com.statelesscoder.klisp.compiler.expressions.FunctionDefinition
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -289,8 +290,7 @@ class ParserTests {
             val result = getParseTree("(fun! id 3)")
             assertIsKeyword(KeywordType.FUN, result.head)
             assertIsSymbol("id", result.tail[0])
-            assertIsList({ assertTrue(it.items.isEmpty()) }, result.tail[1])
-            assertIsNumber(3f, result.tail[2])
+            assertIsNumber(3f, result.tail[1])
         }
 
         @Test
