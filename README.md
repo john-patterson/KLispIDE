@@ -15,8 +15,7 @@ syntax highlighting and code execution go through a server that runs out of the 
 [server module](https://github.com/john-patterson/KLispIDE/tree/master/editor).
 
 ## Requirements
-This project uses JDK version 14.0.2 and targets the 1.8 JVM version. This was developed and tested primarily under
-Mac OS X 10.15.6, but has also run on Windows 10.
+This project requires OpenJDK 11.
 
 ## Running the Editor
 Clone this code and entire the root of the project directory in two different terminal sessions. You will need one to
@@ -28,7 +27,8 @@ launch the language server and another to launch the editor itself.
   - `gradlew.bat :server:run`
   - `gradlew.bat :editor:run`
   
-Traffic uses TDP port 7340. The editor is also hard-coded to hit localhost at the moment.
+Traffic uses TDP port 7340. The editor is also hard-coded to hit localhost at the moment ([isse 9](https://github.com/john-patterson/KLispIDE/issues/9))
+tracks solving this.
   
 ## Language Overview
 I will focus on the features and description of the language. For implementation details, check out the
@@ -52,7 +52,7 @@ body is passed as arguments to that function at interpretation time.
   - Example: `(let ((a 1) (b 2)) (+ a b))`
 * __fun__: This creates a named function, defines it in the current scope, and returns the function itself. There are
 Three parts to a function: the name, the parameter list, and the body.
-  - Example: `(fun foo (a b) (+ a b))`
+  - Example: `(fun foo [a b] (+ a b))`
   
   Functions which take no parameter are expressed by either omitting the parameter list, for instance:
   - Example: `(fun bar true)`
