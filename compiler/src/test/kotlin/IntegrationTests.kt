@@ -1,6 +1,7 @@
 import com.statelesscoder.klisp.compiler.*
 import com.statelesscoder.klisp.compiler.Function
 import com.statelesscoder.klisp.compiler.UserDefinedFunction
+import com.statelesscoder.klisp.compiler.exceptions.ScopeDataException
 import com.statelesscoder.klisp.compiler.types.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -102,6 +103,16 @@ class IntegrationTests {
         run<KLNumber>("(fun! f2 [] 3)", scope)
         val result = run<KLNumber>("(+ (f1) (f2))", scope)
         assertEquals(5f, result.value)
+    }
+
+    @Test
+    fun `inner scope function definition does not update the parent scope`() {
+        val scope = Scope()
+        val result = run<KLNumber>("(let ((a 1)) ((fun! f [x] (+ 1 x)) a))", scope)
+        assertEquals(2f, result.value)
+        assertThrows(ScopeDataException::class.java) {
+            scope.lookup(Symbol("f"))
+        }
     }
 
     private fun <T : KLValue> run(text: String, env: Scope = Scope()): T {
