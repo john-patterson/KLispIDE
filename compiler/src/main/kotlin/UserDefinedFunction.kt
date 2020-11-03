@@ -7,17 +7,18 @@ import com.statelesscoder.klisp.compiler.types.RealizedList
 
 class UserDefinedFunction(val name: Symbol,
                           private val params: List<Symbol>,
-                          private val body: ExpressionPart
+                          private val body: ExpressionPart,
+                          private val definingScope: Scope
 ) : Function() {
-    constructor(name: String, params: List<Symbol>, body: ExpressionPart)
-        : this(Symbol(name), params, body)
+    constructor(name: String, params: List<Symbol>, body: ExpressionPart, definingScope: Scope)
+        : this(Symbol(name), params, body, definingScope)
 
     override fun run(executor: Executor, args: RealizedList, scope: Scope): KLValue {
         if (args.items.size != params.size) {
             throw RuntimeException("Function '$name' expects '${params.size}' arguments, but got '${args.items.size}'.")
         }
 
-        val boundScope = Scope(scope)
+        val boundScope = Scope(scope, definingScope)
         for (i in args.items.indices) {
             val symbolPart = params[i]
             boundScope.add(symbolPart, args.items[i])

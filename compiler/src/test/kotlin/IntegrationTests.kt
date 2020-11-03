@@ -115,6 +115,12 @@ class IntegrationTests {
         }
     }
 
+    @Test
+    fun `function definition has closure`() {
+        val result = run<KLNumber>("((let ((a 1)) (fun! f [x] (+ x a))) 1)")
+        assertEquals(2f, result.value)
+    }
+
     private fun <T : KLValue> run(text: String, env: Scope = Scope()): T {
         val tokens = Tokenizer().scan(text)
         val ast = Parser().parseSingleExpression(tokens)

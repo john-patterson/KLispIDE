@@ -25,8 +25,10 @@ class Scope {
     }
 
     constructor() {}
-    constructor(otherScope: Scope) {
-        this.symbolTable.putAll(otherScope.symbolTable)
+    constructor(vararg otherScopes: Scope) {
+        otherScopes
+            .map { it.symbolTable }
+            .forEach { this.symbolTable.putAll(it)}
     }
     constructor(klValue: Map<String, KLValue>) {
         this.symbolTable.putAll(klValue)

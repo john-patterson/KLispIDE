@@ -49,8 +49,8 @@ class Executor {
             is UserDefinedFunction -> execute(arg, env)
             is Symbol -> handleSymbol(arg, env)
             is Keyword -> throw RuntimeException("Encountered free keyword ${arg.kwdType} in the body of an expression")
-            is Expression -> execute(arg, env)
             is UnrealizedList -> arg.realize(this, env)
+            is Expression -> execute(arg, env)
             else -> throw RuntimeException("Part $arg not recognized.")
         }
     }

@@ -55,7 +55,7 @@ class FunctionDefinition(head: ExpressionPart, tail: List<ExpressionPart>) : Key
     }
 
     override fun execute(executor: Executor, scope: Scope): KLValue {
-        val function = UserDefinedFunction(name, params, body)
+        val function = UserDefinedFunction(name, params, body, scope)
         scope.add(name, function)
         return function
     }

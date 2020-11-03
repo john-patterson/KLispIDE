@@ -185,7 +185,7 @@ class ExecutorTests {
         fun `builtin print function succeeds on complex objects which evaluate to strings`() {
             val e = Executor()
             val scope = Scope()
-            val id = UserDefinedFunction("id", listOf(Symbol("x")), Symbol("x"))
+            val id = UserDefinedFunction("id", listOf(Symbol("x")), Symbol("x"), scope)
             scope.add(Symbol("id"), id)
 
             val expr = Expression(
