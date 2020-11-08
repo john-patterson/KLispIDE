@@ -72,6 +72,7 @@ class Parser {
                 TokenType.IDENTIFIER,
                 TokenType.LET,
                 TokenType.IF,
+                TokenType.FUN_BANG,
                 TokenType.FUN
             )
             parseSimplePart(tokens[1])
@@ -109,7 +110,8 @@ class Parser {
             is Keyword -> when (head.kwdType) {
                 KeywordType.IF -> IfExpression(head, tail)
                 KeywordType.LET -> LetBinding(head, tail)
-                KeywordType.FUN -> FunctionDefinition(head, tail)
+                KeywordType.FUN -> AnonymousFunctionDefinition(head, tail)
+                KeywordType.FUN_BANG -> FunctionDefinition(head, tail)
             }
             else -> Expression(head, tail)
         }
@@ -135,6 +137,7 @@ class Parser {
             TokenType.BOOLEAN -> KLBool(token.text.toBoolean())
             TokenType.LET -> Keyword(KeywordType.LET)
             TokenType.IF -> Keyword(KeywordType.IF)
+            TokenType.FUN_BANG -> Keyword(KeywordType.FUN_BANG)
             TokenType.FUN -> Keyword(KeywordType.FUN)
             TokenType.RIGHT_BRACKET -> throw ParsingException("Unexpected ).")
             TokenType.LEFT_BRACKET -> throw ParsingException("Unexpected (.")

@@ -13,6 +13,7 @@ enum class TokenType {
     STRING,
     LET,
     IF,
+    FUN_BANG,
     FUN,
 }
 

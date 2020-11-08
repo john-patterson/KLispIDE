@@ -88,6 +88,12 @@ class Tokenizer {
             "fun!".equals(text, true) ->
                 Token(
                     text,
+                    TokenType.FUN_BANG,
+                    pos
+                )
+            "fun".equals(text, true) ->
+                Token(
+                    text,
                     TokenType.FUN,
                     pos
                 )

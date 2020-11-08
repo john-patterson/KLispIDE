@@ -1,12 +1,14 @@
 package com.statelesscoder.klisp.compiler.expressions
 
 import com.statelesscoder.klisp.compiler.Executor
-import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.Scope
 import com.statelesscoder.klisp.compiler.Symbol
+import com.statelesscoder.klisp.compiler.UserDefinedFunction
 import com.statelesscoder.klisp.compiler.exceptions.ParsingException
-import com.statelesscoder.klisp.compiler.types.*
-import java.security.Key
+import com.statelesscoder.klisp.compiler.types.KLValue
+import com.statelesscoder.klisp.compiler.types.Keyword
+import com.statelesscoder.klisp.compiler.types.KeywordType
+import com.statelesscoder.klisp.compiler.types.UnrealizedList
 
 class FunctionDefinition(head: ExpressionPart, tail: List<ExpressionPart>) : KeywordExpression(head, tail) {
     private val name: Symbol = tail[0] as Symbol
@@ -26,11 +28,11 @@ class FunctionDefinition(head: ExpressionPart, tail: List<ExpressionPart>) : Key
     }
 
     constructor(name: Symbol, params: List<Symbol>, body: ExpressionPart)
-        : this(Keyword(KeywordType.FUN), listOf(name, UnrealizedList(params), body))
+        : this(Keyword(KeywordType.FUN_BANG), listOf(name, UnrealizedList(params), body))
 
     override fun validate(head: ExpressionPart, tail: List<ExpressionPart>) {
         if (head is Keyword
-            && head.kwdType == KeywordType.FUN) {
+            && head.kwdType == KeywordType.FUN_BANG) {
 
             if (tail.size == 2 && tail[0] !is Symbol) {
                 // This is the case without args

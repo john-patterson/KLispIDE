@@ -106,6 +106,27 @@ class IntegrationTests {
     }
 
     @Test
+    fun `anonymous functions definable`() {
+        val fnVal = run<Function>("(fun [x] 2)")
+        assertNotNull(fnVal)
+    }
+
+    @Test
+    fun `anonymous functions without arguments definable`() {
+        val fnEmptyParams = run<Function>("(fun [] 2)")
+        assertNotNull(fnEmptyParams)
+
+        val fnNoParams = run<Function>("(fun 2)")
+        assertNotNull(fnNoParams)
+    }
+
+    @Test
+    fun `anonymous functions runnable`() {
+        val result = run<KLNumber>("((fun [x] (+ x 1)) 5)")
+        assertEquals(6f, result.value)
+    }
+
+    @Test
     fun `inner scope function definition does not update the parent scope`() {
         val scope = Scope()
         val result = run<KLNumber>("(let ((a 1)) ((fun! f [x] (+ 1 x)) a))", scope)
